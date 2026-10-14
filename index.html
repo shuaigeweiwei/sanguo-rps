@@ -22,6 +22,7 @@
     --dim: #9b8f7c;
     --red: #c8503f;
     --green: #6fae6a;
+    --dock-h: 210px;   /* 手机端固定操作底栏高度（实际值由 ResizeObserver 回填） */
   }
   body {
     background: radial-gradient(ellipse at top, #221a12 0%, var(--bg) 60%);
@@ -34,6 +35,10 @@
   .screen { display: none; }
   .screen.active { display: block; }
   .hidden { display: none !important; }
+
+  /* 结构容器：桌面下 display:contents 完全不参与布局（视觉零变化），
+     只在 ≤760px 的手机断点里启用，做成「吸顶血条 + 固定底栏」。 */
+  .battlehead, .actiondock { display: contents; }
 
   h1.title {
     text-align: center;
@@ -539,38 +544,120 @@
     .card .cname { font-size: 20px; }
     .record { font-size: 11.5px; line-height: 2; }
 
-    /* ---- 战斗页 ---- */
-    .roundinfo { font-size: 15px; }
-    .weather { font-size: 12.5px; padding: 5px; margin-bottom: 8px; }
-    .teams { flex-direction: column; align-items: stretch; gap: 6px; }
-    .team { gap: 6px; }
+    /* ---- 战斗页：血条吸顶 + 操作栏固定在底部，中间自行滚动 ---- */
+    /* 给固定底栏让位，免得战报最后一截被压在底栏下面 */
+    #screen-battle { padding-bottom: calc(var(--dock-h) + 12px); }
+
+    /* 头部容器：回合信息 + 北伐进度 + 队伍 + 血条，滚动时钉在屏幕顶端 */
+    .battlehead {
+      display: block;
+      position: sticky; top: 0; z-index: 24;
+      margin: -10px -10px 0;              /* 负边距抵消 body 的 10px 内边距，让底色铺满整行 */
+      padding: 7px 10px 6px;
+      background: rgba(22,18,14,.97);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 6px 16px rgba(0,0,0,.45);
+    }
+    .battlehead > .btop { margin-bottom: 5px; gap: 6px; }
+    .battlehead > .btop button { padding: 7px 9px; font-size: 12.5px; }
+    .roundinfo { font-size: 13.5px; }
+    .battlehead > .weather { font-size: 11px; padding: 3px 5px; margin-bottom: 5px; }
+
+    /* 北伐进度条：单行横向滑动，并隐藏与下方血条面板重复的双方血量
+       （第 2、3 个子节点固定是「❤我 / ❤敌」，route 与变体说明都是追加在后面的） */
+    .battlehead > .rlbar {
+      margin-bottom: 5px; padding: 4px 8px; font-size: 11px;
+      flex-wrap: nowrap; gap: 5px 9px; overflow-x: auto;
+      justify-content: flex-start;   /* 必须：center + nowrap 溢出会让左端永远滚不到 */
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .battlehead > .rlbar::-webkit-scrollbar { display: none; }
+    .battlehead > .rlbar > span { flex: 0 0 auto; white-space: nowrap; }
+    .battlehead > .rlbar > span:nth-child(2),
+    .battlehead > .rlbar > span:nth-child(3) { display: none; }
+    .battlehead > .rlbar .rlb { padding: 1px 7px; }
+
+    /* 队伍条：5 个一排，避免在手机上折成 4 行把头部撑爆 */
+    .teams { flex-direction: column; align-items: stretch; gap: 5px; margin-bottom: 5px; }
+    .team { gap: 5px; }
     #teamA { justify-content: flex-start; }
-    .teamrule { width: 100%; order: 3; text-align: left; font-size: 11.5px; }
-    .slot { width: calc(33.333% - 4px); font-size: 11px; padding: 4px 6px; }
-    .fighters { flex-direction: column; gap: 9px; }
-    .vs { width: auto; height: 26px; font-size: 22px; }
-    .panel { padding: 11px 12px; }
-    .pname { font-size: 21px; }
-    .hptext { font-size: 12px; }
-    .float { font-size: 26px; top: 30%; }
-    .float.crit { font-size: 38px; }
-    .moveshow { gap: 12px; padding: 12px; margin: 10px 0; }
-    .mv { font-size: 42px; }
-    .mvs { font-size: 20px; }
-    .mvres { font-size: 18px; letter-spacing: 2px; }
-    .items { gap: 7px; }
-    button.item { padding: 10px 13px; font-size: 13.5px; }
-    button.item small { font-size: 10px; }
-    .stakebar { gap: 6px; font-size: 12px; }
-    button.stake { padding: 8px 13px; }
-    .history { gap: 10px; padding: 6px 8px; font-size: 12px; }
-    .history b { font-size: 14px; letter-spacing: 2px; }
-    .secrets { gap: 10px; padding: 6px 8px; font-size: 12px; }
-    .controls { gap: 8px; margin: 10px 0 8px; }
-    .rps { flex: 1 1 calc(33% - 8px); font-size: 19px; padding: 17px 4px; border-radius: 14px; }
-    .chargehint { font-size: 12px; }
-    .log { height: 140px; font-size: 12.5px; padding: 8px 10px; line-height: 1.8; }
-    button.ultbtn { padding: 11px 26px; font-size: 15px; }
+    .teamrule { width: 100%; order: 3; text-align: left; font-size: 11px; line-height: 1.35; }
+    .slot { width: calc(20% - 5px); font-size: 10px; padding: 3px 4px; white-space: nowrap; overflow: hidden; }
+
+    /* 血条：手机上左右并排（原来竖排要吃掉近一半屏高），并精简次要信息 */
+    .fighters { flex-direction: row; gap: 7px; }
+    .vs { display: none; }                /* 省出的宽度给血条面板，属性行才折不成两行 */
+    .panel { padding: 6px 7px; }
+    .phead { margin-bottom: 4px; gap: 5px; }
+    .pname { font-size: 14.5px; letter-spacing: 1px; }
+    .ptitle, .pside { display: none; }
+    .hpbar { height: 14px; }
+    .hptext { font-size: 10.5px; margin-top: 2px; }
+    .rageline { margin-top: 5px; font-size: 11px; gap: 5px; }
+    .attrs { font-size: 9.5px; margin-top: 3px; line-height: 1.35; }
+    /* 这里刻意不加 nowrap：让它自然折成两行，比 overflow:hidden 把「蓄力 25%」裁掉强 */
+    .pskill { display: none; }            /* 技能说明在图鉴里，手机上省出约 40px */
+    .chips { margin-top: 4px; gap: 3px; min-height: 0; }
+    .chips:empty { display: none; }       /* 没有状态时不留空行 */
+    .chip { font-size: 9px; padding: 1px 5px; }
+    .float { font-size: 24px; top: 26%; }
+    .float.crit { font-size: 34px; }
+
+    /* 中间滚动区（血条与操作栏之外的部分） */
+    .moveshow { gap: 10px; padding: 9px; margin: 8px 0; }
+    .mv { font-size: 34px; }
+    .mvs { font-size: 18px; }
+    .mvres { font-size: 16px; letter-spacing: 2px; }
+    .history { gap: 8px; padding: 5px 8px; margin-bottom: 7px; font-size: 11.5px; }
+    .history b { font-size: 13px; letter-spacing: 2px; }
+    .secrets { gap: 8px; padding: 5px 8px; margin-bottom: 7px; font-size: 11.5px; }
+
+    /* 军略牌：改成横向滑动，避免折成三四行把整屏吃光 */
+    .cardbar { padding: 7px 8px; margin-bottom: 8px; }
+    .cbrow { margin-bottom: 5px; font-size: 11.5px; gap: 7px; }
+    .cbrow b { font-size: 13.5px; }
+    .hand { flex-wrap: nowrap; overflow-x: auto; min-height: 0;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+            padding: 4px 0 2px; }
+    .hand::-webkit-scrollbar { display: none; }
+    .hcard { width: 116px; min-height: 88px; flex: 0 0 auto; padding: 6px 7px 14px; }
+    .hcard .hn { font-size: 12.5px; }
+    .hcard .hd { font-size: 11px; }
+
+    .log { height: 110px; font-size: 12px; padding: 7px 9px; line-height: 1.7; }
+
+    /* 操作底栏：固定在屏幕最下方，血条与出招永远同屏，不用来回翻 */
+    .actiondock {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
+      background: rgba(22,18,14,.97);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 20px rgba(0,0,0,.5);
+    }
+    .controls { flex: 1 1 100%; gap: 6px; margin: 0; }
+    .rps { flex: 1 1 calc(33% - 7px); font-size: 17px; padding: 10px 4px; border-radius: 13px; }
+    .chargehint { font-size: 10.5px; line-height: 1.3; }
+
+    /* 押注与超必杀挤到同一行，省掉一整行的高度 */
+    .stakebar { flex: 1 1 auto; gap: 4px; margin: 0; font-size: 11px;
+                justify-content: center; min-width: 0; }
+    .stakelabel, .stakehint { display: none; }   /* 手机上省两行，三个按钮自解释 */
+    .stakebar .dot { display: none; }            /* 藏掉装饰性「·」，让三个按钮和超必杀并进同一行 */
+    button.stake { padding: 6px 7px; font-size: 11px; white-space: nowrap; }
+    .ultbtnline { flex: 0 0 auto; margin: 0; }
+    button.ultbtn { padding: 7px 11px; font-size: 13.5px; letter-spacing: 2px; white-space: nowrap; }
+
+    .items { flex: 1 1 100%; gap: 5px; margin: 0; }
+    button.item { flex: 1 1 calc(20% - 5px); min-width: 0; padding: 6px 6px; font-size: 12px;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    button.item small { display: block; font-size: 9.5px; margin-top: 1px;
+                        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .jnhint { display: none; }            /* 与北伐进度条里的「🎒 锦囊 4/4」重复 */
 
     /* ---- 弹窗 / 结算 ---- */
     .mbox { padding: 18px 16px; width: 94%; max-height: 84dvh; }
@@ -593,7 +680,8 @@
     .maplayer { gap: 8px; }
     .mapnode { width: 88px; padding: 8px 4px; font-size: 23px; }
     .mapnode small { font-size: 9px; }
-    .hcard { width: calc(50% - 4px); min-height: 108px; font-size: 11.5px; }
+    /* .hcard 的手机端尺寸统一由上面「战斗页」那段决定（116px 宽、横滑 3 张一屏），
+       这里不再重复声明，避免同名规则互相覆盖。 */
     .hand { gap: 7px; }
     .potion { width: 38px; height: 38px; font-size: 18px; }
     button.pilebtn { padding: 7px 10px; font-size: 11px; }
@@ -608,6 +696,11 @@
     .cxitem { gap: 7px; padding: 6px 7px; }
     .cxitem .nm { min-width: 60px; font-size: 12.5px; }
     .cxitem .ds { font-size: 12px; }
+  }
+
+  /* 超窄屏（iPhone SE1 / 5 等 320px 宽）：锦囊按钮文字再收一档，别让名字被省略号吃掉 */
+  @media (max-width: 344px) {
+    button.item { font-size: 10.5px; padding: 6px 4px; }
   }
 </style>
 </head>
@@ -676,6 +769,8 @@
 
   <!-- ============ 战斗界面 ============ -->
   <section id="screen-battle" class="screen">
+    <!-- 头部容器：桌面下 display:contents 不参与布局；手机端变成吸顶血条区 -->
+    <div class="battlehead">
     <div class="btop">
       <button id="btnBack">← 换个阵容</button>
       <div class="roundinfo" id="roundInfo">第 1 回合</div>
@@ -697,6 +792,7 @@
       <div class="vs">VS</div>
       <div class="panel" id="panelA"></div>
     </div>
+    </div><!-- /battlehead -->
 
     <div class="moveshow hidden" id="moveShow"></div>
 
@@ -706,6 +802,8 @@
 
     <div class="cardbar hidden" id="cardBar"></div>
 
+    <!-- 操作底栏容器：桌面下 display:contents 不参与布局；手机端固定在屏幕底部 -->
+    <div class="actiondock">
     <div class="controls">
       <button class="rps" data-move="0">✊ 石头</button>
       <button class="rps" data-move="1">✌️ 剪刀</button>
@@ -715,9 +813,9 @@
 
     <div class="stakebar">
       <span class="stakelabel">🎲 出招押注</span>
-      <button class="stake active" data-stake="1">🛡 稳 · ×1</button>
-      <button class="stake" data-stake="1.5">⚔ 险 · ×1.5</button>
-      <button class="stake" data-stake="2">🔥 豪 · ×2</button>
+      <button class="stake active" data-stake="1">🛡 稳<i class="dot"> · </i>×1</button>
+      <button class="stake" data-stake="1.5">⚔ 险<i class="dot"> · </i>×1.5</button>
+      <button class="stake" data-stake="2">🔥 豪<i class="dot"> · </i>×2</button>
       <span class="stakehint" id="stakeHint">每回合生效：押得越重，赢得越狠、输得越疼</span>
     </div>
 
@@ -726,6 +824,7 @@
     </div>
 
     <div class="items" id="itemsBar"></div>
+    </div><!-- /actiondock -->
 
     <div class="log" id="log"></div>
   </section>
@@ -5607,6 +5706,22 @@ $('btnQuitRL').addEventListener('click', () => {
   session++; busy = false; RL.active = false; clearRoguelikeSave(); G.over = true;
   hideKO(); $('ultBanner').className = 'ultbanner hidden'; show('screen-select');
 });
+
+/* 📱 手机端：实测固定操作底栏高度回填 --dock-h，给战斗页底部留出让位空间。
+   桌面端该容器是 display:contents（没有盒子），高度恒为 0，直接跳过。 */
+(function(){
+  const dock = document.querySelector('.actiondock');
+  if(!dock) return;
+  const apply = () => {
+    const h = dock.getBoundingClientRect().height;
+    if(h > 4) document.documentElement.style.setProperty('--dock-h', Math.ceil(h) + 'px');
+  };
+  apply();
+  window.addEventListener('resize', apply, { passive: true });
+  if(typeof ResizeObserver !== 'undefined'){
+    try { new ResizeObserver(apply).observe(dock); } catch(e){}
+  }
+})();
 
 function syncUlt(){
   const b = $('btnUlt');
