@@ -437,6 +437,7 @@
   .rlbar b { color:var(--gold); font-weight:normal; }
   .rlbar .rlb { border:1px solid var(--line); border-radius:11px; padding:1px 9px; background:#171310; }
   .rlbar .rlb.hot { border-color:#c06a2c; color:#e0a06a; }
+  .rlbar .rlb.up  { border-color:#3f8f5a; color:#7fd6a0; }
   .jnhint { font-size:11.5px; color:var(--dim); border:1px dashed var(--line);
     border-radius:11px; padding:2px 9px; }
 
@@ -1944,7 +1945,7 @@ function addPoison(f, amount, src){
 /* ==================== 北伐（Roguelike）run 状态 ==================== */
 const RL = { active:false, hero:null, gold:0, map:[], layer:0, relics:[], log:[], result:null,
              deck:[], drawPile:[], discard:[], hand:[], potions:[], pendingReward:null,
-             curNode:null, battles:0, doctrine:null, morale:3, supplies:3,
+             curNode:null, battles:0, doctrine:null, morale:4, supplies:3,
              nodeHistory:[], flags:{}, report:null };
 const HAND_MAX = 8;
 const BASE_ENERGY = 3;
@@ -2045,6 +2046,10 @@ const RL_ROUTE_INFO = {
   supply:  {icon:'📦', name:'粮道', desc:'更容易获得补给、金币和战后恢复。'},
   scheme:  {icon:'🧠', name:'秘径', desc:'奇遇与军略牌奖励更容易出现稀有选项。'}
 };
+/* 军心三档的说明，给地图页/战况条的徽章做 title ——原先只显示一个数字，
+   玩家根本不知道 4 才是及格线，也就无从感知这个系统"到底有什么用"。 */
+const MORALE_TIP = '军心三档：≥4 本战起始格挡 +4、怒气 +5%；=3 无任何加成；≤2 敌方开场怒气 +10%（Boss 战同样生效）。'
+                 + '每打完一场都会折损 1 点军心，军道 +2、粮道 +1 可以补回来，秘径则会持续下滑。';
 const RL_DOCTRINES = [
   {id:'raid', icon:'⚔', name:'奇袭', desc:'每场战斗起始蓄力 +15%；战斗缴获金币 +8%。',
    apply(f){ f.st.startCharge = (f.st.startCharge||0) + 15; f.st.goldUp = (f.st.goldUp||0) + 0.08; }},
@@ -2205,7 +2210,7 @@ function resumeRoguelike(){
   RL.pendingReward = snap.rl.pendingReward || null;
   RL.battles = snap.rl.battles || 0;
   RL.doctrine = snap.rl.doctrine || null;
-  RL.morale = Number.isFinite(snap.rl.morale) ? snap.rl.morale : 3;
+  RL.morale = Number.isFinite(snap.rl.morale) ? snap.rl.morale : 4;
   RL.supplies = Number.isFinite(snap.rl.supplies) ? snap.rl.supplies : 3;
   RL.nodeHistory = snap.rl.nodeHistory || [];
   RL.flags = snap.rl.flags || {};
@@ -3449,8 +3454,12 @@ function beginDeckBattle(){
     log('📦 粮队及时赶到，本战起始格挡 +6。','gold');
   }
   if(RL.morale >= 4){
-    player.st.block += 3;
-    log('🪖 军心高昂，本战起始格挡 +3。','gold');
+    /* 格挡每回合会被 endCardTurn 清零，所以开战送的格挡只活到第 1 回合结束;
+       怒气则一直带到超必杀条上,玩家每场都看得见 —— 两者一起才是"有感"的增益。
+       数值经 rlbot2 权威评估校准:+6/+15 会把 easy 顶到 52%(带宽 35-45)。 */
+    player.st.block += 4;
+    player.rage = Math.min(100, (player.rage || 0) + 5);
+    log('🪖 军心高昂，本战起始格挡 +4、怒气 +5%。','gold');
   }
   drawCards(BASE_DRAW + (player.st.drawBonus||0) + (player.st.drawPerTurn||0));
   log('🃏 卡组已备：抽 '+BASE_DRAW+' 张起手，能量 '+player.st.energy+
@@ -3840,7 +3849,7 @@ function startRoguelike(){
   RL.pendingReward = null;
   RL.battles = 0;
   RL.doctrine = null;
-  RL.morale = 3;
+  RL.morale = 4;
   RL.supplies = 3 + merit.supplies;
   RL.nodeHistory = [];
   RL.flags = {};
@@ -3929,10 +3938,21 @@ function rlFinish(){
   heal(player, Math.round(player.maxHp * healRate));
   if(player.st.healOnBattle) heal(player, Math.round(player.maxHp * player.st.healOnBattle));
   if(player.st.winSupply){ changeSupplies(player.st.winSupply); log('🌾 【屯田令】缴获补给 +'+player.st.winSupply,'gold'); }
-  if(n.route === 'war') changeMorale(1);
+  /* 连战折损:每打完一场都损兵折将,军心 -1。这是军心唯一的"自然支出" ——
+     没有它,军道/粮道的胜利加成会把军心永远顶在 4-5,实测 639 场里
+     军心最低只到过 3,≤2 的惩罚档一次都不会触发,等于死内容。
+     顺序必须"先扣后补",这样开战瞬间读到的军心才自洽:
+       军道 -1+2 = 净+1(顶到 5) / 粮道 -1+1 = 净0(持平) / 秘径 -1(持续下滑) */
+  const moraleBefore = RL.morale;
+  if(n.type !== 'boss') changeMorale(-1, true);
+  if(n.route === 'war') changeMorale(2, true);
   if(n.route === 'supply'){
     changeSupplies(n.type === 'elite' || n.type === 'challenge' ? 2 : 1);
     changeMorale(1, true);
+  }
+  if(RL.morale !== moraleBefore){
+    log('🪖 军心'+(RL.morale > moraleBefore ? '上涨' : '折损')+'至 '+RL.morale+'/5',
+        RL.morale > moraleBefore ? 'gold' : 'bad');
   }
   /* 精英：额外遗物 + 药水 */
   if(n.type === 'elite'){
@@ -4000,6 +4020,10 @@ function enterNode(layer, idx){
 
 function startRLBattle(node){
   player = RL.hero;
+  /* 战报清屏必须放最前面：原先清在变体/军心分支之后，
+     把【烟幕】【烽火示警】【侦察奏效】【军心低落】四条提示全吃掉了——
+     效果照常生效，但玩家完全看不到原因（尤其军心低落的惩罚是"无声"的）。 */
+  $('log').innerHTML = '';
   const L = RL.layer;
   const scale = rlDifficultyScale();
   let foe;
@@ -4095,26 +4119,28 @@ function startRLBattle(node){
       weather = 'night';
     } else if(variant === 'siege'){
       ai.st.block += 10;
-      log('攻城战：敌方开场获得 10 点格挡','sys');
     } else if(variant === 'do-or-die'){
       foe.maxHp = Math.max(10, Math.round(foe.maxHp * 0.75));
       foe.hp = foe.maxHp;
       foe.atk += 3;
-      log('⚔ 决死战：敌方生命 −25%、攻击 +3，放手一搏！','sys');
     } else if(variant === 'spy'){
       foe.maxHp = Math.round(foe.maxHp * (BATTLE_VARIANTS.spy.hpBonus || 1.10));
       foe.hp = foe.maxHp;
       player.st.peekCharges = (player.st.peekCharges||0) + 1;
-      log('🕵 谍战：细作传回情报，本战首回合可预知敌招；敌方生命 +10%。','sys');
     } else if(variant === 'disaster'){
-      log('🌦 天灾：飞矢流石不分敌我，每回合结束双方各受 3 点无视防御伤害！','sys');
-    }
-    if(RL.morale <= 1){
-      ai.rage = Math.max(ai.rage, 10);
-      log('🪖 军心低落，敌方趁虚而入，怒气 +10%。','bad');
+      /* 变体说明统一由下方的 🧭 BATTLE_VARIANTS[variant].desc 打印。
+         这里原本各有一条 log()，但它们写在旧清屏点之前，从来没被玩家看见过；
+         清屏上移后若保留就会变成两行重复信息，故删除。 */
     }
   }
-  $('log').innerHTML = '';
+  /* 军心惩罚:①阈值 <=1 → <=2 —— 实测 639 场军心最低只到过 3，
+     <=1 在真实对局里一次都不会触发，纯属死内容；
+     ②移出 node.type!=='boss' —— 原先等于把这条惩罚在最终战白送掉，
+     和烟幕/烽火示警"Boss 同样生效"的口径也不一致。 */
+  if(RL.morale <= 2){
+    ai.rage = Math.max(ai.rage, 10);
+    log('🪖 军心低落，敌方趁虚而入，怒气 +10%。','bad');
+  }
   hideKO();
   setRpsDisabled(false); syncItems(false);
   $('roundInfo').textContent = '第 1 回合';
@@ -4854,7 +4880,8 @@ function renderRLBar(){
       (node && node.type==='boss' ? ' · 决战' : ' · 第 '+(RL.layer+1)+' 层')+'</span>'+
     '<span>❤ 我 <b>'+player.hp+'/'+player.maxHp+'</b>（'+hp+'%）</span>'+
     '<span>❤ 敌 <b>'+ai.hp+'/'+ai.maxHp+'</b>（'+ahp+'%）</span>'+
-    '<span class="rlb'+(RL.morale<=1?' hot':'')+'">🪖 军心 '+RL.morale+'/5</span>'+
+    '<span class="rlb'+(RL.morale>=4?' up':RL.morale<=2?' hot':'')+
+      '" title="'+MORALE_TIP+'">🪖 军心 '+RL.morale+'/5</span>'+
     '<span class="rlb'+(RL.supplies<=1?' hot':'')+'">📦 补给 '+RL.supplies+'</span>'+
     '<span>💰 '+RL.gold+'</span>'+
     '<span>🎒 锦囊 '+leftJn+'/'+jnCapacity()+'</span>'+
@@ -4880,7 +4907,7 @@ function renderMapScreen(){
       RL.deck.length+' 张 · 🧪药水 '+RL.potions.filter(Boolean).length+'/3</div>'+
     '<div class="rlmeta">'+
       '<span>🗺 当前战区：<b>'+region.name+'</b></span>'+
-      '<span>🪖 军心：<b>'+RL.morale+'/5</b></span>'+
+      '<span title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
       '<span>📦 补给：<b>'+RL.supplies+'</b></span>'+
       '<span>📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
       (RL.flags.scouted ? '<span>🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
@@ -4890,7 +4917,8 @@ function renderMapScreen(){
     '<div class="rlprogress" aria-label="北伐进度"><i style="width:'+progress+'%"></i></div>'+
     '<div class="rlmeta"><button id="btnDeckView">📚 查看卡组</button><span>进度 '+Math.min(RL.layer, totalLayers)+'/'+totalLayers+'</span></div>'+
     '<div class="potions" id="mapPotionRow" style="margin-top:8px"></div>';
-  $('rlGold').innerHTML = '💰 <b>'+RL.gold+'</b> 金　·　🪖 '+RL.morale+'/5　·　📦 '+RL.supplies;
+  $('rlGold').innerHTML = '💰 <b>'+RL.gold+'</b> 金　·　'+
+    '<span title="'+MORALE_TIP+'">🪖 '+RL.morale+'/5</span>　·　📦 '+RL.supplies;
   $('rlRelicsBox').innerHTML = RL.relics.length
     ? RL.relics.map(id => { const r = RELICS.find(x=>x.id===id);
         return '<span class="relic '+(r.rar==='boss'?'up':'')+'" title="【'+r.name+'】('+RARITY_NAME[r.rar]+')：'+r.desc+'">'+r.icon+'</span>'; }).join('')
