@@ -438,6 +438,10 @@
   .rlbar .rlb { border:1px solid var(--line); border-radius:11px; padding:1px 9px; background:#171310; }
   .rlbar .rlb.hot { border-color:#c06a2c; color:#e0a06a; }
   .rlbar .rlb.up  { border-color:#3f8f5a; color:#7fd6a0; }
+  /* 军心档位说明（地图页常驻文字）—— iOS Safari 不显示 title 工具提示，
+     手机上必须是看得见的字，所以三档效果与当前档位直接写在页面里 */
+  .moraleGood { color:#7fd6a0; font-weight:bold; }
+  .moraleBad  { color:#e0a06a; font-weight:bold; }
   .jnhint { font-size:11.5px; color:var(--dim); border:1px dashed var(--line);
     border-radius:11px; padding:2px 9px; }
 
@@ -4898,6 +4902,10 @@ function renderMapScreen(){
   const cls = pct<=25 ? 'low' : pct<=55 ? 'mid' : '';
   const doctrine = RL_DOCTRINES.find(d => d.id === RL.doctrine);
   const region = RL_REGIONS[Math.min(2, Math.floor(RL.layer / Math.max(1, Math.ceil((RL.map.length-1)/3))))] || RL_REGIONS[0];
+  /* 当前军心档位——手机上 title 提示不显示，必须写成页面里看得见的字 */
+  const mNow = RL.morale >= 4 ? ['增益', 'moraleGood']
+             : RL.morale <= 2 ? ['惩罚', 'moraleBad']
+             : ['中性', ''];
   const totalLayers = Math.max(1, RL.map.length - 1);
   const progress = Math.min(100, Math.round(Math.min(RL.layer, totalLayers) / totalLayers * 100));
   $('rlHeroBox').innerHTML =
@@ -4912,6 +4920,11 @@ function renderMapScreen(){
       '<span>📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
       (RL.flags.scouted ? '<span>🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
     '</div>'+
+    '<div class="rlmeta"><span>🪖 军心三档：<b class="moraleGood">≥4 → 本战起始格挡 +4、怒气 +5%</b>'+
+      '　｜　<b>=3 → 无效果</b>'+
+      '　｜　<b class="moraleBad">≤2 → 敌方开场怒气 +10%（Boss 战同样生效）</b>'+
+      '　——　当前：<b class="'+mNow[1]+'">'+mNow[0]+'</b></span></div>'+
+    '<div class="rlmeta"><span>🪖 每打完一场非 Boss 战军心 −1（连战折损）；军道 +2、粮道 +1 可补回来，秘径不补会一路下跌。</span></div>'+
     '<div class="rlmeta"><span>💡 押注是高风险高回报；有读心或望楼提示时，押 ×2 更容易兑现。</span></div>'+
     (RL.flags.scoutAid ? '<div class="rlmeta"><span>🗺 侦察助益：下一场非 Boss 战敌军生命 -'+RL.flags.scoutAid+'%。</span></div>' : '')+
     '<div class="rlprogress" aria-label="北伐进度"><i style="width:'+progress+'%"></i></div>'+
