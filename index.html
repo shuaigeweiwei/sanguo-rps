@@ -395,11 +395,25 @@
     box-shadow:0 10px 50px rgba(0,0,0,.6); animation:pop .35s cubic-bezier(.2,1.3,.5,1) both; }
   .mbox h3 { font-size:23px; color:var(--gold); letter-spacing:3px; margin-bottom:12px;
     border-bottom:1px solid rgba(216,180,90,.16); padding-bottom:9px; }
-  .mbox p { color:var(--dim); font-size:14px; line-height:1.8; margin-bottom:18px; }
+  .mbox p { color:var(--dim); font-size:15px; line-height:1.92; margin-bottom:14px; }
   .mbox p b { color:var(--text); }
   .mopts { display:flex; flex-direction:column; gap:9px; }
   .mopts button { padding:10px 14px; font-size:14px; text-align:left; line-height:1.62; }
   .mopts button:hover { border-color: var(--gold); }
+
+  /* ---------- 军议会·卷首叙事（电影字幕式逐句渐显） ---------- */
+  #mBody { display:block; margin-bottom:16px; }
+  .rpc { max-width:44em; margin:0 auto 4px; padding:6px 18px 4px;
+    border-top:1px solid rgba(216,180,90,.15); border-bottom:1px solid rgba(216,180,90,.15); }
+  .rpc-line { font-family:'Kaiti SC','STKaiti','KaiTi','FZKai-Z03S','楷体',serif;
+    color:#ecdfc3; font-size:17.5px; line-height:2.02; letter-spacing:.4px;
+    text-shadow:0 1px 8px rgba(0,0,0,.55); margin:10px 0;
+    transition:opacity .85s ease, transform .85s ease, filter .85s ease; }
+  .rpc-line.pre { opacity:0; transform:translateY(9px); filter:blur(3px); }
+  .rpc-if { color:#ffd76a; border-left:2px solid rgba(216,180,90,.55); padding-left:11px;
+    background:linear-gradient(90deg, rgba(216,180,90,.09), transparent 78%); }
+  .rpc-dim { margin-top:14px; padding-top:9px; border-top:1px dashed rgba(216,180,90,.2);
+    font-size:12.5px !important; line-height:1.8 !important; }
 
   /* ---------- 北伐地图 ---------- */
   .rltop { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
@@ -982,7 +996,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
 <div class="modal hidden" id="modal">
   <div class="mbox">
     <h3 id="mTitle"></h3>
-    <p id="mBody"></p>
+    <div id="mBody"></div>
     <div class="mopts" id="mOpts"></div>
   </div>
 </div>
@@ -4549,11 +4563,17 @@ function addFixedCard(id, up){
    量纲按读取现场对齐：lifesteal / dmgUp / dmgReduce / healOnBattle / goldUp 是小数，
    startBlock / winGold / peekCharges / startPoisonOnce 是整数。体检脚本 councilprobe.js。 */
 const RL_SCENES = [
-  { scene:['祁山的桑树刚抽新枝，大军就已出街亭。前军报来：张郃据城不下，山路窄处只能一车通行。',
-            '你翻开地图，街亭那一点被朱笔圈了三遍。这里是北伐的第一道门——门不开，后面的所有路都是空谈。',
-            '帐中议兵到三更，三种主张争执不下：急进的、死守的、动嘴皮子的。你得当场定下来，明早出队就不改了。',
-            '卤城的麦子黄透，驮队还堵在木门道上。张郃不硬碰，专往粮道下叉——半辈子山地仗打下来，他比谁都清楚饿比刀更快。夜里游哨带回两个生面孔的向导，供词对不上来路。利害就在这几日：粮到，祁山是路；粮尽，祁山是坟。',
-            '军议散得比往常晚。案上摊着三条道，争的都是几日口粮、几里山隘，没有人先提伤亡二字。你把灯芯挑亮，一句一句问下去，问到第三遍，帐中只剩呼吸。对面五十里外张郃的大营也亮着灯，火光隔着陇山对峙，两边的更鼓此起彼落——谁先熬不住，谁先把退路让出去。'],
+  { scene:['建兴六年春，祁山的桑条刚抽出新的绿意，北伐大军已开到街亭隘口之下。',
+            '中军接到的第一份军报只有一句：张郃据城不战，只等远来的蜀军先耗尽第一口粮。',
+            '山路窄处一车只容通行，驮队排出去十几里，在山影里像一条不肯断气的绳。',
+            '你把舆图铺在案上，朱笔把「街亭」那一点圈了三遍——北伐的第一道门，就卡在这里。',
+            '门若不开，后面所有的路都是空谈；门若破了，魏军整个西线再无遮拦。',
+            '帐中议兵直到三更：急性子要抢麦期，老成派要筑高垒，说客们还攥着空白的国书。',
+            '卤城的麦子黄透了，每颗麦粒都在替你数日子——早一步是军粮，晚一步就是灰。',
+            '夜里游哨带回两个生面孔的向导，供词对不上来路：敌人也开始揣摸你的粮道。',
+            '对面五十里外张郃的大营也亮着灯，火光隔着陇山对峙，两边的更鼓此起彼落。',
+            '他比谁都清楚饿比刀更快：不硬碰，专往粮道下叉，等你先熬不住。',
+            '你把灯芯挑亮，把三条路一句一句问下去，问到第三遍，帐中只剩下呼吸。'],
     council:[
       {t:'🏃 轻装急进，先夺要道', d:'金币 +20，补给 −1，开局蓄力 +25%',
        run(){ RL.gold += 20; changeSupplies(-1, true); RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 25; }},
@@ -4564,11 +4584,16 @@ const RL_SCENES = [
               RL.flags.scoutAid = Math.max(RL.flags.scoutAid||0, 8);
               RL.flags.scouted = Math.max(RL.flags.scouted||0, 1); }}
     ]},
-  { scene:['陈仓城门吊桥高悬，郝昭在城头设了十层女墙。冲车到了就被拍落，云梯还没靠上就着了火。',
-            '粮道在秦岭栈道上一寸一寸挪，前军送来的不是战报，是欠粮的数目。攻得越久，越像是自己在围自己。',
-            '有人建议死攻，有人建议绕开，还有人想写一封劝降书。',
-            '陈仓城头立着十重女墙，吊桥昼夜高悬。郝昭守军不满千数，云梯未近先中火箭，冲车一靠便被绳系石磨砸断。围到第二十日，栈道运来的粮一斗都带一斗火气。又报：轻骑出了陈仓西谷，专截落单的运粮小队——攻城的人，快被城攻了。',
-            '营中开始算另一笔账：陈仓不过数百里小城，为它耗掉一季路程值不值。修了三封劝降书，城里回话的始终是同一支钉在辕门木桩上的箭。郝昭断粮断援，却守得像一支凿进山里的楔子——你不拔，他就在你背后生了根。'],
+  { scene:['陈仓吊桥昼夜高悬，城头十重女墙一字排开——郝昭的守军，其实不满千数。',
+            '冲车刚啃到墙根就被绳系石磨砸断，云梯还没靠上墙皮，先中了一轮火箭。',
+            '这是拿命换时间的打法：他守的不是这座城，是拖到你先断粮的那一刻。',
+            '秦岭栈道上的粮一寸一寸挪，送到营里的欠粮数目，一天比一天难堪。',
+            '攻得越久，越像自己在围自己：车马都堆在城下，反倒成了人家反围你的口袋。',
+            '营中吵成三派：有人主张死攻，有人要绕道散关，有人只求先寄一封信进城。',
+            '三封劝降书先后送入城门，回话的始终是同一支钉在辕门木桩上的箭。',
+            '又报：陈仓西谷杀出一队轻骑，专截落单的运粮小队，来去都贴着山根走。',
+            '攻城的人快被城攻了——可这枚楔子不拔，它就在你背后生根发芽。',
+            '军议开到第三夜，帐外更鼓一记一记：陈仓不值一城，值的是整条归路。'],
     council:[
       {t:'🔥 昼夜环攻，务必破城', d:'攻击 +3，但我军疲敝：最大生命 −6',
        run(){ RL.hero.atk += 3; RL.hero.maxHp = Math.max(20, RL.hero.maxHp - 6);
@@ -4578,11 +4603,16 @@ const RL_SCENES = [
       {t:'📜 修书劝降，攻心为上', d:'军心 +2，此后每场战斗敌方首回合攻击 −3',
        run(){ changeMorale(2, true); RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3; }}
     ]},
-  { scene:['定军山两翼对屯，夏侯渊的旗号漫山遍野。此人用兵神速，千里袭人，从不给你列阵的时间。',
-            '探马来报：他分兵去收新市，本阵反显单薄。这是一个稍纵即逝的缝隙，也可能是故意留给你钻的口袋。',
-            '老将的话在帐中回响：「夺汉中不难，难的是夺了以后还打得下去。」',
-            '定军山对峙已半旬，夏侯渊的营盘一日一挪，快得像雁阵换位。探报：他亲引四百人出营补鹿角，本阵露出一道缝。缝隙是号令，也可能是饵。东侧山头望气的人断言可击，也断言：只此一击，不中即退。山风把三军的鼓点都压低了半分。',
-            '汉水北岸传出新话：有人偃旗息鼓，凭一座空营吓退了追兵，连伙夫都学会了摆旗。军中对汉水这步棋的传法越来越玄——是在赌运，还是在赌算，没人说得清。夏侯渊不认为险，他赌的是你粮脚比他的刀短：你的粮翻三重山，他的粮顺水行舟。你抢的是日子，不是山头。'],
+  { scene:['定军山两翼对屯已过半旬，夏侯渊的旗号漫山遍野，忽东忽西像雁阵换位。',
+            '千里袭人的名号不是虚的：他从不给你列阵的工夫，接战永远由他选时。',
+            '探马踏破了三双蹄铁，才带回一条足以改写战局的消息——他分兵去收新市了。',
+            '本阵露出了一道缝；那道缝可能是号令，也可能是一张等你钻的口袋。',
+            '东侧山头望气的人两句话都说得笃定：可击；只此一击，不中即退。',
+            '老将的告诫在帐中回响：「夺汉中不难，难的是夺了之后还打得下去。」',
+            '汉水北岸传来了新的战例：有人偃旗息鼓，凭一座空营吓退了追兵。',
+            '如今连伙夫摆旗都学得有模有样，军中把这一计传得越来越玄。',
+            '夏侯渊不信险，他赌的是你的粮翻三重山、他的粮顺水行舟。',
+            '你抢的不是山头，是日子——军议之前，先算清楚这一仗要打给哪一天看。'],
     council:[
       {t:'⚡ 抢山夺隘，先发制人', d:'开局蓄力 +35%，攻击 +1',
        run(){ RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 35; RL.hero.atk += 1; }},
@@ -4591,11 +4621,16 @@ const RL_SCENES = [
       {t:'🌾 就地屯粮，断他外援', d:'补给 +3，战斗得金 +18%，军心 +1',
        run(){ changeSupplies(3, true); RL.hero.st.goldUp = (RL.hero.st.goldUp||0) + 0.18; changeMorale(1, true); }}
     ]},
-  { scene:['樊城外汉水连日暴涨，于禁的七军泡在泥里。庞德抬着一口棺材出阵，箭囊上绑着白布写的死字。',
-            '水气入骨，军中开始有人咳血。曹军的船却已经造好，停在高处等你下去。',
-            '这一刻要定的不是打法，是敢不敢把后背交给这条河。',
-            '汉水暴涨七日，选在此处决战，赌的是对方没把船造出来。斥候带回的确报却让人后背发凉：曹军水营藏在上游湾里，赭帆借洪流随时可下。庞德仍抬着棺巡行矢石之间，白马白袍，那张脸在箭雨里没有动过一寸。军心比水位涨得快——涨破线，勇气就成了凶器。',
-            '降旗还没晒干，新报又到：樊城父老扶老携幼上城助守，砖石草木统统搬上了女墙。这一仗对面守的不只是一座城，是身后数百里的家业。斥候回营问的第一句不是敌情，反而是：进了城，粮从哪里来？军议因此开到了三更。'],
+  { scene:['汉水连涨七日，浊浪已经拍上了堤腰——于禁的七军，泡在泥水和疫气里。',
+            '庞德抬着一口棺材出阵巡行，箭囊上白布写的那个死字，被雨泡得更白了。',
+            '水气入骨，蜀军也开始有人咳血——这条河对交战的双方都不留情面。',
+            '斥候带回的确报让人后背发凉：曹军的水营藏在上游湾里，赭帆未展。',
+            '他们的船早就造好了，只是按着洪峰的脾气，在等一个顺流直下的时辰。',
+            '选此地决战，赌的就是这一口气：谁的军心先涨破线，谁就先疯了。',
+            '樊城父老扶老携幼上城助守，砖石草木统统搬上了女墙。',
+            '对面守的不只是一座城，而是身后数百里的家业——这一仗赢不来便宜。',
+            '斥候回营的第一句不是敌情，而是反问：进得了城，粮从哪里来？',
+            '军议开到三更，烛花爆了四次；案上的汉水图，被湿气洇出一片灰蓝。'],
     council:[
       {t:'🌊 决水灌营，同归于险', d:'首战敌方中毒 4 层，我方生命 −8',
        run(){ RL.hero.st.startPoisonOnce = (RL.hero.st.startPoisonOnce||0) + 4;
@@ -4606,11 +4641,16 @@ const RL_SCENES = [
        run(){ RL.hero.st.lifesteal = (RL.hero.st.lifesteal||0) + 0.10;
               RL.hero.st.critBonus = (RL.hero.st.critBonus||0) + 0.08; }}
     ]},
-  { scene:['洛阳城下的司马懿不问战事，只问使者吃了几碗饭、家中妻儿安否。他算的不是兵力，是你的耐心。',
-            '坚壁不战，任你怎么搦战，城头只挂一张琴。军中都传：冢虎在等人自己烂掉。',
-            '你手里还有最后的筹码——怎么花，决定这趟北伐能走多远。',
-            '洛阳不接战。司马懿把四门外的粮草收得干干净净，任你百般挑战，四门钉死如铁。他算准一桩事：你的军粮从汉中启程，到洛阳城下已是末路；他的粮，出城五十步就是仓廪。城头降下来的不是战书，是一袭巾帼妇人的衣装。',
-            '渭水的粮船三日后到埠，仓吏启封清点，报数只够十日之储。军中分作两派：一派主张围而不攻，坐待城内生变；一派主张焚桥断水，逼他出城。你盯着案上的洛阳形势图良久——这张图上，两军最先比拼的不是兵，是耐心。'],
+  { scene:['洛阳城下的司马懿不问战事，只问你的使者吃了几碗饭、家中妻儿安否。',
+            '使者的每一句答复都进了他的册子——一条注脚，能换十日的粮算。',
+            '他算的从来不是兵力，是你的耐心；更像在等你，先老一岁。',
+            '城头不挂甲兵，只挂一张琴：冢虎的打法，是等你自己慢慢烂掉。',
+            '四门外的粮草收得干干净净，四门钉死如铁，搦战之声如泥牛入海。',
+            '他的粮出城五十步就是仓廪；你的粮，从汉中启程翻山，已近末路。',
+            '城头掷下来的不是战书，是一袭巾帼妇人的衣装——辱意在先，礼数在后。',
+            '渭水的粮船三日后到埠，仓吏启封清点，报数只够十日之储。',
+            '军中裂成两派：一派主张围而不攻坐待其变，一派主张焚桥断水逼他出城。',
+            '你盯着案上的洛阳形势图良久——这张图上最先比拼的不是兵，是耐心。'],
     council:[
       {t:'💉 反间于朝', d:'此后每场战斗敌方首回合攻击 −3，金币 −40',
        run(){ RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3;
@@ -4623,10 +4663,15 @@ const RL_SCENES = [
               RL.gold = Math.max(0, RL.gold - 70); }}
     ]},
   { scene:['虎牢关前尘头大起，那杆方天画戟立在门楼之下，比任何军报都直白。',
-            '吕布不设疑兵、不修壕沟，只把关门的门轴换了道新的——他算准了你会从正门进来。',
-            '这是最后一关：过了，还于旧都，六章的伤亡一并值回来；不过，史书就会换一个人来写这一段。',
-            '虎牢关的鼓一响，山道两侧的柴堆次第引燃，焰光把夜照成了昼。吕布横戟立于关前，赤兔踏出的火星混进戟尖的寒光。三英合力才挣得平手的故事传了三十年，今日换你执旗——身后是六年的北伐、三军与你的名。此关不开，中原无路。',
-            '斥候回报：关内既无一兵，也无粮山——鬼神吕布，一个人守关。比十万守军更荒谬，也教人更不敢近前。军中把连弩尽数抬上山脊，火光之下人人紧了紧绑腿。明早的第一合，谁都绊不得，也退不得。'],
+            '吕布不设疑兵、不修壕沟，只把关门的门轴，换了道新的。',
+            '他算准了你会从正门进来——天下的路，走到最后都只剩一条。',
+            '斥候的回报荒谬得让人心惊：关内既无一兵一卒，也无一座粮山。',
+            '鬼神吕布，独自一人守着这一座足以拦下十万大军的关隘。',
+            '关前的战鼓一响，山道两侧的柴堆次第引燃，焰光把夜照成了昼。',
+            '赤兔踏出的火星混进戟尖寒光——三十年来，没人敢从他面前走过。',
+            '三英合力才挣得平手的故事，今日要换一面旗来重新写过。',
+            '身后是这些年的北伐、三军的性命，和你一个人的名字。',
+            '连弩尽数抬上山脊，火光下人人紧了紧绑腿——明早第一合，谁都退不得。'],
     council:[
       {t:'⚔ 三军齐进，正面破关', d:'攻击 +4，防御 +6，但我方不能全须全尾地进去：生命 −12',
        run(){ RL.hero.atk += 4; RL.hero.def += 6; RL.hero.hp = Math.max(1, RL.hero.hp - 12); }},
@@ -5503,14 +5548,37 @@ function openCouncil(){
   if(ch >= RL_SCENES.length || councilTaken() >= ch) return;
   const s = RL_SCENES[ch], c = rlChapter();
   showModal('🏮 第 '+(ch+1)+' 章 · '+c.name+'　【'+c.title+'】'+c.boss,
-    s.scene.map(p => '<p>'+p+'</p>').join('')+
+    '<div class="rpc">'+
+    s.scene.map(p => '<p class="rpc-line">'+p+'</p>').join('')+
     rlIfIntroParas(ch)+
-    '<p class="dim">余金 <b>'+RL.gold+'</b> · 军心 <b>'+(RL.morale||0)+'/5</b> · 补给 <b>'+(RL.supplies||0)+
-    '</b> · 遗物 <b>'+RL.relics.length+'</b> 件 · 主将 <b>'+RL.hero.hp+'/'+RL.hero.maxHp+'</b></p>',
+    '<p class="dim rpc-dim">余金 <b>'+RL.gold+'</b> · 军心 <b>'+(RL.morale||0)+'/5</b> · 补给 <b>'+(RL.supplies||0)+
+    '</b> · 遗物 <b>'+RL.relics.length+'</b> 件 · 主将 <b>'+RL.hero.hp+'/'+RL.hero.maxHp+'</b></p>'+
+    '</div>',
     s.council.map((o, i) => ({
       t:o.t+'　— '+o.d,
       run(){ chooseCouncil(i); }
     })));
+  rlCinemaReveal();   /* 卷首字幕逐句浮出（学过场电影：一句一句交代故事） */
+}
+/* ---------- 过场字幕渐显（cinema reveal） ----------
+   把军议会弹窗里的 .rpc-line / .rpc-dim 段逐条淡入：第一句先落，随后约
+   0.64s 一句地往下送，「一句一句交代故事」。三军议按钮永不延迟——
+   玩家可以不等字幕放完就点。测试沙盒的 document.querySelectorAll 只认
+   通用屏选择器，这里查不到段落就静默空转，绝不抛错。 */
+let RL_RPC_TIMERS = [];
+function rlCinemaReveal(){
+  RL_RPC_TIMERS.forEach(function(t){ try{ clearTimeout(t); }catch(e){} });
+  RL_RPC_TIMERS = [];
+  try{
+    const box = $('mBody');
+    if(!box || !box.querySelectorAll) return;
+    const lines = Array.prototype.slice.call(box.querySelectorAll('.rpc-line, .rpc-dim'));
+    lines.forEach(function(el, i){
+      if(!el || !el.classList) return;
+      el.classList.add('pre');
+      RL_RPC_TIMERS.push(setTimeout(function(){ el.classList.remove('pre'); }, 420 + i*640));
+    });
+  }catch(e){ /* 兼容无 DOM 的测试环境 */ }
 }
 
 /* —— P4 阵前搦战文言（story-patch-1 交付：六章三式——擂鼓／辱敌／深垒，纯展示） —— */
@@ -8083,7 +8151,7 @@ function rlIfIntroParas(ch){
   if(ch === 4 && f.if_fancheng === 1) out.push('✒【史笔·改】遗物四箱押在中军，甲械过人——曹仁在城楼看清那面旗号后沉默了很久：守城拼的从来不是城墙，是军械之外的那一点底气。（改史其四）');
   if(ch === 5 && f.if_luoyang === 1) out.push('✒【史笔·改】洛阳城头的灯比往年提前熄了七日——司马懿食少事烦，而你的军心与粮道撑到了同一处：他在土山上看你的营，竟先看见了自己帐里的空碗。（改史其五）');
   if(ch === 5 && rlIfCount() >= 3) out.push('✒【史笔·改】夜里有人往中军帐送来一卷竹简——史官奉命新修的北伐志，把这一路改过的旧笔都收在上头。虎牢关在即，读不读、怎么读，史官说全凭将军。');
-  return out.map(function(p){ return '<p>'+p+'</p>'; }).join('');
+  return out.map(function(p){ return '<p class="rpc-line rpc-if">'+p+'</p>'; }).join('');
 }
 function advanceChapter(){
   const prevIdx = RL.chapter || 0;
