@@ -673,9 +673,16 @@
     .rageline:has(.ragefill.full) > span:first-child::after { content: ' · 就绪'; }
     .attrs { font-size: 9.5px; margin-top: 3px; line-height: 1.35; }
     /* 这里刻意不加 nowrap：让它自然折成两行，比 overflow:hidden 把「蓄力 25%」裁掉强 */
-    .pskill { display: -webkit-box; font-size: 10px; line-height: 1.45; margin-top: 4px; padding-top: 4px;
+    .pskill { display: -webkit-box; font-size: 10.5px; line-height: 1.45; margin-top: 4px; padding-top: 4px;
               -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
     /* 技能说明恢复可见：实测 39 个武将技能最长 45 字，限 4 行在 320px 窄屏也装得下 */
+    /* 技能速览弹窗：手机上字号行距缩一档，双方两张卡一屏收尽 */
+    .skcard { padding: 8px 10px; margin-bottom: 8px; }
+    .skhead { font-size: 15px; }
+    .skskill, .skult { font-size: 12.5px; line-height: 1.7; }
+    .skbeats { font-size: 11px; }
+    /* 军议字幕在窄屏降两档，避免横向溢出 */
+    .rpc-line { font-size: 15px; line-height: 1.9; }
     .chips { margin-top: 4px; gap: 3px; min-height: 0; }
     .chips:empty { display: none; }       /* 没有状态时不留空行 */
     .chip { font-size: 9px; padding: 1px 5px; }
@@ -783,6 +790,22 @@
   @media (max-width: 344px) {
     button.item { font-size: 10.5px; padding: 6px 4px; }
   }
+/* —— 技能速览：点武将面板（战斗中随时可查双方技能） —— */
+.panel{ cursor:pointer; }
+.panel:hover{ background:rgba(255,214,120,.05); }
+.pname{ border-bottom:1px dashed rgba(230,183,96,.35); padding-bottom:1px; }
+.skcard{ background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:10px;
+  padding:10px 12px; margin-bottom:10px; }
+.skhead{ font-size:17px; color:#e8c98a; letter-spacing:1px; margin-bottom:6px; }
+.skhead span{ font-size:12px; color:#a08c66; margin-left:6px; }
+.skhead em{ float:right; font-style:normal; font-size:11px; padding:1px 8px; border-radius:8px;
+  background:rgba(212,120,60,.18); color:#e8b06a; }
+.skcard.skfoe .skhead em{ background:rgba(160,60,60,.18); color:#d98a80; }
+.skstat{ font-size:12px; color:#b09a76; margin-bottom:7px; line-height:1.6; }
+.skcard.skfoe .skstat{ color:#b08a80; }
+.skskill, .skult{ font-size:13.5px; line-height:1.75; margin-bottom:6px; color:#d8c8a8; }
+.skult{ color:#e0c090; }
+.skbeats{ font-size:12px; line-height:1.6; color:#9a8a70; border-top:1px dashed var(--line); padding-top:6px; }
 /* —— 北伐落幕演出（纯展示层：破关金光／止步玄幕，1.9 秒后自撤，不碰数值） —— */
 body.x-finalwin::after{ content:''; position:fixed; inset:0; z-index:9998; pointer-events:none;
   background:radial-gradient(ellipse at 50% 38%, rgba(255,222,146,.32) 0%, rgba(255,190,90,.12) 42%, transparent 72%);
@@ -6836,10 +6859,11 @@ function playRound(pm){
     tickEffects(player);
     tickEffects(ai);
 
-    /* 🌦 天灾变体：回合结束双方各受 3 点无视防御伤害 */
+    /* 🌦 天灾变体：回合结束双方各受 3 点无视防御伤害（修正：上一版给 AI 的
+       伤害以 src=player 计入，把天灾算成了我方输出，战报/北伐战况虚高） */
     if(RL.active && RL.curNode && RL.curNode.variant === 'disaster' && (player.alive || ai.alive)){
       if(player.alive){ log('🌦 【天灾】流石飞矢，'+player.name+' 受到 3 点伤害','bad'); dealDamage(player, 3, player); }
-      if(ai.alive){ log('🌦 【天灾】'+ai.name+' 亦为天灾所伤 3 点','good'); dealDamage(ai, 3, player); }
+      if(ai.alive){ log('🌦 【天灾】'+ai.name+' 亦为天灾所伤 3 点','good'); dealDamage(ai, 3, null, {bypassBlock:true}); }
     }
 
     /* 🀄 兵势结算：挂在刚刚这一拳的手势与胜负上（只在本局学过才触发） */
@@ -9377,10 +9401,30 @@ function renderPanel(side, entering){
   if(!p) return;
   const f = fighterOf(side);
   p.innerHTML = fighterHtml(f, side === 'p' ? '我方' : '电脑');
+  /* 点任意武将面板 → 技能速览弹窗（双方技能/必杀/当前数值一屏看全） */
+  p.onclick = function(){ openSkillPeek(); };
   if(entering){
     p.classList.remove('enter'); void p.offsetWidth; p.classList.add('enter');
     setTimeout(() => p.classList.remove('enter'), 700);
   }
+}
+
+/* ---------- 技能速览：战斗中随时可查双方技能（手机端主诉求） ---------- */
+function skillPeekCard(f, sideLabel){
+  const ready = f.rage >= 100 ? ' · 超必杀就绪' : '';
+  return '<div class="skcard' + (sideLabel === '敌方' ? ' skfoe' : '') + '">' +
+    '<div class="skhead">' + f.name + '<span>· ' + f.ch.title + '</span><em>' + sideLabel + '</em></div>' +
+    '<div class="skstat">⚔ ' + f.atk + '　🛡 ' + effectiveDef(f) + '%　⚡ 蓄力 ' + f.charge + '%　🔥 怒气 ' + f.rage + '%' + ready + '</div>' +
+    '<div class="skskill"><b>【' + f.ch.skill.name + '】</b>' + f.ch.skill.desc + '</div>' +
+    '<div class="skult"><b>【必杀 · ' + f.ch.ult.name + '】</b>' + f.ch.ult.desc + '</div>' +
+    '<div class="skbeats">' + ultBeats(f.ch.ult) + '</div>' +
+  '</div>';
+}
+function openSkillPeek(){
+  if(!player || !ai || !player.ch || !ai.ch) return;
+  showModal('📖 技能速览',
+    skillPeekCard(player, '我方') + skillPeekCard(ai, '敌方'),
+    [{ t:'回到战斗', run(){} }]);
 }
 
 function renderBattle(){
