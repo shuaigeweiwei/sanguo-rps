@@ -2686,6 +2686,744 @@ const RL_STORY_P4 = [
     ]}
 ];
 RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P4);
+/* ==================== ✒ 史笔·改｜P5 内容批（IF 后续 + 支线链 + 条件奇遇 + 武将个人线） ====================
+   本批纪律：不引入渲染期选项过滤（verify3 按定义下标逐个点按钮），
+   每条奇遇固定三钮、按钮常开；门槛与个人线分支全部写在 run(R) 里按
+   RL.flags / RL.hero.ch.id 分岔。数值沿用「一次性收益或 +1 攻/防小永久」
+   的既有档位，绝不白送遗物 / 军略牌升级。 */
+const RL_STORY_P5 = [
+  /* —— A. 史笔·改 后续奇遇：盖了章戏更足，没盖章也有照常的 unfolding —— */
+  { icon:'🏘', name:'西县千家', ch:1,
+    text:'陇右的消息随斥候进营：西县千家正在集结粮秣与轻车，说愿随北伐军东移——问题只有一个：迁，还是留。',
+    opts:[
+      {t:'编户资军', run(R){
+        if(R.RL.flags.if_jieting === 1){
+          R.addSupplies(2); R.adjustMorale(1);
+          R.log('街亭既守，陇右路畅——千家赍粮出西城，轻车络绎东来（补给 +2，军心 +1）。');
+        } else {
+          R.addSupplies(1);
+          R.log('散在道旁的民户有小半愿随军东行，你收拢入营（补给 +1）。');
+        }
+      }},
+      {t:'徙民实汉中', run(R){
+        if(R.RL.flags.if_jieting === 1){
+          R.gold += 18;
+          R.log('千家赍徙汉中，沿途州县以礼相送——车马入营，折银入库（金 +18）。');
+        } else {
+          R.gold += 8;
+          R.log('愿徙者众，随行的车马捎来了折银（金 +8）。');
+        }
+      }},
+      {t:'令民归农', run(R){
+        R.log('你止住迁徙，让各县守着自家田亩过冬。斥候回报说，田垄上有人朝着你的旗子拜了三拜。');
+      }}
+    ]},
+  { icon:'🏳', name:'巷中降卒', ch:2,
+    text:'巷战初歇，一批守军缒城来降——他们说困守三月早已看清结局，只求入营吃一口热饭。',
+    opts:[
+      {t:'纳械入军', run(R){
+        if(R.RL.flags.if_chencang === 1){
+          R.hero.atk += 1; R.adjustMorale(1);
+          R.log('从郝昭城头抬下的连弩齐整如新——降卒亲手抬进军械营（攻 +1，军心 +1）。');
+        } else {
+          R.hero.atk += 1;
+          R.log('降卒缴出的军械归了军中（攻 +1）。');
+        }
+      }},
+      {t:'为前驱带路', run(R){
+        if(R.RL.flags.if_chencang === 1){
+          R.RL.flags.scoutAid = Math.max(R.RL.flags.scoutAid||0, 6);
+          R.log('降卒熟路——下一场非 Boss 战敌军将先折锐（敌命 -6%）。');
+        } else {
+          R.log('降卒渐渐散入诸营听用，带路之事作罢。');
+        }
+      }},
+      {t:'资遣还乡', run(R){
+        R.adjustMorale(2);
+        R.log('你发放盘缠遣散降卒。营门口那一声「恩相」，士卒们记了很久（军心 +2）。');
+      }}
+    ]},
+  { icon:'⚙', name:'定军遗铠', ch:3,
+    text:'定军山战场散落的甲械尚新——一夜之前，这些还都是夏侯渊前军的家什。',
+    opts:[
+      {t:'换装诸营', run(R){
+        if(R.RL.flags.if_dingjun === 1){
+          R.hero.def += 2; healSelf(6);
+          R.log('阵斩之后甲械几乎无损——厚甲过肩，血战后的肩背轻了几分（防御 +2，回复 6 血）。');
+        } else {
+          R.hero.def += 1;
+          R.log('散甲拼修，可用者有限（防御 +1）。');
+        }
+      }},
+      {t:'熔甲铸矢（-4 血）', run(R){
+        dmgSelf(4); R.hero.atk += 1;
+        R.log('炉火连夜，新矢明日入弦（攻 +1，-4 血）。');
+      }},
+      {t:'祭而后收（军心 +1，回复 4 血）', run(R){
+        R.adjustMorale(1); healSelf(4);
+        R.log('祭过再收，军心反而安定了（军心 +1，回复 4 血）。');
+      }}
+    ]},
+  { icon:'⛵', name:'帆烬之滨', ch:4,
+    text:'汉水北岸成片的火场已经冷透——七日前那些夜里的火光，烧掉的不止是船帆。',
+    opts:[
+      {t:'打捞浮财', run(R){
+        if(R.RL.flags.if_fancheng === 1){
+          R.gold += 16;
+          R.log('避兵商贾遗下的细软尚多，浮财装了整整三箱（金 +16）。');
+        } else {
+          R.gold += 8;
+          R.log('沿河捡拾，所得有限（金 +8）。');
+        }
+      }},
+      {t:'招纳善游者', run(R){
+        if(R.RL.flags.if_fancheng === 1){
+          R.hero.atk += 1; R.adjustMorale(1);
+          R.log('水鬼班请入军前听用——他们熟悉每一处暗礁（攻 +1，军心 +1）。');
+        } else {
+          R.hero.atk += 1;
+          R.log('渔户自愿在前锋听用（攻 +1）。');
+        }
+      }},
+      {t:'加固堤坊（补给 +1，军心 +1）', run(R){
+        R.addSupplies(1); R.adjustMorale(1);
+        R.log('堤上连夜夯土，两岸乡勇相帮（补给 +1，军心 +1）。');
+      }}
+    ]},
+  { icon:'🍚', name:'食少事烦', ch:5,
+    text:'城头传下来的流言比箭更早：城里那位食少事烦，近来连旬不朝。还捎来一张药方，说是帐下有医者愿意暗渡。',
+    opts:[
+      {t:'率军疾进', run(R){
+        if(R.RL.flags.if_luoyang === 1){
+          dmgSelf(5); R.hero.atk += 2;
+          R.log('兵贵神速，敌胆已虚——急行军再折数人（攻 +2，-5 血）。');
+        } else {
+          dmgSelf(3); R.hero.atk += 1;
+          R.log('强行军逼近城下（攻 +1，-3 血）。');
+        }
+      }},
+      {t:'围而不攻', run(R){
+        if(R.RL.flags.if_luoyang === 1){
+          R.adjustMorale(1); healSelf(8);
+          R.log('熬字诀见效——城头灯灭得更早了，营中士气反涨（军心 +1，回复 8 血）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('引而不发，营中攒着一股劲（军心 +1）。');
+        }
+      }},
+      {t:'遣医寄药（-12 金）', run(R){
+        if(R.gold < 12){ R.log('军中金紧，医者终究没有成行。'); return 'hold'; }
+        R.gold -= 12;
+        if(R.RL.flags.if_luoyang === 1){
+          R.adjustMorale(2);
+          R.log('药方入城三日，城里那位「忽然安了心」——军中对你主帅的算度多了一层敬意（军心 +2）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('医者成行，分量几何无人知晓，营中传为佳话（军心 +1）。');
+        }
+      }}
+    ]},
+  { icon:'📜', name:'史官献简', ch:5,
+    text:'夜里有人往中军帐送来一卷竹简，说是新修北伐志里的私改之笔。虎牢关在即，读不读、怎么读，送简人说全凭将军。',
+    opts:[
+      {t:'夜读军志（军心 +1，回复 4 血）', run(R){
+        R.adjustMorale(1); healSelf(4);
+        R.log('灯下把这一路的旧笔重读一遍，读至击节处，帐外已有士卒自发接更（军心 +1，回复 4 血）。');
+      }},
+      {t:'掷签问天命', run(R){
+        if(rlIfCount() >= 3){
+          R.RL.flags.if_path = 1;             /* ✒ 史笔·改 真结局的闸门，只在此处主动写下 */
+          R.adjustMorale(1);
+          R.log('三签齐掷，立在了帐中。送简人一躬到底：「史官候将军改满三处，才知道这一卷该交给谁。」——虎牢关下那个人的下场，从此由你亲笔（军心 +1）。');
+        } else {
+          R.log('签腹而落——简上私笔未满三处，天时尚未到这一步。你把签收起，帐外夜色如旧。');
+        }
+      }},
+      {t:'封简不读，原样奉还', run(R){
+        R.log('你以原样奉还。送简人也不多话，转身消失在夜色里——明日之战，还是照昨日那样打。');
+      }}
+    ]},
+  /* —— B. 跨节点支线链（FTL 式：埋钩 → 隔章回收） —— */
+  { icon:'🪵', name:'道旁的木匣', ch:0,
+    text:'路旁浅坑里半埋着一只木匣，老兵说是溃兵丢下的，里头像是几件家什与一封家书。',
+    opts:[
+      {t:'收进行囊（军心 +1）', run(R){
+        R.RL.flags.chainBox = 1; R.adjustMorale(1);
+        R.log('木匣掂在手里不重，故事却重（军心 +1）。此后行军若过家门，或能物归原主。');
+      }},
+      {t:'上缴军中（金 +8）', run(R){
+        R.gold += 8;
+        R.log('木匣入了军需簿——里面几件旧家什折了些银钱（金 +8）。');
+      }},
+      {t:'原地埋回', run(R){
+        R.log('土已填好，谁也再看不见它。你按了按新土，带队继续赶路。');
+      }}
+    ]},
+  { icon:'🪙', name:'五铢铭文', ch:2,
+    text:'军器匠擦亮木匣铜扣，刮出半枚五铢和一行小字——若军中有人识得，这匣子便有了去处。',
+    opts:[
+      {t:'去中军问名籍', run(R){
+        if(R.RL.flags.chainBox === 1){
+          R.RL.flags.chainBox = 2; R.adjustMorale(1);
+          R.log('军籍簿对上了：匣主是七年前的阵亡校尉，家在洛阳城南。军士们把这事传遍了各营（军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('军籍簿上对不上号——铜扣字迹漫漶，只好照原样收好（军心 +1）。');
+        }
+      }},
+      {t:'熔扣作赏钱（金 +12，军心 -1）', run(R){
+        R.gold += 12; R.adjustMorale(-1);
+        R.log('铜扣熔作赏钱分了。老兵们没人作声，只是那夜的营火烧得格外安静（金 +12，军心 -1）。');
+      }},
+      {t:'照原样收好', run(R){
+        R.log('木匣原样收回行囊——也许下一站，就有人认得它。');
+      }}
+    ]},
+  { icon:'🏠', name:'洛阳归匣', ch:4,
+    text:'兵锋过处，竞已望见洛阳城南的坊郭。若那名姓真有其家，此刻正是登门的时候——也可能门早已换了主。',
+    opts:[
+      {t:'登门归匣', run(R){
+        if(R.RL.flags.chainBox === 2){
+          R.RL.flags.chainBox = 3; R.addSupplies(1); R.adjustMorale(2);
+          R.log('白发老母亲手收了木匣，又塞给你一双新纳的草鞋——全军传看，都说要打下洛阳还她一个太平（补给 +1，军心 +2）。');
+        } else {
+          R.addSupplies(1);
+          R.log('门牌换了主，旧姓无人识得。你照例留下些米粮（补给 +1）。');
+        }
+      }},
+      {t:'贴榜招募', run(R){
+        R.hero.atk += 1;
+        R.log('把一行小字写成招募帖，有人果然应召而来（攻 +1）。');
+      }},
+      {t:'交给驿传代寻', run(R){
+        R.log('驿传代寻需要文书与等待——你把名姓交割清楚，转身继续沿河南下。');
+      }}
+    ]},
+  { icon:'🚩', name:'建平溃卒', ch:0,
+    text:'三百溃卒在道旁请降，旗号残破，说是被打散了两日，粮都吃尽。',
+    opts:[
+      {t:'收编溃卒（金 -8）', run(R){
+        if(R.gold < 8){ R.log('军中金紧，粮也紧——只能婉拒，三百人朝东散去。'); return 'hold'; }
+        R.gold -= 8; R.adjustMorale(1); R.RL.flags.chainPawn = 1;
+        R.log('三百人散编各什，热饭一开，形色渐定（金 -8，军心 +1）。有人低声说，日后愿为这一饭卖命。');
+      }},
+      {t:'问明敌情（下一场非 Boss 战敌命 -6%）', run(R){
+        R.RL.flags.scoutAid = Math.max(R.RL.flags.scoutAid||0, 6);
+        R.log('溃卒把对面的布防说了个遍（下一场非 Boss 战敌命 -6%）。');
+      }},
+      {t:'登记而散', run(R){
+        R.log('登记名姓、指引去路，各安生计。你带走了一册名籍。');
+      }}
+    ]},
+  { icon:'🥁', name:'旗下故人', ch:2,
+    text:'校场上一名旗头样貌眼熟——老什长认出他来：正是当年教他开弓的同乡。',
+    opts:[
+      {t:'让他们归什', run(R){
+        if(R.RL.flags.chainPawn === 1){
+          R.RL.flags.chainPawn = 2; R.hero.atk += 1; R.adjustMorale(1);
+          R.log('旧谊接新营，溃卒与老卒混编什伍，弓槊什长亲自点校（攻 +1，军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('旧谊虽浅，同乡情在——各营什伍多了一张笑脸（军心 +1）。');
+        }
+      }},
+      {t:'编入辎重营（补给 +1）', run(R){
+        R.addSupplies(1);
+        R.log('善走山道的人编入辎重营，粮路紧了一环（补给 +1）。');
+      }},
+      {t:'酌情赏其归乡', run(R){
+        R.log('乱世相逢不易。你指了条回乡的道，旗头拜了三拜，朝东去了。');
+      }}
+    ]},
+  { icon:'🐂', name:'牛市成交', ch:1,
+    text:'集市一头拴着十头黄牛，贩子说这批牛走过三次褒斜道，识途得很，只是价高。',
+    opts:[
+      {t:'买牛十头（金 -10）', run(R){
+        if(R.gold < 10){ R.log('价太高，买卖不成，贩子牵着牛往北去了。'); return 'hold'; }
+        R.gold -= 10; R.addSupplies(1); R.RL.flags.chainOx = 1;
+        R.log('十头黄牛编入驮运（金 -10，补给 +1）。贩子临走说了句怪话：「牛认旧路，不会忘。」');
+      }},
+      {t:'雇脚夫挑担（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('雇不起脚夫，只好军士自挑。士气没损，只是脚步慢了半拍。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('十二名脚夫随军挑担，头一天的闲话都说「这仗不像那么难打」（金 -6，军心 +1）。');
+      }},
+      {t:'不吃这一套', run(R){
+        R.log('你绕开集市。牛铃远了，风里只剩行军的号子。');
+      }}
+    ]},
+  { icon:'🛒', name:'褒斜牛队', ch:3,
+    text:'道旁忽然响起牛铃——那队黄牛竟自己找回来了，身后还跟着贩子家的两个伙计。',
+    opts:[
+      {t:'收牛归仓', run(R){
+        if(R.RL.flags.chainOx === 1){
+          R.RL.flags.chainOx = 2; R.addSupplies(2); R.adjustMorale(1);
+          R.log('牛认旧路，连夜驮回两车粮。伙计说这是牛自己认的：「畜生也讲信义」（补给 +2，军心 +1）。');
+        } else {
+          R.addSupplies(1);
+          R.log('从驮队里匀出了些干粮（补给 +1）。');
+        }
+      }},
+      {t:'宰牛犒军', run(R){
+        if((R.RL.supplies||0) > 0){
+          R.addSupplies(-1); R.adjustMorale(2);
+          R.log('三军分牛，营火那晚的歌声传过三条山谷（补给 -1，军心 +2）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('仓里实在无肉可分，你许了战后兑现。军中笑声依旧（军心 +1）。');
+        }
+      }},
+      {t:'与牛队别过', run(R){
+        R.log('你把牛队交还贩子——买卖是买卖，信义是信义。两个伙计朝着你的背影深深一揖。');
+      }}
+    ]},
+  { icon:'🌿', name:'采药方子', ch:1,
+    text:'道旁茅庐里住着个采药老人，案上摊着一张治金疮的方子。他说方子不卖，只传有缘人。',
+    opts:[
+      {t:'记下他的方子', run(R){
+        R.RL.flags.chainMed = 1; R.adjustMorale(1);
+        R.log('方子抄进军医帐。老人说：「药要自己认，认错了草，不如不采。」（军心 +1）');
+      }},
+      {t:'请他随军（金 -8）', run(R){
+        if(R.gold < 8){ R.log('金紧——请不下白衣受雇的人。老人望了望你的军阵，摇头回屋。'); return 'hold'; }
+        R.gold -= 8; healSelf(6);
+        R.log('老人当晚就医好了两名箭伤（金 -8，回复 6 血）。他说：「人情贵过药，我认。」');
+      }},
+      {t:'拱手别过', run(R){
+        R.log('你不扰老人清修。出林时回头看了一眼，茅檐立在暮色里。');
+      }}
+    ]},
+  { icon:'🧪', name:'伤药配成', ch:5,
+    text:'军医帐连熬三夜，案上药香隆重——那张被抄进来的方子，终于配成了成剂。',
+    opts:[
+      {t:'如法配药', run(R){
+        if(R.RL.flags.chainMed === 1){
+          R.RL.flags.chainMed = 2; healSelf(16);
+          R.log('主将先试了一剂——刀伤处真像老人说的那样收了口（回复 16 血）。');
+        } else {
+          healSelf(6);
+          R.log('寻常伤药也有些效用（回复 6 血）。');
+        }
+      }},
+      {t:'施药阵前（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——施药这桩只好作罢，军医帐继续按份发。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('药井设在阵前，伤者自取（金 -6，军心 +1）。');
+      }},
+      {t:'留存待战', run(R){
+        R.log('成剂装瓶封蜡，留给最要紧的那一战。');
+      }}
+    ]},
+  { icon:'🕊', name:'妇人请战', ch:3,
+    text:'营门外跪着几名妇人，为首的把一杆自制的枪塞到你面前，说丈夫战死在这条河谷，愿替他再走一程。',
+    opts:[
+      {t:'许其随军', run(R){
+        R.RL.flags.chainWoman = 1; R.adjustMorale(1);
+        R.log('妇人自愿结营随军。旗官说，她们认路的本事比向导还准（军心 +1）。');
+      }},
+      {t:'赠以寒衣（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){
+          R.adjustMorale(1);
+          R.log('金紧——你解下自己的旧氅披在她肩上。营中无人出声，但都记下了（军心 +1）。');
+          return;
+        }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('六金买了两件夹衣。妇人谢过，回身把枪举得更直（金 -6，军心 +1）。');
+      }},
+      {t:'劝其还乡', run(R){
+        R.log('你说了许多战后的话。妇人最后把枪立在地上，拜了一拜，带着同伴往北去了。');
+      }}
+    ]},
+  { icon:'🚩', name:'白幡义旗', ch:5,
+    text:'决战前夜，那伙妇人哨探回来的消息比斥候还准。营里有人提议：给她们单独立一杆旗。',
+    opts:[
+      {t:'建军中义营', run(R){
+        if(R.RL.flags.chainWoman === 1){
+          R.RL.flags.chainWoman = 2; R.hero.atk += 1; R.adjustMorale(1);
+          R.log('白幡绣了枪穗，立在中军之侧。是夜探马回营，带回了三处布防（攻 +1，军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('旗没立成，寨却扎得结实——众人彻夜轮值，士气稍振（军心 +1）。');
+        }
+      }},
+      {t:'编入辎重营（补给 +1）', run(R){
+        R.addSupplies(1);
+        R.log('义营自愿挑起辎重，粮道多了一层人手（补给 +1）。');
+      }},
+      {t:'战后厚赏', run(R){
+        R.log('你许诺战后再议封赏。妇人营安静彻夜，只听得见磨枪穗的声音。');
+      }}
+    ]},
+  /* —— D. 条件奇遇（观察本局状态才更有戏，按钮照常三枚） —— */
+  { icon:'🕯', name:'七星灯祈禳', ch:1,
+    text:'中军帐外摆起七盏小灯，老军士说是照古法祈禳——灯若燃到天明，这一路刀伤都可讨个宽限。',
+    opts:[
+      {t:'续主灯（回复 14 血，军心 +1）', run(R){
+        healSelf(14); R.adjustMorale(1);
+        R.log('主灯燃到天明，晨风里忽然暗了一瞬又稳住——军中医帐说伤处好得反常（回复 14 血，军心 +1）。');
+      }},
+      {t:'移灯望斗（下一场非 Boss 战敌命 -6%）', run(R){
+        R.RL.flags.scoutAid = Math.max(R.RL.flags.scoutAid||0, 6);
+        R.log('你移灯到高处望了一夜星斗，天明看路线清楚了三分（下一场非 Boss 战敌命 -6%）。');
+      }},
+      {t:'吹灯散愿', run(R){
+        R.log('你亲手吹熄七盏灯。老军士嘀咕了一句古话，但没人怪你——打仗终究靠人。');
+      }}
+    ]},
+  { icon:'🎒', name:'遗物盈囊', ch:4,
+    text:'行囊里遗物挨着遗物，行军时叮当作响。军需官提议：与其都搁着，不如让三军开开眼。',
+    opts:[
+      {t:'陈列军门', run(R){
+        if((R.RL.relics||[]).length >= 4){
+          R.adjustMorale(1); healSelf(6);
+          R.log('遗物列在辕门，过营者无不驻足——新兵说这一仗值了（军心 +1，回复 6 血）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('囊中存货不多，驻足的人不多，你收得快（军心 +1）。');
+        }
+      }},
+      {t:'重赏各营', run(R){
+        if((R.RL.relics||[]).length >= 4){
+          R.gold += 18;
+          R.log('军需官以旧物折银充赏（金 +18）。');
+        } else {
+          R.gold += 8;
+          R.log('折银有限，各营分些薄赏（金 +8）。');
+        }
+      }},
+      {t:'收进大纛之下', run(R){
+        R.log('你让遗物都收进大纛影里——有些东西，亮出来不如带在身边。');
+      }}
+    ]},
+  { icon:'🏮', name:'三军攀笑', ch:3,
+    text:'今夜营中笑声格外多——打了胜仗的兵连走路都带弹簧。有人捅了你一下：主帅也该笑一回。',
+    opts:[
+      {t:'与军同笑', run(R){
+        if((R.RL.morale||0) >= 5){
+          R.gold += 14; healSelf(4);
+          R.log('你与士卒笑作一团，赌坊的簸箕都端进了中军（金 +14，回复 4 血）。');
+        } else {
+          R.gold += 6; R.adjustMorale(1);
+          R.log('你应景笑了几声，营中一夜都松快（金 +6，军心 +1）。');
+        }
+      }},
+      {t:'亲书笑谈入营志', run(R){
+        if((R.RL.morale||0) >= 5){
+          R.adjustMorale(1); healSelf(4);
+          R.log('笑谈入志，绘声绘色……读志的人后半夜还在笑（军心 +1，回复 4 血）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('志里的笑不响，但都在（军心 +1）。');
+        }
+      }},
+      {t:'归帐反刍', run(R){
+        R.log('你独自回帐。笑声隔着帐布沉下来，像一床厚被。');
+      }}
+    ]},
+  { icon:'🌑', name:'空粮之夜', ch:2,
+    text:'今夜灶冷。军需官摊开双手：最后一袋米碾完了。三营在黑暗里看着你的火把。',
+    opts:[
+      {t:'掘鼠洞找食（-4 血，补给 +1）', run(R){
+        dmgSelf(4); R.addSupplies(1);
+        R.log('半宿手刨出了小半袋陈粟与几只田鼠——东西难看，明日的粥是真的（-4 血，补给 +1）。');
+      }},
+      {t:'夜袭敌哨夺粮（-8 血，金 +20）', run(R){
+        dmgSelf(8); R.gold += 20;
+        R.log('摸哨一得手就撞上运粮队——险些回不来，但驮回了真金白银（-8 血，金 +20）。');
+      }},
+      {t:'忍饿探路（军心 -1，下一场非 Boss 战敌命 -6%）', run(R){
+        R.adjustMorale(-1);
+        R.RL.flags.scoutAid = Math.max(R.RL.flags.scoutAid||0, 6);
+        R.log('饿着走完的三十里，把明日的路全踩成了熟人（军心 -1，下一场非 Boss 战敌命 -6%）。');
+      }}
+    ]},
+  /* —— E. 武将个人线（无双式个人传）：ch=-1 全章可遇，第二钮只对本人点亮 —— */
+  { icon:'⚔', name:'武圣旧部', ch:-1,
+    text:'营外有人传唱一段旧的调子，说是武人故里的曲——中军帐里有人放下了筷子。',
+    opts:[
+      {t:'设宴听旧事（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('故曲配着热酒，营中筋骨都松了下来（军心 +1）。');
+      }},
+      {t:'按剑上前，试那一手刀法', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'guanyu'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.guanyu = 1;
+          R.hero.atk += 1; healSelf(4);
+          R.log('旧部亲自下场演了一段刀。刀风过处烛火不摇，满营屏息（攻 +1，回复 4 血）。故事传开，连敌营的探子都退了半步。');
+        } else {
+          R.adjustMorale(1);
+          R.log('麾下无人接得上这一式的调子，你笑着回帐（军心 +1）。');
+        }
+      }},
+      {t:'赐故人酒肉（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——赏赐从省，旧人也不见外。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('酒肉抬出辕门，旧人踏歌而去（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🍶', name:'燕人旧曲', ch:-1,
+    text:'校军场外有人击鼓唱曲，唱的是万人敌当阳断后的旧事——歌词路灯都映得发红。',
+    opts:[
+      {t:'驻马听完（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('一曲终了，营中静了半晌，随即爆出喝彩（军心 +1）。');
+      }},
+      {t:'提枪挫其锋芒', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'zhangfei'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.zhangfei = 1;
+          healSelf(10); R.adjustMorale(1);
+          R.log('枪杆顿地三声，桥依旧、水依旧——三军静立，士气如潮（回复 10 血，军心 +1）。当阳的名号，今晚又亮了一回。');
+        } else {
+          R.adjustMorale(1);
+          R.log('你提枪未出，鼓声先歇——好意心领（军心 +1）。');
+        }
+      }},
+      {t:'赐歌者酒肉（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——赏赐从省，歌者笑道「曲是白唱的」。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('酒肉抬出辕门，歌者朝大纛一揖（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🐎', name:'常山故道', ch:-1,
+    text:'行经老山道，乡老说数十里外山民仍传讲一位常山真定人的故事——灯下听来，与军中主将竟有几分像。',
+    opts:[
+      {t:'围火听故事（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('山火围着讲了半宿，末了连向导都听直了眼（军心 +1）。');
+      }},
+      {t:'按剑上前，问一句枪', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'zhaoyun'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.zhaoyun = 1;
+          R.RL.hero.st.dmgReduce = (R.RL.hero.st.dmgReduce||0) + 0.05;
+          healSelf(8); R.adjustMorale(1);
+          R.log('白发老者一眼认出那杆旧枪：「真定赵家吃饭的家伙，还是这一手常山枪。」主将演罢一路，山风都放轻了（回复 8 血，军心 +1，此后受创 -5%）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('枪入手沉了三分，你笑着递还（军心 +1）。');
+        }
+      }},
+      {t:'赠乡老粮盐（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——你分了些随军干粮。乡老再三叩谢。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('粮盐交割，山道从此对北伐军门户大开（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🐴', name:'西凉故驹', ch:-1,
+    text:'集市角落蹲着一头瘦骨嶙峋的西凉马，识货的人说这血脉不合群，但脚力惊人。',
+    opts:[
+      {t:'买草料喂一程（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('好马不该饿肚子。围观军士虽不说，眼神都软了（军心 +1）。');
+      }},
+      {t:'翻看马身上的烙印', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'machao'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.machao = 1;
+          R.hero.atk += 1; R.gold += 12;
+          R.log('烙印还在——是当年西凉军械坊的记认。主将翻鞍上桥，像看见了半只旧箭囊（攻 +1，金 +12）。畜生哼了一声，像是答应。');
+        } else {
+          R.adjustMorale(1);
+          R.log('烙印磨得只剩轮廓，你拍了拍马颈放了手（军心 +1）。');
+        }
+      }},
+      {t:'由它自去', run(R){
+        R.log('瘦马甩了甩尾巴，自己朝西走远了。有人望着它出神了很久。');
+      }}
+    ]},
+  { icon:'🏹', name:'老将之弓', ch:-1,
+    text:'演武场角落挂着一副旧弓，弓身开裂又用牛筋补过三次——军械官说是从敌将荣光里缴来的。',
+    opts:[
+      {t:'入库珍藏（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('旧弓入库，牌位上写「敌之荣光，敬而识之」（军心 +1）。');
+      }},
+      {t:'取弓试射靶心', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'huangzhong'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.huangzhong = 1;
+          R.RL.flags.scoutAid = Math.max(R.RL.flags.scoutAid||0, 8);
+          R.adjustMorale(1);
+          R.log('三箭连珠，靶心穿了又穿。举营喝彩，来日阵前谁敢不低头（下一场非 Boss 战敌命 -8%，军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('一箭中靶，两箭擦边——弓认人，不认力气（军心 +1）。');
+        }
+      }},
+      {t:'赐军械官酒（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——以茶代酒，军械官也笑纳。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('一盏浊酒敬了修弓的人（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🎴', name:'相父锦囊', ch:-1,
+    text:'驿马来报，军师帐多了个不署名的锦囊——送囊人说：开不开，什么时候开，都看主将。',
+    opts:[
+      {t:'原样供起（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('锦囊供在案头，像一枚镇纸。帐中灯火忽然稳了许多（军心 +1）。');
+      }},
+      {t:'当面开囊', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'zhugeliang'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.zhugeliang = 1;
+          R.addSupplies(1); R.adjustMorale(1);
+          R.log('囊中半囊新米、一封家书、四个字：「心广体胖。」（补给 +1，军心 +1）。你笑骂一声，把家书贴身收了。');
+        } else {
+          R.addSupplies(1);
+          R.log('囊中是寻常伤药与新米（补给 +1）。不署名也是心意。');
+        }
+      }},
+      {t:'送还驿路', run(R){
+        R.log('你把原囊封好托驿路带回。送囊人没露面，只远远听见了笑。');
+      }}
+    ]},
+  { icon:'📿', name:'伯约继志', ch:-1,
+    text:'老兵营把一杆旧枪擦拭一新送来，枪铭两个字——「继志」。说是愿它再走一回北方的路。',
+    opts:[
+      {t:'入库供奉（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('旧枪供在旗鼓之侧，老兵营每天有人去擦（军心 +1）。');
+      }},
+      {t:'接过旧枪（-2 血）', run(R){
+        dmgSelf(2);
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'jiangwei'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.jiangwei = 1;
+          R.hero.atk += 1;
+          R.log('枪入手还是当年那个分量。你练了一夜，虎口裂而枪不歇（攻 +1，-2 血）。枪说：还有下一位接。');
+        } else {
+          R.adjustMorale(1);
+          R.log('虎口震得发麻——旧枪认力量，更认志气（军心 +1）。');
+        }
+      }},
+      {t:'再赠老兵营（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——你回赠了一句「志在必得」。老兵营很受用。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('六金换了些酒肉回礼老兵营（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🛡', name:'戟盾故卒', ch:-1,
+    text:'堵门用的双戟旧图摊在中军案上—— 图边一段注记说，持此戟盾者，从未被人从门里赶走过。',
+    opts:[
+      {t:'依图重锻（金 -8）', run(R){
+        if(R.gold < 8){ R.log('金紧——铁料入库，明日再锻。'); return 'hold'; }
+        R.gold -= 8; R.hero.def += 1;
+        R.log('照旧图锻了一具门戟，殿门都挪不动它了（金 -8，防御 +1）。');
+      }},
+      {t:'依军中旧礼较技一场', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'dianwei'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.dianwei = 1;
+          R.hero.def += 2;
+          R.log('三百人围不成你的阵——戟盾旧法一夜练通，众亲兵看得头皮发麻（防御 +2）。古之恶来，名不虚传。');
+        } else {
+          R.adjustMorale(1);
+          R.log('较技点到为止，各胜一合——营中过了一个难得的热闹夜（军心 +1）。');
+        }
+      }},
+      {t:'收入武库', run(R){
+        R.log('旧图收进武库，注记边角被翻得起了毛。');
+      }}
+    ]},
+  { icon:'🌊', name:'逍遥津故地', ch:-1,
+    text:'行军图上圈着一处旧津渡——当年八百人冲过十万军的渡口，如今芦苇长得比人都高。',
+    opts:[
+      {t:'阵前讲古（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('渡口讲了一回古，芦苇荡里风都是旧风（军心 +1）。');
+      }},
+      {t:'至渡口立碑', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'zhangliao'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.zhangliao = 1;
+          R.adjustMorale(2);
+          R.log('碑上不刻胜败，只刻四个字：「津在，人在。」（军心 +2）。过碑的三军，脚步齐了三分。');
+        } else {
+          R.adjustMorale(1);
+          R.log('碑立了，字是「旧战场」——过路的商旅读一读，也算传名（军心 +1）。');
+        }
+      }},
+      {t:'留路引标识（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——以军中木牌权作路引。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('渡口从此有路引识途，过军免了半日绕行（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🔥', name:'江东旧火', ch:-1,
+    text:'夜泊江湾，有渔火错认了你的旗，唱起一段江东的旧火曲——调子热得像六月。',
+    opts:[
+      {t:'听至曲终（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('曲终渔火散尽，水面上只剩你的旗影（军心 +1）。');
+      }},
+      {t:'以火相和', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'zhouyu'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.zhouyu = 1;
+          healSelf(6); R.adjustMorale(1);
+          R.log('你令营中举火与之相和——江面火光连成一片，渔火惊而不散（回复 6 血，军心 +1）。旧火重燃，江东的胆气从来如此。');
+        } else {
+          R.adjustMorale(1);
+          R.log('你挥了挥袖算作回礼。渔火远去，歌声绕了半个江湾（军心 +1）。');
+        }
+      }},
+      {t:'遣使赏鱼酒（金 -6，军心 +1）', run(R){
+        if(R.gold < 6){ R.log('金紧——你以军中干粮相赠。渔人叩谢而去。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('鱼酒两担送到渔火里（金 -6，军心 +1）。');
+      }}
+    ]},
+  { icon:'🕳', name:'冢虎暗线', ch:-1,
+    text:'细作来报：城中某一位「深居简出」的贵人，近来夜夜与一枚棋、一盏灯独坐——灯下还压着半张舆图。',
+    opts:[
+      {t:'存档备查（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('细作的意见收进暗档——多一双眼睛，多一分底气（军心 +1）。');
+      }},
+      {t:'循线深挖', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'simayi'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.simayi = 1;
+          R.gold += 16;
+          R.log('线头一路牵到洛阳某家旧仆——你不动声色收了网，辎重照单全收（金 +16）。冢虎的灯，今晚照见了不该照的人。');
+        } else {
+          R.gold += 6;
+          R.log('线到中途断了，只追回些许货银（金 +6）。');
+        }
+      }},
+      {t:'拨金养线（金 -6）', run(R){
+        if(R.gold < 6){ R.log('金紧——细作自去，线还留着。'); return 'hold'; }
+        R.gold -= 6;
+        R.log('六金喂进暗线，线松了半环，还活着（金 -6）。');
+      }}
+    ]},
+  { icon:'🌙', name:'离间故人', ch:-1,
+    text:'营中有人传阅一幅绣帕，帕角的针脚像极了某位故人的手艺——可她如今该在很远的地方。',
+    opts:[
+      {t:'收帕入夹（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('绣帕夹进令册——有些念想，压在军务里最稳当（军心 +1）。');
+      }},
+      {t:'依针脚寻人', run(R){
+        if(R.hero && R.hero.ch && R.hero.ch.id === 'diaochan'){
+          R.RL.flags.personal = R.RL.flags.personal || {};
+          R.RL.flags.personal.diaochan = 1;
+          healSelf(6); R.adjustMorale(1);
+          R.log('针脚寻到，人却只留一句话：谁的忠，谁的好，营里从此不用猜（回复 6 血，军心 +1）。一句话拆了一场嫌隙，比刀还快。');
+        } else {
+          R.adjustMorale(1);
+          R.log('针脚对了，人不在——营中猜了三日的嫌隙，被这半日拆解了大半（军心 +1）。');
+        }
+      }},
+      {t:'送还其人其帕', run(R){
+        R.log('帕子原样封送回程。针脚会自己认主。');
+      }}
+    ]}
+];
+RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P5);
 /* 分章取池：走到哪一章就演哪一章的戏（ch:-1 为全章通用）。
    若某章专属奇遇不足，则回落通用池，保证第 2 层以后总能撞见剧情。 */
 function rlStoryPoolFor(ch){
@@ -3076,6 +3814,7 @@ function noteHeroLog(win){
     const hl = loadHeroLog();
     const e = hl[h.id] || { runs:0, wins:0, best:null, last:null };
     e.runs++;
+    if(RL.flags && RL.flags.personal && RL.flags.personal[h.id]) e.per = true;   /* ✒ 武将个人线已唤起 */
     if(win) e.wins++;
     const rec = { win:!!win, diff:difficulty, chapter:(RL.chapter||0)+1,
                   layer:RL.layer||0, battles:RL.battles||0,
@@ -3724,6 +4463,9 @@ function rlRecapHtml(){
   /* 第三行：一条只看数据的建议 */
   L.push('📌 <b>下一局</b>：'+rlTip(r, { supplies: RL.supplies||0, morale: RL.morale||0,
     relics: (RL.relics||[]).length, deck: (RL.deck||[]).length }));
+  /* ✒ 史笔·改：第四行——让 IF 改史在课后复盘也看得见 */
+  L.push('✒ <b>史笔</b>：本局改写 <b>'+rlIfCount()+'</b> / '+RL_IF_RULES.length+' 处'+
+    (rlIfCount() >= 3 ? '——虎牢关前，若有人献简，那是你的史官' : ''));
   return '<br><span class="dim">┌ 本局三行复盘 ┐</span><br><span class="dim">'+
     L.join('<br>')+'</span>';
 }
@@ -3898,6 +4640,16 @@ const RL_SCENES = [
 /* ---------- 结局：史官载笔（一局一评 · 可收集） ----------
    纯函数：只读 RL / stats，不掷骰子、不改状态。同一局重开必然同一个结局。 */
 const RL_ENDINGS = [
+  /* —— ✒ 史笔·改｜IF 真结局（无双式）。闸门 if_path 只能由「史官献简」掷签
+     时主动写下，只读套件的强制局面一律不带它 —— 不会劫持任何既定结局 —— */
+  { id:'if_gaitian_qin', kind:'win', icon:'🌌', name:'改天换地·缚虎',
+    hint:'破关，虎牢关前与献简的史官相认（改史≥3），且终阵前选择了辱敌',
+    cond:c => c.won && (RL.flags||{}).if_path === 1 && RL.flags.parleyFinal === 'taunt',
+    text:c => '五章旧笔尽数改过之后，虎牢关的吕布第一次挥得迟了。'+c.name+'依着阵前那句辱语激出的狂态，把那个天下无双的人从赤兔马上一路拖下鞍来——缚而在大纛之下，三军先是欢呼，随即鸦雀无声：他们终于亲眼看见了改史的样子。史官行笔至此停了很久，只落一句：「凡将军亲手所改，一律加圈。」' },
+  { id:'if_gaitian_fang', kind:'win', icon:'🌅', name:'改天换地·归山',
+    hint:'破关，虎牢关前与献简的史官相认（改史≥3）——但最后一合，你放走了那个人',
+    cond:c => c.won && (RL.flags||{}).if_path === 1,
+    text:c => '缴械成礼。'+c.name+'与那个人在关下对饮一盏，随后亲手解开他的缚绳：「天下无双的人，合该去寻自己的对手。」吕布纵马向北，赤兔踏烟而没。此后关外传闻，凡蜀军过处，山陵都会先静上一寸。史官把那一卷竹简原样奉还：「自此，修史之权，在将军。」' },
   /* —— 全胜：连破六章、虎牢关诛吕布 —— */
   { id:'jieyue', kind:'win', icon:'⚖', name:'节钺凯旋',
     hint:'凯旋，且这一局身上压着三条朝廷军令（军神）',
@@ -4752,6 +5504,7 @@ function openCouncil(){
   const s = RL_SCENES[ch], c = rlChapter();
   showModal('🏮 第 '+(ch+1)+' 章 · '+c.name+'　【'+c.title+'】'+c.boss,
     s.scene.map(p => '<p>'+p+'</p>').join('')+
+    rlIfIntroParas(ch)+
     '<p class="dim">余金 <b>'+RL.gold+'</b> · 军心 <b>'+(RL.morale||0)+'/5</b> · 补给 <b>'+(RL.supplies||0)+
     '</b> · 遗物 <b>'+RL.relics.length+'</b> 件 · 主将 <b>'+RL.hero.hp+'/'+RL.hero.maxHp+'</b></p>',
     s.council.map((o, i) => ({
@@ -4791,15 +5544,19 @@ function bossParley(node){
     (P4 ? '<p>'+P4.a+'</p><p class="dim">'+P4.b+'</p><p class="dim">'+P4.c+'</p>' : '')+
     '<p class="dim">搦战之语不出于将令，而出于全军之眼。此刻的选择，会在开战一刻同时落在双方身上。</p>',
     [{t:'⚔ 擂鼓搦战，照常交锋',
-      run(){ node.parleyDone = true; startRLBattle(node); }},
+      run(){ node.parleyDone = true;
+              RL.flags.parleyFinal = 'drum';   /* ✒ 史笔·改：终阵选法留档，缚虎/归山据此分流 */
+              startRLBattle(node); }},
      {t:'🗣 阵前辱敌，激其轻进（敌攻 +4，我方开局蓄力 +40%、怒气 +30）',
       run(){ node.parleyDone = true;
+              RL.flags.parleyFinal = 'taunt';
               RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 40;
               RL.hero.st.rage = (RL.hero.st.rage||0) + 30;
               startRLBattle(node);
               if(ai && ai.alive) ai.atk += 4; }},
      {t:'🛡 深垒固守，先避其锋（开局格挡 +24，最大生命 +10）',
       run(){ node.parleyDone = true;
+              RL.flags.parleyFinal = 'bunker';
               RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + 24;
               RL.hero.maxHp += 10; RL.hero.hp += 10;
               startRLBattle(node); }}]);
@@ -7285,8 +8042,52 @@ function rlFinish(){
    只有最终章（虎牢关·吕布）不走这里，而是在 rlFinish 里直接结束整趟北伐。
    流程刻意对齐 completeNode + 普通胜利路径（closeModal / renderMapScreen / E('rlWin')），
    保证「打完 Boss 回到新章节地图」与「打完小怪回到地图」走同一套渲染管线。 */
+/* ==================== ✒ 史笔·改｜IF 检查点系统 ====================
+   参照真三国无双的「IF 条件」：每章一个改史检查点——斩将过章、整军之前
+   盘点本局状态，满足超额条件就盖一枚章。只写进已序列化的 RL.flags，
+   不动任何数值；章章相扣：下一章开头多一段【史笔·改】；改满三处，
+   虎牢关前「史官献简」会认这条路；此后破关，结局《改天换地·缚虎/归山》。
+   全部只追加：不改 RL_SCENES / RL_ENDINGS 既有条目、不加弹窗、不耗随机数。 */
+const RL_IF_RULES = [
+  { key:'if_jieting', name:'街亭之守', ch:0,
+    hint:'过第 1 章时军心≥3 且补给≥3（马谡下了山，把营扎进当道水口）',
+    cond:function(){ return (RL.morale||0) >= 3 && (RL.supplies||0) >= 3; } },
+  { key:'if_chencang', name:'陈仓之破', ch:1,
+    hint:'过第 2 章时军心≥4（兵势正盛，郝昭守不住人心）',
+    cond:function(){ return (RL.morale||0) >= 4; } },
+  { key:'if_dingjun', name:'定军之速', ch:2,
+    hint:'全场战斗尚不足 17 场时攻克第 3 章（一日之内，阵斩妙才）',
+    cond:function(){ return (RL.battles||0) <= 16; } },
+  { key:'if_fancheng', name:'樊城之水', ch:3,
+    hint:'攻克第 4 章时遗物≥4 件（兵甲盈军，则水到渠成）',
+    cond:function(){ return (RL.relics||[]).length >= 4; } },
+  { key:'if_luoyang', name:'洛阳之忍', ch:4,
+    hint:'过第 5 章时军心≥3 且补给≥3（相持不发，熬得国手自乱）',
+    cond:function(){ return (RL.morale||0) >= 3 && (RL.supplies||0) >= 3; } }
+];
+function rlIfCount(){ return RL_IF_RULES.filter(function(r){ return (RL.flags||{})[r.key] === 1; }).length; }
+function rlStampIf(prevIdx){
+  const f = RL.flags || (RL.flags = {});
+  RL_IF_RULES.forEach(function(r){
+    if(r.ch === prevIdx && f[r.key] !== 1){
+      try{ if(r.cond()){ f[r.key] = 1; log('✒ 史笔·改：'+r.name+'——这一局，史官换了一支笔。','gold'); } }catch(e){}
+    }
+  });
+}
+/* 章首追加的改史段落：不盖章就是空串，存档与只读测试零感知 */
+function rlIfIntroParas(ch){
+  const f = RL.flags || {}, out = [];
+  if(ch === 1 && f.if_jieting === 1) out.push('✒【史笔·改】街亭没有丢。马谡把营盘扎进当道水口，张郃顿兵坚垒二十日、粮尽而退——陇右三郡民心未散，魏人这才看清：蜀军这回恃的不是天险，是一个肯下山的书生。（改史其一）');
+  if(ch === 2 && f.if_chencang === 1) out.push('✒【史笔·改】陈仓早破，破的不止在云梯，更在人心——军势正盛，郝昭守着千人的城，终究先听见了城外更响的东西：自家粮仓的木门，被蜀军一顶便开。（改史其二）');
+  if(ch === 3 && f.if_dingjun === 1) out.push('✒【史笔·改】定军不在险，在速。夏侯渊那顶白缨盔还挂在山脊鹿角上，援军鼓声才刚渡河——三路魏军赶来看的不是战场，是一座提前合上的棺。（改史其三）');
+  if(ch === 4 && f.if_fancheng === 1) out.push('✒【史笔·改】遗物四箱押在中军，甲械过人——曹仁在城楼看清那面旗号后沉默了很久：守城拼的从来不是城墙，是军械之外的那一点底气。（改史其四）');
+  if(ch === 5 && f.if_luoyang === 1) out.push('✒【史笔·改】洛阳城头的灯比往年提前熄了七日——司马懿食少事烦，而你的军心与粮道撑到了同一处：他在土山上看你的营，竟先看见了自己帐里的空碗。（改史其五）');
+  if(ch === 5 && rlIfCount() >= 3) out.push('✒【史笔·改】夜里有人往中军帐送来一卷竹简——史官奉命新修的北伐志，把这一路改过的旧笔都收在上头。虎牢关在即，读不读、怎么读，史官说全凭将军。');
+  return out.map(function(p){ return '<p>'+p+'</p>'; }).join('');
+}
 function advanceChapter(){
   const prevIdx = RL.chapter || 0;
+  rlStampIf(prevIdx);                 /* ✒ 史笔·改：整军之前先盘点改史 */
   const prev = RL_CHAPTERS[prevIdx];
   RL.chapter = prevIdx + 1;
   RL.layer = 0;
@@ -9446,6 +10247,9 @@ function codexHtml(tab){
       totR += e.runs; totW += e.wins;
       if(e.best && (!deep || e.best.layer > deep.layer)){ deep = e.best; deepName = c.name; }
     });
+    const perN = done.filter(c => hl[c.id].per).length;
+    const _ifE = stats.endings || {};
+    const ifW = (_ifE.if_gaitian_qin||0) + (_ifE.if_gaitian_fang||0);
     let out = '<h4>🏆 战史</h4>'+
       '<p>将作府增强的是<b>实力</b>，战史记下的是<b>足迹</b>：哪位武将陪你走过最深的路、破过几座关。'+
       '胜也好败也罢，走过的每一层都算数——输了的那局也记在这里。</p>';
@@ -9455,7 +10259,8 @@ function codexHtml(tab){
     out += cxGrid([
       cxItem('🎖', '出征归宿', '共 <b>'+totR+'</b> 局北伐，破关 <b>'+totW+'</b> 次'+(totR ? '（总胜率 '+(totW/totR*100).toFixed(0)+'%）' : '')),
       cxItem('🧭', '最深的足迹', deep ? '<b>'+deepName+'</b> · '+deep.date+(deep.win ? ' · 破关' : ' · 止于第 '+deep.chapter+' 章第 '+deep.layer+' 层（'+deep.diff+'）') : '——'),
-      cxItem('👥', '出战过的武将', '<b>'+done.length+' / '+CHARS.length+'</b> 位　<span class="dim">还有 '+(CHARS.length - done.length)+' 位没带过——换人，就是一段新战史。</span>')
+      cxItem('👥', '出战过的武将', '<b>'+done.length+' / '+CHARS.length+'</b> 位　<span class="dim">还有 '+(CHARS.length - done.length)+' 位没带过——换人，就是一段新战史。</span>'),
+      cxItem('📜', '史笔·改', '个人线已唤起 <b>'+perN+'</b> 位 · 《改天换地》成书 <b>'+ifW+'</b> 次　<span class="dim">（改满三处史笔，虎牢关前的史官自会献简）</span>')
     ]);
     out += '<h4>🎖 武将足迹</h4>';
     const rows = done.slice().sort((a, b) =>
@@ -9465,7 +10270,8 @@ function codexHtml(tab){
       const desc = '出征 <b>'+e.runs+'</b> 次 · 破关 <b>'+e.wins+'</b> 次 · '+
         (e.best ? (e.best.win ? '<b class="boonchip">已破关</b>' : '最深 <b>第 '+e.best.layer+' 层</b>（'+e.best.diff+'）') : '')+
         (e.last ? '<br><span class="dim">最近：'+e.last.date+' · 第 '+e.last.chapter+' 章 · '+(e.last.win ? '破关' : '陨落')+'</span>' : '');
-      return cxItem(c.icon, c.name+(e.wins ? '　🏆×'+e.wins : ''), desc);
+      return cxItem(c.icon, c.name+(e.wins ? '　🏆×'+e.wins : '')+(e.per ? '　📜' : ''), desc+
+        (e.per ? '<br><span class="dim">📜 个人线已唤起</span>' : ''));
     }));
     return out;
   }
@@ -9849,6 +10655,7 @@ globalThis.__api = {
   maybeFieldEvent, fieldEventRnd,
   FIELD_EVENT_CHANCE, FIELD_EVENT_MAX, FIELD_EVENT_WEIGHT_TOTAL,
   getRL_STORY_EVENTS: () => RL_STORY_EVENTS, rlStoryPool, rlRegionIndex,
+  getRL_IF_RULES: () => RL_IF_RULES, rlIfCount, rlStampIf, rlIfIntroParas,
   rlFill, rlRivalName, rlHeroName, STORY_EVENT_CHANCE,
   getRL_FATES: () => RL_FATES, getFATE_BY_ID: () => FATE_BY_ID,
   getRL_DOCTRINES: () => RL_DOCTRINES, getRL_MUTATORS: () => RL_MUTATORS,
