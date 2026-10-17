@@ -65,10 +65,14 @@
     letter-spacing: 1px;
   }
   button:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 12px rgba(216,180,90,.2); }
+  button:not(:disabled):active { transform: translateY(1px); box-shadow: 0 0 8px rgba(0,0,0,.4); }
   button:disabled { opacity: .4; cursor: not-allowed; }
   button:disabled:hover { border-color: var(--gold-dim); color: var(--text); box-shadow: none; }
-  button.primary { background: linear-gradient(180deg, #6d2c22, #4a1c15); border-color: var(--red); }
+  button.primary { background: linear-gradient(180deg, #6d2c22, #4a1c15); border-color: var(--red); letter-spacing: 2px; }
   button.primary:hover { color: #ffd9c9; box-shadow: 0 0 14px rgba(200,80,63,.35); }
+  /* 「继续北伐」是回到局中的唯一入口，给它主 CTA 级的视觉权重 */
+  #btnResumeRL { border-color: var(--gold); color: var(--gold);
+    background: linear-gradient(180deg, rgba(216,180,90,.18), rgba(216,180,90,.05)); }
   button.mode { opacity: .6; font-size: 14.5px; padding: 8px 18px; }
   button.mode.active { border-color: var(--gold); color: var(--gold); opacity: 1; box-shadow: 0 0 12px rgba(216,180,90,.25); background: linear-gradient(180deg, #3a2f1d, #262013); }
 
@@ -299,15 +303,16 @@
   .mv.lose { filter: grayscale(1) brightness(.5); transform: rotate(-12deg) translateY(10px); opacity: .75; }
   .mvs { font-size: 24px; color: var(--red); font-weight: bold; }
   .mvres { font-size: 20px; letter-spacing: 3px; font-weight: bold; animation: pop .35s .15s both; }
-  .mvres.good { color: #86c481; }
-  .mvres.bad { color: #e07a68; }
-  .mvres.sys { color: var(--gold); }
+  .mvres.good { color: #8fd28a; background: rgba(111,174,106,.13); border:1px solid rgba(111,174,106,.35); border-radius:7px; padding:2px 9px; }
+  .mvres.bad { color: #ec8674; background: rgba(200,80,63,.13); border:1px solid rgba(200,80,63,.4); border-radius:7px; padding:2px 9px; }
+  .mvres.sys { color: var(--gold); background: rgba(216,180,90,.10); border:1px solid rgba(216,180,90,.3); border-radius:7px; padding:2px 9px; }
   @keyframes pop { 0% { transform: scale(.35); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
   @keyframes fadeIn { 0% { opacity: 0 } 100% { opacity: 1 } }
 
   .controls { display: flex; gap: 12px; justify-content: center; margin: 14px 0 10px; align-items: center; flex-wrap: wrap; }
   .rps { font-size: 19px; padding: 14px 30px; border-radius: 12px; background: linear-gradient(180deg, #3a2e1e, #251d14); letter-spacing: 3px; }
   .rps:hover { transform: translateY(-2px); }
+  .rps:active { transform: translateY(0) scale(.965); box-shadow: 0 0 8px rgba(0,0,0,.45); }
   .chargehint { width: 100%; text-align: center; font-size: 12.5px; color: var(--dim); }
 
   .log { background: #14100c; border: 1px solid var(--line); border-radius: 10px; height: 180px; overflow-y: auto; padding: 10px 14px; font-size: 13px; line-height: 1.9; }
@@ -388,11 +393,13 @@
   .mbox { background:linear-gradient(180deg,#2b2218,#1d1710); border:1px solid var(--gold-dim);
     border-radius:14px; padding:26px 34px; max-width:640px; width:92%; max-height:88vh; overflow-y:auto;
     box-shadow:0 10px 50px rgba(0,0,0,.6); animation:pop .35s cubic-bezier(.2,1.3,.5,1) both; }
-  .mbox h3 { font-size:23px; color:var(--gold); letter-spacing:3px; margin-bottom:10px; }
+  .mbox h3 { font-size:23px; color:var(--gold); letter-spacing:3px; margin-bottom:12px;
+    border-bottom:1px solid rgba(216,180,90,.16); padding-bottom:9px; }
   .mbox p { color:var(--dim); font-size:14px; line-height:1.8; margin-bottom:18px; }
   .mbox p b { color:var(--text); }
   .mopts { display:flex; flex-direction:column; gap:9px; }
-  .mopts button { padding:9px 14px; font-size:14px; text-align:left; }
+  .mopts button { padding:10px 14px; font-size:14px; text-align:left; line-height:1.62; }
+  .mopts button:hover { border-color: var(--gold); }
 
   /* ---------- 北伐地图 ---------- */
   .rltop { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
@@ -403,8 +410,15 @@
   .rlhtitle { font-size:12px; color:var(--dim); }
   .rlmeta { display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:7px; color:var(--dim); font-size:12px; }
   .rlmeta b { color:var(--text); font-weight:600; }
+  /* 信息分层：概览整行（rlstate）→ 核心指标小药丸（rlstat）→ 提示行（rlnote） */
+  .rlmeta .rlstate { flex:1 1 100%; background:#171310; border:1px solid var(--line);
+    border-radius:9px; padding:5px 10px; line-height:1.75; }
+  .rlmeta .rlstat { background:#171310; border:1px solid var(--line); border-radius:9px;
+    padding:3px 10px; display:inline-block; }
+  .rlmeta .rlnote { flex:1 1 100%; display:block; color:var(--dim);
+    border-left:2px solid var(--line); padding:3px 0 3px 9px; line-height:1.8; }
   .rlboons .boonchip { color:#f0d9a0; border:1px solid var(--gold-dim); border-radius:6px;
-    padding:1px 7px; background:rgba(216,180,90,.08); }
+    display:inline-block; white-space:nowrap; padding:1px 7px; margin:2px 4px 2px 0; background:rgba(216,180,90,.08); }
   .rlboons button { padding:2px 9px; font-size:11px; border-radius:10px; margin-left:6px; }
   .rlprogress { height:6px; background:#171310; border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-top:8px; }
   .rlprogress i { display:block; height:100%; background:var(--gold); transition:width .25s; }
@@ -639,9 +653,15 @@
     .hpbar { height: 14px; }
     .hptext { font-size: 10.5px; margin-top: 2px; }
     .rageline { margin-top: 5px; font-size: 11px; gap: 5px; }
+    /* 怒气涨满时：整行变金变亮 + 追加「就绪」二字，手机上不再错过超必杀解锁 */
+    .rageline:has(.ragefill.full) { background: rgba(224,122,58,.16); border-radius: 8px;
+      padding: 3px 7px; margin-top: 3px; color: #ffd24a; font-weight: 600; }
+    .rageline:has(.ragefill.full) > span:first-child::after { content: ' · 就绪'; }
     .attrs { font-size: 9.5px; margin-top: 3px; line-height: 1.35; }
     /* 这里刻意不加 nowrap：让它自然折成两行，比 overflow:hidden 把「蓄力 25%」裁掉强 */
-    .pskill { display: none; }            /* 技能说明在图鉴里，手机上省出约 40px */
+    .pskill { display: -webkit-box; font-size: 10px; line-height: 1.45; margin-top: 4px; padding-top: 4px;
+              -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+    /* 技能说明恢复可见：实测 39 个武将技能最长 45 字，限 4 行在 320px 窄屏也装得下 */
     .chips { margin-top: 4px; gap: 3px; min-height: 0; }
     .chips:empty { display: none; }       /* 没有状态时不留空行 */
     .chip { font-size: 9px; padding: 1px 5px; }
@@ -708,7 +728,10 @@
     .mbox h3 { font-size: 19px; letter-spacing: 2px; }
     .mbox p { font-size: 13px; margin-bottom: 14px; }
     .mopts { gap: 8px; }
-    .mopts button { padding: 13px 13px; font-size: 13.5px; }
+    .mopts button { padding: 13px 13px; font-size: 13.5px; line-height: 1.6; min-height: 44px; }
+    .rlmeta .rlstat { padding: 3px 8px; }
+    .rlmeta .rlstate { padding: 4px 9px; }
+    .rlmeta .rlnote { padding: 3px 0 3px 8px; }
     .obox { padding: 26px 16px; width: 94%; }
     .obox h2 { font-size: 26px; letter-spacing: 4px; }
     .obox p { font-size: 13px; margin-bottom: 16px; }
@@ -746,6 +769,18 @@
   @media (max-width: 344px) {
     button.item { font-size: 10.5px; padding: 6px 4px; }
   }
+/* —— 北伐落幕演出（纯展示层：破关金光／止步玄幕，1.9 秒后自撤，不碰数值） —— */
+body.x-finalwin::after{ content:''; position:fixed; inset:0; z-index:9998; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 38%, rgba(255,222,146,.32) 0%, rgba(255,190,90,.12) 42%, transparent 72%);
+  animation:xshowdown 1.9s ease-out forwards; }
+body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(18,3,3,.55) 100%);
+  box-shadow:inset 0 0 120px rgba(120,20,20,.32);
+  animation:xshowdown 1.9s ease-out forwards; }
+@keyframes xshowdown{ 0%{opacity:0} 16%{opacity:1} 100%{opacity:0} }
+/* —— 战史新纪录金字（结算页追加行） —— */
+.recflash{ color:#ffd76a; animation:recpulse 1.6s ease-in-out 2; }
+@keyframes recpulse{ 0%,100%{ text-shadow:0 0 0 rgba(255,215,106,0); } 50%{ text-shadow:0 0 12px rgba(255,215,106,.85); } }
 </style>
 </head>
 <body>
@@ -763,6 +798,12 @@
       <button id="modeB" class="mode">🐯 虎牢关 3v1</button>
       <button id="modeA" class="mode">🏆 擂台 · 无尽连胜</button>
       <button id="modeR" class="mode">🧭 北伐 Roguelike</button>
+    </div>
+
+    <div class="diffbar" id="dailyBar">
+      <span>📅 每日试炼：</span>
+      <button id="btnDaily" class="diff">⚔️ 今日一签</button>
+      <span class="dim" id="dailyRecTxt"></span>
     </div>
 
     <div class="diffbar">
@@ -2201,6 +2242,450 @@ const RL_STORY_CHAPTER_EVENTS = [
     ]}
 ];
 RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_CHAPTER_EVENTS);
+
+/* —— P4 剧情文本包（story-patch-1，主线接机制合并：24 条按章分组，9 支 st 白名单通道与
+   既定原语，代价上限对齐同档条目：金 ≤30 / 血 ≤6 / 军心补给 ±1~2） —— */
+const RL_STORY_P4 = [
+  /* —— 第一章 · 出祁山（张郃） —— */
+  { icon:'🪨', name:'木门遇伏', ch:0,
+    text:'副将押后队未归，游哨在木门道峭壁望见弩光三闪。天明前收到他托樵夫带出的口信：他扣下了截粮的游骑，粮车滞在涧南，人都活着——只是山径两端都有人，都在等雾。',
+    opts:[
+      {t:'🪓 死士清道，强行接应（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('死士顺雾压进涧南，斧声过了三道哨。粮车和人回来了，军中却少了一半笑脸（军心 -1）。');
+      }},
+      {t:'🌫 扬尘疑兵，吓退伏兵（耗军资十五金）', run(R){
+        if(R.gold < 15){ R.log('军资不足十五金，扬尘疑兵之计作罢。'); return 'hold'; }
+        R.gold -= 15;
+        R.log('你拨十五金教民夫扬尘擂鼓，涧上的弩手当是大军压到，弃了哨位——粮车安然出谷（金 -15）。');
+      }},
+      {t:'📜 弃车保兵，人回粮失（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('军仓已空，弃无可弃，只得仍派死士接应。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你传令弃车保人：副将带着人回来了，一车粮留在了涧南（补给 -1）。');
+      }}
+    ]},
+  { icon:'🌾', name:'上邽麦熟', ch:0,
+    text:'上邽郊外麦浪连天，父老跪在道旁捧新麦请大军收下。仓吏低声算账：照价买，府库要见底；白拿，民心就破了。界河另一头，同样的新麦正堆进张郃的营盘——他也在用同样的筹码稳人心。',
+    opts:[
+      {t:'⚖ 公买公卖，全照市价（金 -20）', run(R){
+        if(R.gold < 20){ R.log('库里凑不出二十金，公买公卖这桩买卖先搁着。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('你照市价买下新麦，父老捧钱回家。粮车入营那日，道旁多了好些来投军的青年（金 -20）。');
+      }},
+      {t:'🍚 留麦于民，只收人心（补给 -1，军心 +1）', run(R){
+        if(R.RL.supplies < 1){ R.log('你本想留麦于民，军仓却先见了底，只得作罢。'); return 'hold'; }
+        R.addSupplies(-1); R.adjustMorale(1);
+        R.log('你令兵马绕开麦田，全军啃干粮。消息传开，沿途村寨争着给大军引路（补给 -1，军心 +1）。');
+      }},
+      {t:'🛒 按军市半价征购（补给 +1，军心 -1）', run(R){
+        R.addSupplies(1); R.adjustMorale(-1);
+        R.log('仓吏按军市半价开了条子。麦入仓了，父老的脸也沉着了（补给 +1，军心 -1）。');
+      }}
+    ]},
+  { icon:'🌙', name:'谷底夜行', ch:0,
+    text:'老驮夫在篝火边讲粮道夜行的诀窍：谷底风大霜重，山脊露白天低。他把三十年踩出来的小路画在掌心，愿意替大军引路，只求夜里不点灯。走与不走，走在谁前谁后，今晚就得定。',
+    opts:[
+      {t:'🌙 衔枚夜行，随他走谷底（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('全军衔枚走了一夜谷底，霜气从脚踝冻到膝盖。天亮清点，一个兵都没少（军心 -1）。');
+      }},
+      {t:'🔥 天明再走，稳字当头（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('军粮只够当日口腹，等不起天明的一车消耗，夜路只得走。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你按部就班等天亮再走，多费一车粮，队形却齐整如常（补给 -1）。');
+      }},
+      {t:'🗺 分两队，让他带轻兵先行（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('分两队要分灶起火，粮上匀不出来，只得合队而行。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('老驮夫带轻兵先行探路，大队多烧了一处营火（补给 -1）。天黑前，两队在三十里外会齐。');
+      }}
+    ]},
+  { icon:'📝', name:'帐外谈兵', ch:0,
+    text:'年轻参军把陇山画满一案：何处可伏、何处断水、何处扎营必败。讲起来不要命，声音传到帐外。老将们坐在帐角冷笑——同一张图，他们二十年前就画过一遍。他等你一句话：用，还是不用。',
+    opts:[
+      {t:'📝 采他一策入军议（军心 -1，预知 +1）', run(R){
+        R.adjustMorale(-1); R.hero.st.peekCharges = (R.hero.st.peekCharges||0) + 1;
+        R.log('你把他的策记了三行，老将告退时没人行礼。可第二日斥候回报，与他画的分毫不差（军心 -1，预知 +1）。');
+      }},
+      {t:'🪑 调去后军帮着押粮（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('后军正短粮，此事按下不提。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你把他调去后军押粮，多起了一处灶（补给 -1）。他走时，把那张陇山图留在了案上。');
+      }},
+      {t:'🍵 听他讲完再散议（彻夜军议：-3 血）', run(R){
+        dmgSelf(3);
+        R.log('你让人把灯全点上，听他从头讲完。散议已是三更，你揉着发胀的额角回了帐（-3 血）。');
+      }}
+    ]},
+
+  /* —— 第二章 · 陈仓道（郝昭） —— */
+  { icon:'🕳', name:'地窟对凿', ch:1,
+    text:'工兵的地道掘到城墙根，凿声在夜里像另一颗心跳。掘到第七日，前头传来回声——城里也有人在挖，两边镐尖隔着三尺土层对上了。进是火，退是功亏一篑，全队停在土里等令。',
+    opts:[
+      {t:'🔥 灌烟逼退城里那一头（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('烟薪要烧，可仓里已匀不出来，此事作罢。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('湿柴塞进地窟，浓烟封了那头。城里的人爬了出来，地道空着归你（补给 -1）。');
+      }},
+      {t:'🪖 弃地道回地面强攻（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('七天的心血一夜填平，工兵把镐收进筐里没人说话。云梯重新靠上城根（军心 -1）。');
+      }},
+      {t:'🧱 换向续掘，赌他手慢（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('再掘七日又得七日口粮，仓里撑不住，只能停工。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你令换向续掘，两边的凿声在土里错开半尺，各挖各的（补给 -1）。城里偶尔也骂人。');
+      }}
+    ]},
+  { icon:'🏹', name:'箭书无回', ch:1,
+    text:'第三封劝降书没人敢递。城里回话的还是那支箭，钉在辕门木桩上，信角被雨泡烂了字。有幕僚出了新主意：不劝郝昭，改劝城中父老——把生死利害写成露布，教全城自己听见。',
+    opts:[
+      {t:'🏹 万箭投书，射遍全城（金 -15）', run(R){
+        if(R.gold < 15){ R.log('凑不出十五金的箭资，露布还写在案上。'); return 'hold'; }
+        R.gold -= 15;
+        R.log('你开了弓匠的作坊，一夜绑出书矢三百支。天亮时露布落满城中街巷（金 -15）。');
+      }},
+      {t:'🥷 勇士越城传帖（赌一条性命：半数军心 +2，半数 -6 血）', run(R){
+        if(Math.random() < 0.5){
+          R.adjustMorale(2);
+          R.log('勇士泅过水濠，帖子钉进了城心的坊柱。城里连夜传抄，对面军中自乱（军心 +2）。');
+        } else {
+          dmgSelf(6);
+          R.log('绳索半途断了。勇士摔在城下，被乱石压着抬了回来——帖子终究没送进城（-6 血）。');
+        }
+      }},
+      {t:'🗑 罢劝降，倾力攻械（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('罢劝降也没有余粮起大工，只能照旧围着。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你收了第三封劝降书，把木料都拨给了冲车营。攻械的匠人熬夜赶工（补给 -1）。');
+      }}
+    ]},
+  { icon:'🛠', name:'冲车之誓', ch:1,
+    text:'冲车被石磨砸断了第九根辕木。匠头蹲在断辕边看了半夜，削出带轮的组合盾：车在人推，盾在人举，一次上前要八条汉子赌命。他要你一句话，明早这车出不出营门。',
+    opts:[
+      {t:'🛡 组盾临城，硬撼女墙（-5 血）', run(R){
+        dmgSelf(5);
+        R.log('八条汉子顶着组合盾把车推到了墙根。石磨砸下来的那一下，整个营都听见了（-5 血）。');
+      }},
+      {t:'🏹 改筑弩楼仰射，先夺城头（金 -10）', run(R){
+        if(R.gold < 10){ R.log('筑楼要木料要工钱，库里凑不出十金，只得作罢。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('弩楼当夜起架，比女墙还高三尺。城头的火油泼不上来了（金 -10）。');
+      }},
+      {t:'⛺ 收兵回营，养锐再战（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('冲车退回营门，辕木断口朝天。匠头蹲在原地没动，军心也跟着凉了半截（军心 -1）。');
+      }}
+    ]},
+  { icon:'🌉', name:'西谷轻骑', ch:1,
+    text:'西谷轻骑夜抄粮政营，火把在江滩上烧成一线。押粮的军侯死堵住窄口，粮车未失，人的甲全湿透了。他拎着头盔进帐请罪：截住是截住了，明日他们还来——堵不堵得住，看你给不给援手。',
+    opts:[
+      {t:'🛡 拨亲兵三百助守（军心 +1，补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('添三百张嘴，仓里却匀不出一份干粮——此事作罢。'); return 'hold'; }
+        R.adjustMorale(1); R.addSupplies(-1);
+        R.log('三百亲兵当夜集结。军侯第二天把断桥的木料也拆了，粮食一颗没丢（军心 +1，补给 -1）。');
+      }},
+      {t:'🌉 火船断西谷浮桥（金 -20）', run(R){
+        if(R.gold < 20){ R.log('雇船备薪要二十金，库里凑不出，只能稳守。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('火船顺水而下，把西谷的浮桥拦腰烧断。对面轻骑再想过来，得先造船（金 -20）。');
+      }},
+      {t:'📜 传令粮道后撤半站地（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('粮道后撤半站地，队伍顶着夜露又赶了半夜路。粮是安全了，人也乏了（-2 血）。');
+      }}
+    ]},
+
+  /* —— 第三章 · 夺汉中（夏侯渊） —— */
+  { icon:'⚡', name:'鹿角之隙', ch:2,
+    text:'夏侯渊出营补鹿角，四百人一列，先锋旗离主阵远了半里。山头烟柱三次直起是击、横放是守。老将们按着缰绳说不可轻进——半里的缝隙，够一匹马冲进去，也够十面伏兵埋出来。',
+    opts:[
+      {t:'⚡ 遣轻骑趁隙冲其本阵（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('轻骑衔枚出谷，半里缝隙一穿而过——对面是真隙，还是饵，明晨见分晓。军议吵到后半夜（军心 -1）。');
+      }},
+      {t:'🎯 招弩手齐射补角之队（金 -10）', run(R){
+        if(R.gold < 10){ R.log('弩手齐射的箭枝赏格要十金，囊中不足，只得放过这半里缝隙。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('你以十金悬赏招齐了山头的弩手。补鹿角的四百人在箭程里抬了三回盾，没再往前挪（金 -10）。');
+      }},
+      {t:'🌫 固守不动，等下个缝隙（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('全军盯着那道缝隙收兵回营，一宿没敢卸甲。缝隙自己合上了（-2 血）。');
+      }}
+    ]},
+  { icon:'🌊', name:'汉水夜渡', ch:2,
+    text:'号角从水边传来：空营退兵的旧话翻成了新词。士气盛到发烫，有人主张连夜渡水抢滩。渡口的水位一夜一变，老船工要见现钱才肯夜里行船——这个冬渡，要快，还是要稳。',
+    opts:[
+      {t:'🌊 连夜抢渡（金 -20 雇船）', run(R){
+        if(R.gold < 20){ R.log('老船工只要现钱。凑不齐二十金，船橹就摇不动。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('二十金拍在他掌心，船队连夜下水。天亮前，前锋已在对岸滩头立起旗（金 -20）。');
+      }},
+      {t:'☀️ 白日整渡（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('等到天光大亮才渡水，队伍在滩上晒了半日。慢是慢了，军容齐整（-2 血）。');
+      }},
+      {t:'🍚 先饱军再渡（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('想先开饭再过河，可仓里的粮连今日的份都要数着用。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你让军中先烧早饭。热汤下肚，过河时脚步都稳（补给 -1）。');
+      }}
+    ]},
+  { icon:'⚒', name:'老匠修枪', ch:2,
+    text:'随军的老匠替三条断枪焊上新头，说是他爹传下的火候。老将掂了掂，说轻了三分——但也快了三分。这些枪要不要发给先锋，帐内争了半日：快的枪配胆小的兵，反要坏事。',
+    opts:[
+      {t:'🛡 发给死士先锋队（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('三条新枪发给了死士先锋。老将冷着脸走开——枪快了，人心却悬了（军心 -1）。');
+      }},
+      {t:'📦 全数入库，留待大战（金 -10）', run(R){
+        if(R.gold < 10){ R.log('入库要添防潮的桐油木匣，库里提不出十金。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('三条枪上了油、入了库，专为决战留着（金 -10）。老匠把火候写在签上，塞进枪匣。');
+      }},
+      {t:'⚒ 当场熔铸箭簇（-3 血）', run(R){
+        dmgSelf(3);
+        R.log('老匠把三条枪回了炉，铳出一打名新的箭簇。炉火燎了半宿，你也守了半宿（-3 血）。');
+      }}
+    ]},
+  { icon:'📜', name:'汉中王笺', ch:2,
+    text:'成都手书只一行：汉中者，益州咽喉，存亡之机，此机不可失。读信的人各读各的——有人读出催命，有人读出背水。军议散后，信被折成三折收进主帅怀中，回信迟迟没有写。',
+    opts:[
+      {t:'📌 传示全军以壮行色（金 -10）', run(R){
+        if(R.gold < 10){ R.log('誊抄传示要费纸墨工钱，库里凑不出十金，笺先收着。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('王笺誊抄了十几份，一发到各营。传阅那夜，巡夜的火把比平时多了三成（金 -10）。');
+      }},
+      {t:'📌 刊于驿路木牌（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('立牌刻字要动用工粮，仓里匀不出，只得作罢。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('王笺的最后一行被刻上驿路木牌。往来士卒路过都放慢了脚步（补给 -1）。');
+      }},
+      {t:'🗑 拆读即毁，不立文字（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('信在灯上烧尽了。知道这件事的人只有三个，谁也没说（军心 -1）。');
+      }}
+    ]},
+
+  /* —— 第四章 · 战樊城（庞德） —— */
+  { icon:'⛵', name:'上游之帆', ch:3,
+    text:'赭帆的水营藏在上游湾里，洪流一到随时顺下。烧了它，断了半条命根；不打，它就是头顶悬着的积雨云。有识水性的降卒画出浅滩与火道，也有人说，那正是留给你们的饵。',
+    opts:[
+      {t:'🔥 火船夜袭水营（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('火船要裹油毡浸火油，仓里连浸一层的油都提不出来。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('火船趁涨水顺湾而下。火头起来时，对面的锚索断了一半（补给 -1）。');
+      }},
+      {t:'🎣 按兵不动，作饵钓饵（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('你下令按兵不动，全军看着那片赭帆晒了一天又一天。没人知道你在等什么（军心 -1）。');
+      }},
+      {t:'🪨 巨石沉湾，锁住水道（金 -20）', run(R){
+        if(R.gold < 20){ R.log('雇石工、赁船锁链要二十金，库里凑不齐，沉湾之策暂缓。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('巨石连索沉进湾口。涨水那天，赭帆一条也没能下来（金 -20）。');
+      }}
+    ]},
+  { icon:'⚰', name:'棺材的分量', ch:3,
+    text:'那口棺材抬了七日，抬杠的人换来换去，没人肯说累。军中传来传去，竟把死字说成了吉利话：有人往自己甲上写了个死字，也有人连夜收拾包袱。同一件东西，在两边军队手里都是文章。',
+    opts:[
+      {t:'🖊 帐前同写一字以壮士气（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('写罢死字要犒酒，仓里连一份犒酒都匀不出。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你带头在自己甲上写了那个字。笔递下去，写的人排到了辕门外（补给 -1）。');
+      }},
+      {t:'🧠 收缴棺材改作浮桥料（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('那口棺材被拆成了六块桥板。对面战场上少了一杆旗，两边军中都少了一句话（军心 -1）。');
+      }},
+      {t:'🗣 当众说破，只作不知（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('你当众说破：「那是壮他的气，不是丧他的命，都少念。」说完咳了两声（-2 血）。');
+      }}
+    ]},
+  { icon:'📏', name:'降卒的尺', ch:3,
+    text:'降卒三千编入挑土队，工头用私尺量沟，多挖的每一寸都是白干。有人密报尺里藏着门道：短下的那一截，就是替谁留的后路。深查是人心散，不查是堤坝虚。',
+    opts:[
+      {t:'📏 收缴私尺，一律用军尺（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('私尺当众烧了，军尺发下去三千条。挑土的队伍安静得像一堵墙（军心 -1）。');
+      }},
+      {t:'🍚 加一勺口粮换公心（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('加一勺口粮是好法子，可仓里连勺都见底了。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('你下令挑土的每息加一勺稠粥。私尺第二天自己缴上来了（补给 -1）。');
+      }},
+      {t:'🔍 只究带头者，余各不问（金 -10）', run(R){
+        if(R.gold < 10){ R.log('只究带头者也得发安家赏，库里提不出十金。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('带头那位充了军，其余散回原队。你私底下给了密报的人十金，教他闭嘴（金 -10）。');
+      }}
+    ]},
+  { icon:'🌊', name:'堤上裂口', ch:3,
+    text:'连日暴雨，营边的堤裂了三尺口子。堵它要抽走一半人力，不堵今夜全营泡水。抬土号子响到半夜，有人发现裂口渗出的浑水里漂着谷壳——上游，正有人淘城外的仓。',
+    opts:[
+      {t:'⛰ 全力堵堤（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('堵堤的人要吃双份，仓里撑不起这个双份。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('全军一半人上了堤，号子喊到天明。裂口合上了，粮少了一日口（补给 -1）。');
+      }},
+      {t:'🛶 就裂口放水，改舟营（金 -20）', run(R){
+        if(R.gold < 20){ R.log('改舟营要筏木桐油，二十金凑不齐，还是先堵堤。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('你令就裂口放水，营盘改成筏上。第二天洪头下来时，别人家泡在水里，你已经漂着了（金 -20）。');
+      }},
+      {t:'🏕 后撤高坡再图（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('连夜后撤高坡，泥水里的行军走了半夜。营保住了，脚也泡烂了（-2 血）。');
+      }}
+    ]},
+
+  /* —— 第五章 · 破洛阳（司马懿） —— */
+  { icon:'🌾', name:'城外拾穗', ch:4,
+    text:'城外坚壁清野之后，四野只剩落穗可拾。粮政营算过：拾穗七日，省出两日之粮。可城头望楼看得见每一穗的去向——这一层司马懿比你先想到，他在等你再靠近三十步。',
+    opts:[
+      {t:'🌾 加派两队，放胆拾穗（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('两队人撒到四野，穗子一颗颗拾进袋。城头一直没人拦——这安静得让人心里发毛（军心 -1）。');
+      }},
+      {t:'🏹 只在弩程之内拾取（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('拾穗队圈死在弩程里，一垄一垄挪。穗少人多，半饱着回营（-2 血）。');
+      }},
+      {t:'🕯 夜拾昼伏（金 -10 买灯油）', run(R){
+        if(R.gold < 10){ R.log('夜里拾穗要点灯，十金的灯油都提不出，昼伏夜拾只能作罢。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('灯火豆大的亮珠缝在腰上，夜里四野全是游动的星。七日过去，袋子鼓了（金 -10）。');
+      }}
+    ]},
+  { icon:'🕊', name:'巾帼的回礼', ch:4,
+    text:'送去的妇人衣装在城头挂了三日，回赠是一车新麦——种子级的好麦，附话极短：留着明年种。军中当笑话传，谋士却读出了正文：他在说，他等得起。这车麦入不入仓，进帐就要定。',
+    opts:[
+      {t:'🌾 收麦入仓（补给 +1，军心 -1）', run(R){
+        R.addSupplies(1); R.adjustMorale(-1);
+        R.log('麦入了仓。谋士提醒你：收了这车麦，就是承认他在等你——军心正忌讳这个（补给 +1，军心 -1）。');
+      }},
+      {t:'🔥 当众焚麦（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('你在辕门前把那车麦点了。火光里全军都在喊——哪一派都在喊（军心 +1）。');
+      }},
+      {t:'📯 还书骂城（金 -10）', run(R){
+        if(R.gold < 10){ R.log('还书要快马要赏格，十金凑不出，骂城暂缓。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('回信只有八个字，射上城头。城头静了一日，那车麦也没再提（金 -10）。');
+      }}
+    ]},
+  { icon:'🚤', name:'渭水夜航', ch:4,
+    text:'粮船夜里靠埠，船老大神神秘秘：他备了两条水道，一条快而险，一条慢而稳，押了钱才肯开口。中转的沙洲上有生面孔接应，口音不像本地人——最后三十里水路，账房不敢拍板。',
+    opts:[
+      {t:'🚤 走快道，敢夜行（金 -30 封口）', run(R){
+        if(R.gold < 30){ R.log('封人家的嘴要三十金现钱，库里提不出，快道之议只得搁下。'); return 'hold'; }
+        R.gold -= 30;
+        R.log('三十金押下去，船队夜过沙洲。生面孔们收了钱，假装没看见（金 -30）。');
+      }},
+      {t:'🐢 走慢道，图稳妥（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('船队换了慢道，多绕两日水路。粮全数到埠，人也乏了（-2 血）。');
+      }},
+      {t:'🪶 分兵两路各半（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('粮分两路，快慢各半。到埠点验那天，账房核了三遍才敢画押（军心 -1）。');
+      }}
+    ]},
+  { icon:'📒', name:'督粮的账', ch:4,
+    text:'督粮官在营外另立了小账：有几笔粮调发对不上，差额不大，笔笔都有印。他不敢声张，先来回你——因为账上的名字，一个比一个大。查是得罪，不查是亏空。',
+    opts:[
+      {t:'⚖ 当众清账，名姓不避（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('小账当众摊开，名字一个一个念出去。粮再没短过一笔——营里也安静得反常（军心 -1）。');
+      }},
+      {t:'🤐 秘查缓办（金 -20）', run(R){
+        if(R.gold < 20){ R.log('秘查要用外市的眼线，二十金凑不出，只得先按着。'); return 'hold'; }
+        R.gold -= 20;
+        R.log('你拨二十金养了两名暗探。粮账上的窟窿，一个月里自己合上了（金 -20）。');
+      }},
+      {t:'🔥 烧账不问，只补空额（金 -30）', run(R){
+        if(R.gold < 30){ R.log('补空额要三十金，库里只凑出一半——那半本账先烧了，一半。'); return 'hold'; }
+        R.gold -= 30;
+        R.log('小账在炉里烧了，空额从你的私库里补平。督粮官跪下磕了三个头（金 -30）。');
+      }}
+    ]},
+
+  /* —— 第六章 · 虎牢关（吕布） —— */
+  { icon:'🔥', name:'火堆夜语', ch:5,
+    text:'关前的火堆烧到后半夜，老兵们绕着讲三十年前的旧事：谁拖过戟杆，谁中过一箭还替同伴裹了头。讲到末了，没人敢说一个胜字，只有人翻来覆去念叨：明日活着回营，回来喝热的。',
+    opts:[
+      {t:'🍵 开锅热汤，全营同饮（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('想全营开一锅热汤，仓里的粮总账不够这一锅。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('热汤开锅，全营一人一碗。喝完没人说话，锅底朝天（补给 -1）。');
+      }},
+      {t:'🎲 赌令旗，胜者免晨操（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('赌桌上的酒水要另起一份，仓里匀不出，赌局没开成。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('令旗在火堆边传了一夜。输的人把明早的操都认了，笑骂声到三更才散（补给 -1）。');
+      }},
+      {t:'🏮 多添三堆营火（金 -10）', run(R){
+        if(R.gold < 10){ R.log('添三堆营火的薪炭钱要十金，库里提不出，火堆就这么烧着。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('三堆新火从山脚一路点到关前。对面城头把火数了一遍，没说话（金 -10）。');
+      }}
+    ]},
+  { icon:'📐', name:'戟痕量命', ch:5,
+    text:'山脊上留着一道三十年的戟痕，深可入石。军中传说拿它量命：合戟这痕的人，明日的几合之内可以无恙。信的人排队去量，不信的人绕道而行——只有主帅，非从痕上过不可。',
+    opts:[
+      {t:'📐 依军中传说量痕（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('你伸手在痕上量了三寸，什么也没说。第三日军心涨了一分——传说被主帅认了（军心 +1）。');
+      }},
+      {t:'🚫 禁绝攀谈此事（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('你下了禁令，量痕的山脊被巡哨封了。夜里还是有人偷偷上去——比你早（军心 -1）。');
+      }},
+      {t:'⚒ 拓痕请匠入记室（金 -10）', run(R){
+        if(R.gold < 10){ R.log('拓痕要纸墨要工钱，十金提不出，拓帖之议作罢。'); return 'hold'; }
+        R.gold -= 10;
+        R.log('拓帖进了记室，从此记室里多了一卷《戟痕纪》。匠人拿的十金，值（金 -10）。');
+      }}
+    ]},
+  { icon:'🐎', name:'深蹄之印', ch:5,
+    text:'前哨在关下泥里发现蹄印，比寻常战马深两指、大一圈。猎户说：这样的马，昼夜奔袭百里不算事。把剩下的十一匹快马集中给亲卫明早接应，还是留在粮队保退路，马政官连夜清点等你话。',
+    opts:[
+      {t:'🐎 十一匹快马集中亲卫（补给 -1）', run(R){
+        if(R.RL.supplies < 1){ R.log('十一匹快马一夜要十一份精料，仓里匀不出，集中之议作罢。'); return 'hold'; }
+        R.addSupplies(-1);
+        R.log('十一匹快马并进亲卫栏，豆料喂足。明日它们要跑的，是回程的路（补给 -1）。');
+      }},
+      {t:'🌾 留作粮驮，稳住后路（-2 血）', run(R){
+        dmgSelf(2);
+        R.log('快马留给粮队，明晨的接应只能靠两条腿。你带着亲卫又踏查了一夜山道（-2 血）。');
+      }},
+      {t:'🐴 数匹充饵骑诱他下关（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('两匹快马披了主旗下了关道。饵放了，钩还没等到——骑手的老母先哭了（军心 -1）。');
+      }}
+    ]},
+  { icon:'🖋', name:'名字的账', ch:5,
+    text:'名册房清点入关名单，发现十几个名字报重，还有的对不上籍贯——各营把敢死的人名报串了。这张名单是明日城头点名用的：报上去的名，就是用命作保的账，一笔都不能糊。',
+    opts:[
+      {t:'🖋 逐一核对到三更（-3 血）', run(R){
+        dmgSelf(3);
+        R.log('你亲自一页页核到三更，串了的改名，重了的画圈。册子合上时，烛花爆了三回（-3 血）。');
+      }},
+      {t:'📜 就按名册点名（军心 -1）', run(R){
+        R.adjustMorale(-1);
+        R.log('名册原样发回各营。第二日点卯，有两个名字没人应（军心 -1）。');
+      }},
+      {t:'🪖 敢死队额上加饷（金 -30）', run(R){
+        if(R.gold < 30){ R.log('加饷要三十金现发，库里凑不出这笔，名册还照旧。'); return 'hold'; }
+        R.gold -= 30;
+        R.log('三十金连夜发到敢死队，喊名的嗓门都不一样了。名字串没串的，没人再提（金 -30）。');
+      }}
+    ]}
+];
+RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P4);
 /* 分章取池：走到哪一章就演哪一章的戏（ch:-1 为全章通用）。
    若某章专属奇遇不足，则回落通用池，保证第 2 层以后总能撞见剧情。 */
 function rlStoryPoolFor(ch){
@@ -2574,6 +3059,160 @@ function savePreferences(){
   try{ localStorage.setItem(PREFS_KEY, JSON.stringify({difficulty, speed:spd})); }catch(e){}
 }
 
+/* ==================== 🏆 战史（局外足迹账本：只记足迹，不加数值） ==================== */
+const HERO_LOG_KEY = 'sanguo_rps_herolog_v1';
+function loadHeroLog(){
+  try{ return JSON.parse(localStorage.getItem(HERO_LOG_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveHeroLog(hl){
+  try{ localStorage.setItem(HERO_LOG_KEY, JSON.stringify(hl)); }catch(e){}
+}
+/* 北伐落定（胜/败）时落账：每名武将的最深足迹与最近一局，跨局可回看——输了也往前走了一层 */
+function noteHeroLog(win){
+  try{
+    const h = (RL && RL.hero && RL.hero.ch) || null;
+    if(!h) return;
+    const hl = loadHeroLog();
+    const e = hl[h.id] || { runs:0, wins:0, best:null, last:null };
+    e.runs++;
+    if(win) e.wins++;
+    const rec = { win:!!win, diff:difficulty, chapter:(RL.chapter||0)+1,
+                  layer:RL.layer||0, battles:RL.battles||0,
+                  date:(new Date()).toISOString().slice(0,10) };
+    const newBest = !e.best || rec.layer > e.best.layer;
+    if(newBest) e.best = rec;
+    G.heroRec = { newBest:!!newBest, layer:rec.layer, hero:h.name, win:!!win };
+    e.last = rec;
+    hl[h.id] = e;
+    saveHeroLog(hl);
+  }catch(err){}
+}
+
+/* ==================== 📅 每日试炼（尖塔式：全服同种子，一天一签） ==================== */
+const DAILY_KEY = 'sanguo_rps_daily_v1';
+let dailySavedRnd = null;
+function dailyDateStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dailyHash(s){
+  let x = 2166136261 >>> 0;
+  for(let i = 0; i < s.length; i++){
+    x ^= s.charCodeAt(i);
+    x = Math.imul(x, 16777619) >>> 0;
+  }
+  return x;
+}
+function dailyRng(seed){
+  let a = seed >>> 0;
+  return function(){
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function loadDailyLog(){
+  try{ return JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveDailyLog(o){
+  try{ localStorage.setItem(DAILY_KEY, JSON.stringify(o)); }catch(e){}
+}
+function dailyHeroIdx(){ return dailyHash('hero:' + dailyDateStr()) % CHARS.length; }
+/* 探针用：观察当日随机流是否仍在接管（'seeded'）/ 已归还（'natural'） */
+function dailyRndState(){ return dailySavedRnd ? 'seeded' : 'natural'; }
+
+/* 每日开拔：把日期哈希成种子，将 Math.random 整体换成当日固定流——
+   路线、天时、军令、奇遇、掉落，全服同一天走的是同一条命。 */
+function startDailyRun(){
+  if(RL.active) return;
+  if(dailySavedRnd){ Math.random = dailySavedRnd; dailySavedRnd = null; }
+  const ds = dailyDateStr();
+  try{ dailySavedRnd = Math.random; Math.random = dailyRng(dailyHash('sanguo:' + ds)); }
+  catch(e){ dailySavedRnd = null; }
+  const h = CHARS[dailyHeroIdx()] || CHARS[0];
+  G.daily = { date: ds, hero: h.name };
+  G.dailyLast = null;
+  G.heroRec = null;
+  selectedId = h.id;
+  difficulty = 'normal';
+  setMode('roguelike');
+  startRoguelike();
+  syncDailyBar();
+}
+
+/* 一局收场（胜/败/弃皆算）：把当日最高足迹记进每日账本，并归还 Math.random */
+function endDailySession(win){
+  if(!G.daily) return;
+  const ds = G.daily.date;
+  let lastRun = { date: ds, layer: (RL.layer || 0), win: !!win, runs: 1, hero: G.daily.hero };
+  try{
+    const log = loadDailyLog();
+    const e = log[ds] || { hero: G.daily.hero, layer: 0, win: false, runs: 0 };
+    e.runs = (e.runs || 0) + 1;
+    if((RL.layer || 0) > (e.layer || 0)) e.layer = RL.layer || 0;
+    if(win) e.win = true;
+    lastRun.runs = e.runs; lastRun.layer = e.layer || 0; lastRun.bestWin = !!e.win;
+    log[ds] = e;
+    saveDailyLog(log);
+  }catch(err){}
+  G.daily = null;
+  G.dailyLast = lastRun;
+  syncDailyBar();
+  if(dailySavedRnd){ Math.random = dailySavedRnd; dailySavedRnd = null; }
+}
+
+function syncDailyBar(){
+  try{
+    const el = $('dailyRecTxt'); if(!el) return;
+    const ds = dailyDateStr();
+    const rec = loadDailyLog()[ds];
+    el.textContent = '今日主将 ' + ((CHARS[dailyHeroIdx()] || {}).name || '——') +
+      (rec ? ' · 最佳第 ' + (rec.layer || 0) + ' 层' + (rec.win ? '（已破关）' : ' · 尚未破关') : ' · 尚未开拔');
+  }catch(e){}
+}
+function openDailyModal(){
+  const ds = dailyDateStr();
+  const h = CHARS[dailyHeroIdx()];
+  const rec = loadDailyLog()[ds];
+  showModal('📅 每日试炼 · ' + ds,
+    '<p>今天的种子全场唯一：主将、路线、天时、军令、奇遇——大家走的都是同一条路，比的就是手上功夫。</p>' +
+    '<p>今日主将：<b>' + (h ? h.name : '——') + '</b>（锁死）· 难度：<b>老将</b></p>' +
+    (rec
+      ? '<p class="dim">今日战绩：已开拔 <b>' + rec.runs + '</b> 局 · 最佳 <b>第 ' + (rec.layer || 0) + ' 层</b>' + (rec.win ? ' · 已破关 🏆' : '') + '</p>'
+      : '<p class="dim">种子是死的，手是活的。输了可以再开拔——重开多少次，路线和骰子都和今天第一局一模一样。</p>'),
+    [{ t: '⚔️ 今日开拔（主将 ' + (h ? h.name : '——') + '）', run(){ startDailyRun(); } },
+     { t: '再想想', run(){} }]);
+}
+/* 落幕演出（纯展示层）：破关金光 / 止步玄幕，1.9 秒后自撤 */
+function rlShowdownFx(winFlag){
+  try{
+    const b = document.body;
+    if(!b || !b.classList) return;
+    b.classList.add(winFlag ? 'x-finalwin' : 'x-runlose');
+    setTimeout(() => { try{ b.classList.remove(winFlag ? 'x-finalwin' : 'x-runlose'); }catch(e2){} }, 1900);
+  }catch(e){}
+}
+/* 结算页追加线：战史新纪录 + 每日试炼收场（无记录返回空串，页面不变样） */
+function heroRecNote(){
+  try{
+    const r = G.heroRec;
+    if(!r || !r.newBest || !(r.layer > 0)) return '';
+    return '<br><b class="recflash">🏆 战史新纪录：主将 ' + (r.hero || '——') +
+      ' 最深至第 ' + r.layer + ' 层' + (r.win ? ' · 破关！' : '') + '</b>';
+  }catch(e){ return ''; }
+}
+function dailyNote(){
+  try{
+    const e = G.dailyLast || (G.daily ? loadDailyLog()[G.daily.date] : null);
+    if(!e) return '';
+    return '<br><span class="dim">📅 每日试炼（' + e.date + '）：本日最佳 <b>第 ' + (e.layer || 0) + ' 层</b>' +
+      (e.win || e.bestWin ? ' · 已破关' : '') + ' · 本日已开拔 ' + e.runs + ' 局</span>';
+  }catch(e){ return ''; }
+}
+
 /* ==================== 本场战斗数据（结算页战报） ==================== */
 const battleStats = { crits:0, cards:0, potions:0, items:0, ults:0, destiny:0,
                       maxCharge:0, dmgDealt:0, dmgTaken:0 };
@@ -2778,7 +3417,7 @@ const RELIC_SLOTS_BASE = 6, RELIC_SLOTS_MAX = 9;
 const RL = { active:false, hero:null, gold:0, map:[], layer:0, relics:[], relicSlots:RELIC_SLOTS_BASE, log:[], result:null,
              deck:[], drawPile:[], discard:[], hand:[], potions:[], pendingReward:null,
              curNode:null, battles:0, doctrine:null, morale:4, supplies:3,
-             chapter:0, mutators:[], orders:[], boons:[],
+             chapter:0, mutators:[], orders:[], boons:[], boonRanks:{},
              nodeHistory:[], flags:{}, report:null };
 /* 军令「重役」会占用格位，所以格位要等规则算完才定得下来 */
 function rlRelicSlots(){ return Math.max(1, Math.min(RELIC_SLOTS_MAX, (RL.relicSlots || RELIC_SLOTS_BASE) + rlOrderSlots())); }
@@ -3170,7 +3809,9 @@ function addFixedCard(id, up){
 const RL_SCENES = [
   { scene:['祁山的桑树刚抽新枝，大军就已出街亭。前军报来：张郃据城不下，山路窄处只能一车通行。',
             '你翻开地图，街亭那一点被朱笔圈了三遍。这里是北伐的第一道门——门不开，后面的所有路都是空谈。',
-            '帐中议兵到三更，三种主张争执不下：急进的、死守的、动嘴皮子的。你得当场定下来，明早出队就不改了。'],
+            '帐中议兵到三更，三种主张争执不下：急进的、死守的、动嘴皮子的。你得当场定下来，明早出队就不改了。',
+            '卤城的麦子黄透，驮队还堵在木门道上。张郃不硬碰，专往粮道下叉——半辈子山地仗打下来，他比谁都清楚饿比刀更快。夜里游哨带回两个生面孔的向导，供词对不上来路。利害就在这几日：粮到，祁山是路；粮尽，祁山是坟。',
+            '军议散得比往常晚。案上摊着三条道，争的都是几日口粮、几里山隘，没有人先提伤亡二字。你把灯芯挑亮，一句一句问下去，问到第三遍，帐中只剩呼吸。对面五十里外张郃的大营也亮着灯，火光隔着陇山对峙，两边的更鼓此起彼落——谁先熬不住，谁先把退路让出去。'],
     council:[
       {t:'🏃 轻装急进，先夺要道', d:'金币 +20，补给 −1，开局蓄力 +25%',
        run(){ RL.gold += 20; changeSupplies(-1, true); RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 25; }},
@@ -3183,7 +3824,9 @@ const RL_SCENES = [
     ]},
   { scene:['陈仓城门吊桥高悬，郝昭在城头设了十层女墙。冲车到了就被拍落，云梯还没靠上就着了火。',
             '粮道在秦岭栈道上一寸一寸挪，前军送来的不是战报，是欠粮的数目。攻得越久，越像是自己在围自己。',
-            '有人建议死攻，有人建议绕开，还有人想写一封劝降书。'],
+            '有人建议死攻，有人建议绕开，还有人想写一封劝降书。',
+            '陈仓城头立着十重女墙，吊桥昼夜高悬。郝昭守军不满千数，云梯未近先中火箭，冲车一靠便被绳系石磨砸断。围到第二十日，栈道运来的粮一斗都带一斗火气。又报：轻骑出了陈仓西谷，专截落单的运粮小队——攻城的人，快被城攻了。',
+            '营中开始算另一笔账：陈仓不过数百里小城，为它耗掉一季路程值不值。修了三封劝降书，城里回话的始终是同一支钉在辕门木桩上的箭。郝昭断粮断援，却守得像一支凿进山里的楔子——你不拔，他就在你背后生了根。'],
     council:[
       {t:'🔥 昼夜环攻，务必破城', d:'攻击 +3，但我军疲敝：最大生命 −6',
        run(){ RL.hero.atk += 3; RL.hero.maxHp = Math.max(20, RL.hero.maxHp - 6);
@@ -3195,7 +3838,9 @@ const RL_SCENES = [
     ]},
   { scene:['定军山两翼对屯，夏侯渊的旗号漫山遍野。此人用兵神速，千里袭人，从不给你列阵的时间。',
             '探马来报：他分兵去收新市，本阵反显单薄。这是一个稍纵即逝的缝隙，也可能是故意留给你钻的口袋。',
-            '老将的话在帐中回响：「夺汉中不难，难的是夺了以后还打得下去。」'],
+            '老将的话在帐中回响：「夺汉中不难，难的是夺了以后还打得下去。」',
+            '定军山对峙已半旬，夏侯渊的营盘一日一挪，快得像雁阵换位。探报：他亲引四百人出营补鹿角，本阵露出一道缝。缝隙是号令，也可能是饵。东侧山头望气的人断言可击，也断言：只此一击，不中即退。山风把三军的鼓点都压低了半分。',
+            '汉水北岸传出新话：有人偃旗息鼓，凭一座空营吓退了追兵，连伙夫都学会了摆旗。军中对汉水这步棋的传法越来越玄——是在赌运，还是在赌算，没人说得清。夏侯渊不认为险，他赌的是你粮脚比他的刀短：你的粮翻三重山，他的粮顺水行舟。你抢的是日子，不是山头。'],
     council:[
       {t:'⚡ 抢山夺隘，先发制人', d:'开局蓄力 +35%，攻击 +1',
        run(){ RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 35; RL.hero.atk += 1; }},
@@ -3206,7 +3851,9 @@ const RL_SCENES = [
     ]},
   { scene:['樊城外汉水连日暴涨，于禁的七军泡在泥里。庞德抬着一口棺材出阵，箭囊上绑着白布写的死字。',
             '水气入骨，军中开始有人咳血。曹军的船却已经造好，停在高处等你下去。',
-            '这一刻要定的不是打法，是敢不敢把后背交给这条河。'],
+            '这一刻要定的不是打法，是敢不敢把后背交给这条河。',
+            '汉水暴涨七日，选在此处决战，赌的是对方没把船造出来。斥候带回的确报却让人后背发凉：曹军水营藏在上游湾里，赭帆借洪流随时可下。庞德仍抬着棺巡行矢石之间，白马白袍，那张脸在箭雨里没有动过一寸。军心比水位涨得快——涨破线，勇气就成了凶器。',
+            '降旗还没晒干，新报又到：樊城父老扶老携幼上城助守，砖石草木统统搬上了女墙。这一仗对面守的不只是一座城，是身后数百里的家业。斥候回营问的第一句不是敌情，反而是：进了城，粮从哪里来？军议因此开到了三更。'],
     council:[
       {t:'🌊 决水灌营，同归于险', d:'首战敌方中毒 4 层，我方生命 −8',
        run(){ RL.hero.st.startPoisonOnce = (RL.hero.st.startPoisonOnce||0) + 4;
@@ -3219,7 +3866,9 @@ const RL_SCENES = [
     ]},
   { scene:['洛阳城下的司马懿不问战事，只问使者吃了几碗饭、家中妻儿安否。他算的不是兵力，是你的耐心。',
             '坚壁不战，任你怎么搦战，城头只挂一张琴。军中都传：冢虎在等人自己烂掉。',
-            '你手里还有最后的筹码——怎么花，决定这趟北伐能走多远。'],
+            '你手里还有最后的筹码——怎么花，决定这趟北伐能走多远。',
+            '洛阳不接战。司马懿把四门外的粮草收得干干净净，任你百般挑战，四门钉死如铁。他算准一桩事：你的军粮从汉中启程，到洛阳城下已是末路；他的粮，出城五十步就是仓廪。城头降下来的不是战书，是一袭巾帼妇人的衣装。',
+            '渭水的粮船三日后到埠，仓吏启封清点，报数只够十日之储。军中分作两派：一派主张围而不攻，坐待城内生变；一派主张焚桥断水，逼他出城。你盯着案上的洛阳形势图良久——这张图上，两军最先比拼的不是兵，是耐心。'],
     council:[
       {t:'💉 反间于朝', d:'此后每场战斗敌方首回合攻击 −3，金币 −40',
        run(){ RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3;
@@ -3233,7 +3882,9 @@ const RL_SCENES = [
     ]},
   { scene:['虎牢关前尘头大起，那杆方天画戟立在门楼之下，比任何军报都直白。',
             '吕布不设疑兵、不修壕沟，只把关门的门轴换了道新的——他算准了你会从正门进来。',
-            '这是最后一关：过了，还于旧都，六章的伤亡一并值回来；不过，史书就会换一个人来写这一段。'],
+            '这是最后一关：过了，还于旧都，六章的伤亡一并值回来；不过，史书就会换一个人来写这一段。',
+            '虎牢关的鼓一响，山道两侧的柴堆次第引燃，焰光把夜照成了昼。吕布横戟立于关前，赤兔踏出的火星混进戟尖的寒光。三英合力才挣得平手的故事传了三十年，今日换你执旗——身后是六年的北伐、三军与你的名。此关不开，中原无路。',
+            '斥候回报：关内既无一兵，也无粮山——鬼神吕布，一个人守关。比十万守军更荒谬，也教人更不敢近前。军中把连弩尽数抬上山脊，火光之下人人紧了紧绑腿。明早的第一合，谁都绊不得，也退不得。'],
     council:[
       {t:'⚔ 三军齐进，正面破关', d:'攻击 +4，防御 +6，但我方不能全须全尾地进去：生命 −12',
        run(){ RL.hero.atk += 4; RL.hero.def += 6; RL.hero.hp = Math.max(1, RL.hero.hp - 12); }},
@@ -3289,6 +3940,31 @@ const RL_ENDINGS = [
     cond:c => c.won && c.hpFrac >= 0.6,
     text:c => '连破 '+RL_CHAPTERS.length+' 章，'+c.name+' 身上甲缝未开，'+
       '回营清点依旧斩关夺旗如平常一日。史官写「如入无人之境」，这四个字比军功簿还重。' },
+  /* —— P4 新增：破关的另外六种收笔（story-patch-1，仅加收笔，不改档位数值） —— */
+  { id:'end_win_xueye', kind:'win', icon:'🌙', name:'雪夜叩关',
+    hint:'破关，且全程只打了 8 场以下战斗（不贪节点、直取关城）',
+    cond:c => c.won && c.battles <= 8,
+    text:c => '最后一关是大雪夜里叩开的：斥候冒雪探到一段无灯的女墙，一旅人衔枚踏雪，从背风崖壁攀上。天明拢军，主帅护手上冻了两层壳，卸甲时咔然作响。太史公曰：天不予时，地不予利，而人事尽焉——尽人事者，天亦听之。' },
+  { id:'end_win_jiaguang', kind:'win', icon:'✨', name:'甲光向日',
+    hint:'破关，且每一场战斗全都获胜（军容整肃，未折一阵）',
+    cond:c => c.won && c.battles >= 6 && c.wins === c.battles,
+    text:c => '受降之仪办得极短——城是打穿之后自己开门的。甲光在城楼上连成一线，照得河水发白。看惯了败军的老旗官说，这一趟的军容，与出关那日一模一样。太史公曰：师直为壮，既壮且整，有征而无溃，几近于礼。' },
+  { id:'end_win_bujin', kind:'win', icon:'📖', name:'不矜之功',
+    hint:'破关，且军心 2 以下而不违朝廷军令（低心而得志）',
+    cond:c => c.won && c.morale <= 2 && (c.orders||0) === 0,
+    text:c => '捷报入京那日，主帅在帐中卸甲读书，像什么都没发生过。朝廷来使问破敌方略，他把功劳前后数了三遍，一处也没数到自己头上。太史公曰：功成而弗居者其功久，名显而愈谦者名远，史册可鉴。' },
+  { id:'end_win_hujang', kind:'win', icon:'🏺', name:'壶浆相迎',
+    hint:'破关，且踏足 22 处以上节点（一路走一路有人迎）',
+    cond:c => c.won && c.nodes >= 22,
+    text:c => '大军过境，提壶捧浆的百姓沿路排出关外三十里。有老者按着孙儿的手教他认：就是不吃我们麦子的那支队伍。三处城门未动刀兵自行开了。太史公曰：得土地者一时之强，得人心者百世之基——况复两者兼之。' },
+  { id:'end_win_canglin', kind:'win', icon:'🧺', name:'满仓之胜',
+    hint:'破关，且余金 300 以上、补给 6 以上（班师仓廪犹满）',
+    cond:c => c.won && c.supplies >= 6 && c.gold >= 300,
+    text:c => '入关那日仓廪犹满：最后一队驮马进营，帐外的麦垛堆得比雉堞还高，军需官照册画押一笔未借。这一仗打的不是勇，是节流——没让一粒粮白白烧成灰。太史公曰：善战者无赫赫之功，善筹粮者无嗷嗷之众，此之谓也。' },
+  { id:'end_win_yilv', kind:'win', icon:'🏴', name:'一旅独还',
+    hint:'破关，且身负遗物 4 件以上、主帅生命不足五成',
+    cond:c => c.won && c.relics >= 4 && c.hpFrac <= 0.5,
+    text:c => '第六关既克，营门点卯鸦雀无声——出塞十个带回来的不足半数，辎重十去其七。接风的酒温了三遍无人举杯，主帅把空座一一望过，才说：都回来就好。太史公曰：兵者凶器，胜负乃兵家常事；重伤而能自全，是谓哀兵之胜。' },
   { id:'zhenlv', kind:'win', icon:'🏇', name:'振旅还都',
     hint:'全胜通关（最常见的正结局）',
     cond:c => c.won,
@@ -3332,6 +4008,31 @@ const RL_ENDINGS = [
       '走到第 '+((c.ch+1))+' 章【'+c.chName+'】，军令上写要他守住的东西，'+
       '史书上写的是他没能守住自己。'+c.rival+' 收尸时把那三道令文叠好放进匣中，'+
       '只在封条上留了四个字：「令未偿，人先偿。」' },
+  /* —— P4 新增：败局的四种收笔与两条归因（窄条件先中，不抢既有专页） —— */
+  { id:'end_lose_mage', kind:'lose', icon:'🐎', name:'马革之烈',
+    hint:'败北，且打了 12 场以上硬仗、胜过 8 场之后的最后一战',
+    cond:c => !c.won && !c.draw && c.battles >= 12 && c.wins >= 8,
+    text:c => '最后一战他没有退：亲兵三番拽缰，三番挣回阵中。殁后军中裹尸的白布不足，撕了半面军旗替他扎裹，另外半面留作记认。太史公曰：青山无处不埋骨，男儿何须一面旗——纵旗折骨碎，其志不腐。' },
+  { id:'end_lose_zhenmei', kind:'lose', icon:'🛡', name:'枕戈未捷',
+    hint:'败北，且战斗未满 8 场、军心补给俱在（有序转进）',
+    cond:c => !c.won && !c.draw && c.battles <= 8 && c.morale >= 2 && c.supplies >= 2,
+    text:c => '撤军令下得极静，各营按章次收拢，脚步齐得像怕吵醒什么。过最后一座桥时，殿后的老卒回头望了一眼：关还是那座关，鼓还是那面鼓。太史公曰：尚枕戈而未捷，非战之罪，势也。势可蓄而不可挥霍，此败可为后图。' },
+  { id:'end_lose_xiagu', kind:'lose', icon:'🕳', name:'峡谷驻踪',
+    hint:'败北，且只打了 4 场以下战斗、已过 5 处节点（借住一阵）',
+    cond:c => !c.won && !c.draw && c.battles <= 4 && c.nodes >= 5,
+    text:c => '败报传回那夜营中落雨，站岗的老卒把枪杆当成了拄杖——打了半辈子，头一回听见自家退军鼓。伤兵抬回来了，粮车推回去了，军旗在雨里洗了三遍仍不干净。太史公曰：一败而馁者亡，一败而思者存；存否，唯在主帅一心。' },
+  { id:'end_lose_toumehn', kind:'lose', icon:'🖋', name:'投笔之叹',
+    hint:'败北，且余金 120 以上而未动军略牌与天命（史笔空悬）',
+    cond:c => !c.won && !c.draw && c.gold >= 120 && c.cards === 0 && c.destiny === 0 && (c.items||0) === 0,
+    text:c => '史官奉命记这一路始末，写到中段搁了笔——不是无话，是一字一句都要隔着尘埃落下去。卷末空着三行，留给出征的人自己填，也可能永远空着。太史公曰：史笔如铁，铁只铸形不铸心；心之所向，愿与后世共见之。' },
+  { id:'end_cause_jiaobing', kind:'lose', icon:'🍷', name:'骄兵之祸',
+    hint:'败北，且军心 4 以上、余金 150 以上（箭囊还是满的）',
+    cond:c => !c.won && !c.draw && c.morale >= 4 && c.gold >= 150,
+    text:c => '败退清点，将士的箭囊竟是满的——一路胜得太顺，放箭越来越少，轻敌却越来越重。最后一战敌人翻上山梁时，半数弓手连弦都没上。太史公曰：胜而易骄者，未战先输一半；此役可为万世戒。' },
+  { id:'end_cause_gujun', kind:'lose', icon:'🗺', name:'孤军之失',
+    hint:'败北，且补给不足一车、余金不足二十（孤援断绝）',
+    cond:c => !c.won && !c.draw && c.supplies <= 1 && c.gold <= 20,
+    text:c => '补给断在哪一日，账上查得清清楚楚：先是六百里无援，再是百站无信，最后连一骑也望不见。全军不是败给敌将，是败给了山川形势与迢递的路。太史公曰：师无双至，粮无重载；孤军深入，虽有智者，不能善其后。' },
   /* —— 章数败局：走到哪一章，就停在哪一章的史书里 —— */
   { id:'chushi', kind:'lose', icon:'❄', name:'出师未捷',
     hint:'败于第 1 章 · 祁山',
@@ -3607,75 +4308,153 @@ function difficultyLabel(){ return DIFF_LABEL[difficulty] || '老将'; }
    逼玩家围着一个出招习惯去构筑（连出石头 / 轮换 / 相持就放火）。
    只允许使用既有原语（dealDamage / heal / 蓄力 / 格挡 / 灼烧 / 毒 / 预知）——
    一律不插进伤害管线，动管线等于把整张平衡表重洗，既有断言也全部作废。 */
+/* 兵势品阶（哈迪斯式"同一条反复请福就深化"）：一条兵势最多修到 Ⅳ。
+   up[] 依次是 Ⅱ/Ⅲ/Ⅳ 的说明，必须与 act() 里按 rlBoonRank() 取到的数值一字不差地对上——
+   文案与数值两套话是这一层最要命的事故，boonprobe.js 会逐条对表。
+   数值幅度按 boonsim.js 的实测排行给：立岳/蛇信/连势 已是最强三条，只微涨；
+   疾雷/断缕/无常/缠斗/察微 实测垫底，涨得大方些。 */
+const BOON_MAX_RANK = 4;
+const BOON_ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'];
 const RL_BOONS = [
   {id:'lieshi', icon:'🪨', name:'裂石', tag:'✊ 石头得势',
    desc:'出【✊石头】得势：追加 4 点无视防御伤害，并打散敌将 12% 蓄力。',
+   up:['追加 6 点伤害，打散 14% 蓄力。',
+       '追加 8 点伤害，打散 16% 蓄力。',
+       '追加 10 点伤害，打散 18% 蓄力；拳下碎石顺手回复 1 点生命。'],
    when:C => C.res === 0 && C.pm === 0,
-   act(){ dealDamage(ai, 4, player); rlDimCharge(ai, 12);
+   act(){ const r = rlBoonRank('lieshi');
+     dealDamage(ai, 2 + r * 2, player); rlDimCharge(ai, 10 + r * 2);
+     if(r >= 4) heal(player, 1);
      log('🪨 【裂石】石势沉厚，一拳砸开他的架势！','gold'); }},
   {id:'duanlv', icon:'✂️', name:'断缕', tag:'✌️ 剪刀得势',
    desc:'出【✌️剪刀】得势：截断敌将 18% 蓄力（自己 +10%），并回复 1 点生命。',
+   up:['截断 22% 蓄力（自己 +12%），回复 1 点生命。',
+       '截断 26% 蓄力（自己 +14%），回复 2 点生命。',
+       '截断 30% 蓄力（自己 +18%），回复 2 点生命。'],
    when:C => C.res === 0 && C.pm === 1,
-   act(){ const cut = Math.min(18, ai.charge||0); rlDimCharge(ai, 18); rlAddCharge(player, 10);
-     heal(player, 1);
-     log('✂️ 【断缕】割断了他攒势的弦，截断 '+cut+'% 蓄力。','gold'); }},
+   act(){ const r = rlBoonRank('duanlv'), cut = 14 + r * 4;
+     const n = Math.min(cut, ai.charge||0); rlDimCharge(ai, cut);
+     rlAddCharge(player, [10,12,14,18][r-1]);
+     heal(player, r >= 3 ? 2 : 1);
+     log('✂️ 【断缕】割断了他攒势的弦，截断 '+n+'% 蓄力。','gold'); }},
   {id:'juanqi', icon:'✋', name:'卷旗', tag:'✋ 布得势',
    desc:'出【✋布】得势：大旗一压，敌营火起——挂上【灼烧】（2 回合 × 3，无视格挡）。',
+   up:['灼烧改为 3 回合 × 3。',
+       '灼烧改为 3 回合 × 4。',
+       '灼烧改为 4 回合 × 4，火里还卷走他 6% 蓄力。'],
    when:C => C.res === 0 && C.pm === 2,
-   act(){ applyBurn(ai, 2, 3);
+   act(){ const r = rlBoonRank('juanqi');
+     applyBurn(ai, r >= 4 ? 4 : (r >= 3 ? 3 : 2), r >= 3 ? 4 : 3);
+     if(r >= 4) rlDimCharge(ai, 6);
      log('✋ 【卷旗】旗风卷火，敌营火起！','gold'); }},
   {id:'lianshi', icon:'🔁', name:'连势', tag:'同一手势连用得势',
    desc:'连续两回合出同一手势且得势：追加一发约 35% 攻击力的无视防御杀招。',
+   up:['倍率升到 40%（保底仍是 3 点）。',
+       '倍率升到 45%，保底 4 点。',
+       '倍率升到 50%，保底 5 点。'],
    when:C => C.res === 0 && C.prevPm != null && C.pm === C.prevPm,
-   act(){ const dmg = Math.max(3, Math.round(player.atk * 0.35));
+   act(){ const r = rlBoonRank('lianshi');
+     const dmg = Math.max([3,3,4,5][r-1], Math.round(player.atk * (0.30 + r * 0.05)));
      dealDamage(ai, dmg, player);
      log('🔁 【连势】旧招重出却更沉，追加 '+dmg+' 点伤害！','gold'); }},
   {id:'wuchang', icon:'🎭', name:'无常', tag:'换手得势',
    desc:'这一回合的手势与上一回合不同且得势：蓄力 +12%，回复 1 点生命。',
+   up:['蓄力 +16%，回复 1 点生命。',
+       '蓄力 +18%，回复 2 点生命。',
+       '蓄力 +22%，回复 2 点生命，顺手打散他 8% 蓄力。'],
    when:C => C.res === 0 && C.prevPm != null && C.pm !== C.prevPm,
-   act(){ rlAddCharge(player, 12); heal(player, 1);
-     log('🎭 【无常】招无定式，他摸不透你（蓄力 +12%）。','gold'); }},
+   act(){ const r = rlBoonRank('wuchang'), v = [12,16,18,22][r-1];
+     rlAddCharge(player, v); heal(player, r >= 3 ? 2 : 1);
+     if(r >= 4) rlDimCharge(ai, 8);
+     log('🎭 【无常】招无定式，他摸不透你（蓄力 +'+v+'%）。','gold'); }},
   {id:'chawei', icon:'👁', name:'察微', tag:'敌沿旧招',
    desc:'敌将连续两回合出同一手势：看破其路数（预知 +1，最多攒 2 次），并趁势回复 1 点生命。',
-   when:C => C.prevAm != null && C.am === C.prevAm && (player.st.peekCharges||0) < 2,
-   act(){ player.st.peekCharges = (player.st.peekCharges||0) + 1;
-     heal(player, 1);
+   up:['预知最多攒 3 次。',
+       '预知最多攒 3 次，回复改为 2 点生命。',
+       '预知最多攒 4 次，回复 2 点生命，看破处还补上 3 点伤害。'],
+   when:C => C.prevAm != null && C.am === C.prevAm && (player.st.peekCharges||0) < rlChaweiCap(),
+   act(){ const r = rlBoonRank('chawei');
+     player.st.peekCharges = (player.st.peekCharges||0) + 1;
+     heal(player, r >= 3 ? 2 : 1);
+     if(r >= 4) dealDamage(ai, 3, player);
      log('👁 【察微】他惯于沿用旧招，下一步已被你看破。','gold'); }},
   {id:'beishui', icon:'🩸', name:'背水', tag:'残血得势',
    desc:'我方生命 ≤ 50% 时得势：追加 3 点无视防御伤害，并回复 2 点生命。',
-   when:C => C.res === 0 && player.hp <= player.maxHp * 0.5,
-   act(){ dealDamage(ai, 3, player); heal(player, 2);
+   up:['追加 5 点伤害，回复 2 点生命。',
+       '追加 7 点伤害，回复 3 点生命；判线放宽到 ≤ 60%。',
+       '追加 9 点伤害，回复 3 点生命（判线 ≤ 60%）。'],
+   when:C => C.res === 0 && player.hp <= player.maxHp * (rlBoonRank('beishui') >= 3 ? 0.6 : 0.5),
+   act(){ const r = rlBoonRank('beishui');
+     dealDamage(ai, 1 + r * 2, player); heal(player, r >= 3 ? 3 : 2);
      log('🩸 【背水】绝地里反咬一口！','gold'); }},
   {id:'liaoyuan', icon:'🔥', name:'燎原', tag:'相持',
    desc:'每遇相持（平局）：给敌将挂上【灼烧】（2 回合 × 3），自己再 +6% 蓄力。',
+   up:['自己 +8% 蓄力。',
+       '灼烧改为 3 回合 × 3，自己 +8% 蓄力。',
+       '灼烧改为 3 回合 × 4，自己 +10% 蓄力，火边歇一口气回复 1 点生命。'],
    when:C => C.res === 2,
-   act(){ applyBurn(ai, 2, 3); rlAddCharge(player, 6);
+   act(){ const r = rlBoonRank('liaoyuan');
+     applyBurn(ai, r >= 3 ? 3 : 2, r >= 4 ? 4 : 3);
+     rlAddCharge(player, [6,8,8,10][r-1]);
+     if(r >= 4) heal(player, 1);
      log('🔥 【燎原】相持不下，火星落进他的粮堆。','gold'); }},
   {id:'jilei', icon:'⚡', name:'疾雷', tag:'首回合得势',
    desc:'每场战斗第一回合得势：追加 5 点无视防御伤害，并打散敌将 25% 蓄力。',
+   up:['追加 8 点伤害，打散 30% 蓄力。',
+       '追加 11 点伤害，打散 35% 蓄力。',
+       '追加 14 点伤害，打散 40% 蓄力。'],
    when:C => C.res === 0 && C.round === 1,
-   act(){ dealDamage(ai, 5, player); rlDimCharge(ai, 25);
+   act(){ const r = rlBoonRank('jilei');
+     dealDamage(ai, 5 + (r - 1) * 3, player); rlDimCharge(ai, 25 + (r - 1) * 5);
      log('⚡ 【疾雷】未及列阵，雷已先落！','gold'); }},
-  {id:'shexin', icon:'🐍', name:'蛇信', tag:'得势 25%',
+  {id:'shexin', icon:'🐍', name:'蛇信', tag:'得势挂毒',
    desc:'得势时有 25% 概率给敌将挂【中毒】4 点（逐回合发作）。',
-   when:C => C.res === 0 && Math.random() < 0.25,
+   up:['概率升到 30%。',
+       '概率升到 35%。',
+       '概率升到 40%，且毒发时顺带打散敌将 8% 蓄力。'],
+   /* 品阶只涨"挂得上身"的概率，绝不涨毒层数：毒是逐回合发作的跨回合通道，
+      层数×概率两个乘一起会在长回合里复利——boonsim 的品阶梯实测 Ⅳ/Ⅰ 能到 10.9 倍，
+      是全层最离谱的一条。Ⅳ 给的是蓄力干扰，不是第二口毒。 */
+   when:C => C.res === 0 && Math.random() < [0.25,0.30,0.35,0.40][rlBoonRank('shexin')-1],
    act(){ addPoison(ai, 4, player);
+     if(rlBoonRank('shexin') >= 4) rlDimCharge(ai, 8);
      log('🐍 【蛇信】拳风里藏了一口毒。','gold'); }},
   {id:'liyue', icon:'🛡', name:'立岳', tag:'失势', phase:'pre',
    desc:'失势时抢先立起 7 点格挡：他这一拳打上来，先被盾吃掉。',
+   up:['格挡涨到 9 点。',
+       '格挡涨到 11 点。',
+       '格挡涨到 13 点。'],
    when:C => C.res === 1,
-   act(){ player.st.block = (player.st.block||0) + 7; E({k:'block', side:'p', val:player.st.block});
-     log('🛡 【立岳】你在他出手前把盾立住了（格挡 +7）。','gold'); }},
+   act(){ const r = rlBoonRank('liyue'), blk = 7 + (r - 1) * 2;
+     player.st.block = (player.st.block||0) + blk; E({k:'block', side:'p', val:player.st.block});
+     log('🛡 【立岳】你在他出手前把盾立住了（格挡 +'+blk+'）。','gold'); }},
   {id:'chanchou', icon:'🪢', name:'缠斗', tag:'相持',
    desc:'每遇相持（平局）：缠住敌将使其蓄力 −8%，自己额外 +10% 蓄力。',
+   up:['敌 −12%，己 +12%。',
+       '敌 −15%，己 +15%。',
+       '敌 −18%，己 +18%，缠到他自己漏气，回复 1 点生命。'],
    when:C => C.res === 2,
-   act(){ rlDimCharge(ai, 8); rlAddCharge(player, 10);
+   act(){ const r = rlBoonRank('chanchou'), v = [8,12,15,18][r-1];
+     rlDimCharge(ai, v); rlAddCharge(player, v + 2);
+     if(r >= 4) heal(player, 1);
      log('🪢 【缠斗】他抽不开手，你反而喘过气来。','gold'); }}
 ];
 const RL_BOON_BY_ID = {};
 RL_BOONS.forEach(b => RL_BOON_BY_ID[b.id] = b);
 function boonList(){ return (RL.boons || []).map(id => RL_BOON_BY_ID[id]).filter(Boolean); }
 function rlHasBoon(id){ return (RL.boons || []).indexOf(id) >= 0; }
+/* 品阶：没记过的按 Ⅰ 算；脏 id / 超界一律夹到 [1, BOON_MAX_RANK]，绝不让 act() 拿到 undefined */
+function rlBoonRank(id){
+  const r = RL.boonRanks ? RL.boonRanks[id] : 0;
+  return (typeof r === 'number' && r >= 1) ? Math.min(BOON_MAX_RANK, Math.floor(r)) : 1;
+}
+function rlChaweiCap(){ return [2,3,3,4][rlBoonRank('chawei')-1]; }
+/* 当前品阶该显示哪一句：Ⅰ 用 desc，Ⅱ~Ⅳ 用 up[] 里对应的那条 */
+function boonText(b){
+  const r = rlBoonRank(b.id);
+  return r <= 1 ? b.desc : ((b.up && b.up[r-2]) || b.desc);
+}
+function boonLabel(b){ return b.icon + ' ' + b.name + BOON_ROMAN[rlBoonRank(b.id)]; }
 /* 精确增减蓄力：gainCharge 走的是武将系数与天气，兵势要的是"就说 12% 就给 12%" */
 function rlAddCharge(f, amt){
   if(!f || !f.alive || !amt) return;
@@ -3703,10 +4482,12 @@ function rlBoonTick(C, phase){
     if(bs[i].when(C)) bs[i].act(C);
   }
 }
-/* 抽兵势：与 rollRelic 同一套"排除已持有"纪律，池空了就返回短列表 */
+/* 抽兵势：没学过的、以及学到手但还没修到 Ⅳ 的，都还在池子里。
+   池空了（十二条全修满）就返回短列表，由调用方给一句解释。 */
+function rlBoonRoom(id){ return rlHasBoon(id) === false || rlBoonRank(id) < BOON_MAX_RANK; }
 function rollBoons(n, exclude){
   const used = exclude || [];
-  const pool = RL_BOONS.filter(b => used.indexOf(b.id) < 0 && rlHasBoon(b.id) === false);
+  const pool = RL_BOONS.filter(b => used.indexOf(b.id) < 0 && rlBoonRoom(b.id));
   const out = [];
   for(let i = 0; i < n && pool.length; i++){
     const k = Math.floor(Math.random() * pool.length);
@@ -3721,36 +4502,61 @@ function openBoonList(){
   const bs = boonList();
   showModal('🀄 本局兵势 · '+bs.length+' 条',
     bs.length
-      ? bs.map(b => '<p>'+b.icon+' <b>'+b.name+'</b>（'+b.tag+'）—— '+b.desc+'</p>').join('')+
-        '<p class="dim">兵势在⛩️ 祭坛「兵势请福」处三选一习得，同一条不会重复出现，本局打完即散。</p>'
+      ? bs.map(b => {
+          const r = rlBoonRank(b.id);
+          const nxt = r < BOON_MAX_RANK ? '<span class="dim"> 再求一次可进 '+BOON_ROMAN[r+1]+'：'+b.up[r-1]+'</span>' : '';
+          return '<p>'+boonLabel(b)+'（'+b.tag+'）—— '+boonText(b)+' '+nxt+'</p>';
+        }).join('')+
+        '<p class="dim">兵势在⛩️ 祭坛「兵势请福」与🛒 行商的请福卷处三选一求得；已学过的再求一次就深化一层，最多修到 Ⅳ，本局打完即散。</p>'
       : '<p>尚未学得兵势。北上途中留意⛩️ 祭坛。</p>',
     [{t:'返回', run(){ renderMapScreen(); }}]);
 }
 function gainBoon(id){
   const b = RL_BOON_BY_ID[id];
-  if(!b || rlHasBoon(id)) return false;
+  if(!b) return false;
+  RL.boonRanks = RL.boonRanks || {};
+  if(rlHasBoon(id)){
+    const r = rlBoonRank(id);
+    if(r >= BOON_MAX_RANK) return false;
+    RL.boonRanks[id] = r + 1;
+    log('🀄 兵势精进：'+boonLabel(b)+'——'+boonText(b),'gold');
+    renderMapScreen();
+    saveRoguelike();
+    return true;
+  }
   RL.boons.push(id);
+  RL.boonRanks[id] = 1;
   log('🀄 兵势已入营：'+b.icon+'【'+b.name+'】'+b.desc,'gold');
   renderMapScreen();
   saveRoguelike();
   return true;
 }
-/* after() 让调用方决定后续（祭坛要顺手结掉节点，军议不能重复弹窗） */
-function openBoonChoice(node, after){
+/* after() 让调用方决定后续（祭坛要顺手结掉节点，军议不能重复弹窗）。
+   fromShop：行商的请福卷是花过钱的，"弃法改取 18 金"那条退路就不该再摆出来。 */
+function openBoonChoice(node, after, fromShop){
   const pool = rollBoons(3, []);
   if(!pool.length){
-    log('🀄 军中兵势已尽数学过，再无新法可求。','sys');
+    log('🀄 十二路兵势都已修到极处，军中再无进境可求。','sys');
     if(after) after(); else completeNode(node);
     return;
   }
   showModal('🀄 兵势 · 三选一',
-    '老帅把三种打法摆在你面前：<b>兵势改的是你这一拳怎么生效</b>——学一条就在本局一直生效，同一条不会再出现第二次。'+
+    (fromShop ? '货郎把那卷破纸摊在案上：<b>兵势改的是你这一拳怎么生效</b>——学一条就在本局一直生效；'
+              : '老帅把三种打法摆在你面前：<b>兵势改的是你这一拳怎么生效</b>——学一条就在本局一直生效；')+
+    '已经上身的再求一次就<b>深化一层</b>（最多修到 Ⅳ）。'+
     '<p class="dim">当前兵势 '+boonList().length+' 条：'+
-    (boonList().map(b => b.icon+b.name).join('、') || '尚无')+'</p>',
-    pool.map(b => ({
-      t:b.icon+' '+b.name+'（'+b.tag+'）— '+b.desc,
-      run(){ gainBoon(b.id); if(after) after(); else completeNode(node); }
-    })).concat([{t:'💰 不学法，改取 18 金', run(){
+    (boonList().map(b => boonLabel(b)).join('、') || '尚无')+'</p>',
+    pool.map(b => {
+      const owned = rlHasBoon(b.id);
+      const nr = owned ? rlBoonRank(b.id) + 1 : 1;
+      return owned
+        ? {t:b.icon+' '+b.name+' 精进 '+BOON_ROMAN[nr]+'（现 '+BOON_ROMAN[nr-1]+'）— '+b.up[nr-2],
+           run(){ gainBoon(b.id); if(after) after(); else completeNode(node); }}
+        : {t:b.icon+' '+b.name+'（'+b.tag+'）— '+b.desc,
+           run(){ gainBoon(b.id); if(after) after(); else completeNode(node); }};
+    }).concat(fromShop
+      ? [{t:'🚪 不读卷，先收进行囊', run(){ if(after) after(); else completeNode(node); }}]
+      : [{t:'💰 不学法，改取 18 金', run(){
       RL.gold += 18; log('你婉拒了兵势，换来 18 金军费。','gold');
       if(after) after(); else completeNode(node);
     }}]));
@@ -3954,11 +4760,35 @@ function openCouncil(){
     })));
 }
 
+/* —— P4 阵前搦战文言（story-patch-1 交付：六章三式——擂鼓／辱敌／深垒，纯展示） —— */
+const RL_PARLEY_P4 = [
+  { a:'擂鼓三通，张郃按辔而出，甲上无尘：「闻巧变之名三十年。出祁山易，出陇山难——把阵型全数带来罢，缺哪一路，我替你指。」回营传令，明晨卯时，卤城东原会猎。',
+    b:'阵前扬声：「国之宿将，如今只会替人守着军令过日子？巧变巧变，变到头来连自家的章程都定不了！」张郃鞭梢在掌心绕了两圈，只回了四个字：明日阵上。',
+    c:'鸣金收锋，深沟高垒不出一卒：「陇山寒重，先避其锐；他巧变千般，变不出一个肯送上门的对手。」张郃连书挑战三次，营中回令始终二字：备着。' },
+  { a:'郝昭扶着垛口站定，声音不高，却压过满城风声：「围我二十日，城头还剩九重女墙。要上来便上——陈仓的这方土，寸步不让。」说罢转身，吩咐再添第二炉火油。',
+    b:'阵前讥其孤守：「千人小城也配称将？把名号报回后方，好教他们知道替谁收尸！」郝昭探手取弓，朝叫阵的鼓架虚悬一箭：「姓名留着教子弟用——你，不配。」',
+    c:'下令收锋，围而不攻：「摇他不动就饿他不动？也好，省下云梯的木料。」郝昭在城头看自家粮仓加高，又教民夫往井里续水——两头都等着，等对方的箭头先钝。' },
+  { a:'夏侯渊一骑当先横于阵前，尘未落定，人已在百步之内：「千里袭人者，不与人喘息之机——你的喘息，就在这儿。」话音未落他已拨马归阵，只留一句：明晨鼓再会。',
+    b:'他把头盔挂上枪尖晃了晃：「笑话传出去，说夏侯渊连叫阵都不应，你替我把话带回去？」满营哄笑，笑声撞在盾面上，火气比刀气先升了起来。',
+    c:'收阵入垒，拒不应战：「他一日一挪营，快则快矣，锐气也随日头一起滑。且教他绕。」军令传到山脊，各营增筑鹿角——图穷匕见之前，谁也不许先伸手。' },
+  { a:'庞德抬着那口棺材走到阵前，白驹白袍，令旗往地里一插：「今日之战，我的葬地在前，你们的胜场在后。」两军肃然，那口棺材反过来把两边的火气都压住了。',
+    b:'「降将的船还泡在泥里，抬口棺材就算尽忠了？」骂声未落，庞德回手一箭钉在鼓架旁三寸：「这一箭，是我替你收尸的地方——想清楚再骂第二句。」',
+    c:'大军后移三里，背山结阵：「水涨了七日，锋头正恶，不与浪争。」庞德沿阵巡了三圈没寻到缺口，折回高埠，把棺材挪到能望见全阵的高处——他也在等你的破绽，等你先动。' },
+  { a:'城上无人应阵。鼓点敲到第三轮，司马懿的声音才顺着风送下来：「你的粮从汉中启程，到洛阳城下已是末路；我的粮，出城五十步。要战，先算好日子。」话毕，偌大洛阳静得像空了一般。',
+    b:'阵前掷下巾帼妇人之服：「帷幄有名，阃外无人！」城中报来：司马懿收衣而笑，当日食如常、睡如常——这一套激将法他收了，火气丝毫未动，只把功课做足了一寸。',
+    c:'厚垒深堑，坚壁清野，下令全军鸦过不落。司马懿连七日不出，城头换了三班岗。第八日，沙盘上你的粮道被朱笔描了三道——攻不动的城，等得起的军，两边都在熬。' },
+  { a:'吕布横戟立于关前，戟尖点地三声脆响：「从前三英合力才挣个平手，今日独你一人来，胆气可嘉。」赤兔马打着响鼻，寒光顺着火把淌下来，「上罢——今日我不留手。」',
+    b:'阵前骂战，连旧事都搬了出来，满营助骂声如潮。吕布不怒反笑，笑声里带着铁锈味：「帽子是别人给的，人头是自己的——帽子旧了，戟是新的。想要，排好队来拿。」',
+    c:'大军后撤半山结阵，连弩上高崖：「一人一骑守空关，等的就是一拥而上的饿狼。谁冒进，谁先死。」吕布在关上看了一晌，回身把大戟靠上了墙——他也歇了，像一头把力气省到最后一下的兽。' }
+];
+
 /* ---------- Boss 阵前搦战（开战前的最后一层叙事与取舍） ---------- */
 function bossParley(node){
   const ch = rlChapter();
+  const P4 = RL_PARLEY_P4[Math.min(RL.chapter || 0, RL_PARLEY_P4.length - 1)] || null;
   showModal('🥁 阵前 · '+ch.boss+'「'+ch.title+'」',
     rlBossBanter().map(l => '<p>'+l+'</p>').join('')+
+    (P4 ? '<p>'+P4.a+'</p><p class="dim">'+P4.b+'</p><p class="dim">'+P4.c+'</p>' : '')+
     '<p class="dim">搦战之语不出于将令，而出于全军之眼。此刻的选择，会在开战一刻同时落在双方身上。</p>',
     [{t:'⚔ 擂鼓搦战，照常交锋',
       run(){ node.parleyDone = true; startRLBattle(node); }},
@@ -4070,7 +4900,7 @@ function saveRoguelike(){
         doctrine: RL.doctrine, morale: RL.morale, supplies: RL.supplies,
         origin: RL.origin || null,
         chapter: RL.chapter || 0, mutators: RL.mutators || [], orders: RL.orders || [],
-        boons: RL.boons || [],
+        boons: RL.boons || [], boonRanks: RL.boonRanks || {},
         nodeHistory: RL.nodeHistory, flags: RL.flags, report: RL.report
       },
       hero: saveFighter(RL.hero),
@@ -4120,6 +4950,14 @@ function resumeRoguelike(){
   RL.orders = snap.rl.orders || [];
   /* 兵势同理：改表后旧档里的未知 id 会让回合结算找不到 when/act，直接滤掉 */
   RL.boons = (snap.rl.boons || []).filter(id => RL_BOON_BY_ID[id]);
+  /* 品阶跟着 id 一起重建：Ⅰ 是隐式的（rlBoonRank 默认回 1），所以只存 2 以上。
+     未知 id 的残档、小数/超上限的脏数值都会把「文案说 Ⅳ、数值走 Ⅱ」撕开，一律夹掉。 */
+  RL.boonRanks = {};
+  const boonRankSnap = snap.rl.boonRanks || {};
+  RL.boons.forEach(id => {
+    const r = Math.floor(Number(boonRankSnap[id]));
+    if(r >= 2) RL.boonRanks[id] = Math.min(BOON_MAX_RANK, r);
+  });
   RL.nodeHistory = snap.rl.nodeHistory || [];
   RL.flags = snap.rl.flags || {};
   RL.report = Object.assign(newRLReport(), snap.rl.report || {});
@@ -6242,6 +7080,7 @@ function startRoguelike(){
      天时修饰仍留在 genMap 之后 roll，既有种子测试的地图结构因此不变。 */
   RL.orders = [];
   RL.boons = [];               /* 兵势是本局的构筑，绝不能串到下一局 */
+  RL.boonRanks = {};
   RL.map = genMap(RL.chapter);
   RL.deck = starterDeck();
   RL.drawPile = []; RL.discard = []; RL.hand = [];
@@ -6317,6 +7156,8 @@ function rlFinish(){
                   variant: (n && n.variant) || '' });
     awardRLMerit('lose');
     RL.active = false; RL.result = 'lose';
+    noteHeroLog(false);
+    endDailySession(false);
     clearRoguelikeSave();
     G.over = true; G.result = 'lose'; E({k:'over'});
     return;
@@ -6325,6 +7166,8 @@ function rlFinish(){
     reportRLBattle('win', G.round);
     awardRLMerit('win');
     RL.active = false; RL.result = 'win'; clearRoguelikeSave();
+    noteHeroLog(true);
+    endDailySession(true);
     G.over = true; G.result = 'win'; E({k:'over'}); return;
   }
   if(n.type === 'boss'){
@@ -6335,6 +7178,8 @@ function rlFinish(){
        只有最后一章（虎牢关·吕布）被诛才算整趟北伐功成。 */
     if(!rlIsFinalChapter()){ advanceChapter(); return; }
     RL.active = false; RL.result = 'win'; clearRoguelikeSave();
+    noteHeroLog(true);
+    endDailySession(true);
     G.over = true; G.result = 'win'; E({k:'over'});
     return;
   }
@@ -7182,6 +8027,8 @@ function openEvent(node){
           session++; busy = false;
           rlDeathNote({ kind:'event', event: rlFill(e.name) });
           RL.active = false; RL.result = 'lose';
+          noteHeroLog(false);
+          endDailySession(false);
           clearRoguelikeSave();
           G.over = true; G.result = 'lose'; G.shown = true;
           stats.plays++; stats.loses++; saveStats(); renderRecord();
@@ -7190,7 +8037,8 @@ function openEvent(node){
           $('resultTitle').textContent = '陨落 · 《'+_ie.e.name+'》';
           $('resultTitle').className = 'lose';
           $('resultText').innerHTML = '你在一场奇遇中丢了性命…<br>本次北伐止步第 <b>'+RL.layer+'</b> 层。'+
-            rlEndingHtml(_ie.e, _ie.c, _iNew)+rlRecapHtml();
+            rlEndingHtml(_ie.e, _ie.c, _iNew)+rlRecapHtml()+heroRecNote()+dailyNote();
+          rlShowdownFx(false);
           $('overlay').classList.remove('hidden');
           return true;
         }
@@ -7244,7 +8092,7 @@ function openRemoveList(onDone, onCancel){
 
 function openShop(node){
   const goods = { cards: randomCards(3, 'shop'), potions: shuffle(POTIONS).slice(0,2),
-                  relic: rollRelic('shop'), removed:false, supplyStock:1, refreshCost:8 };
+                  relic: rollRelic('shop'), removed:false, supplyStock:1, boonStock:1, refreshCost:8 };
   function render(){
     const opts = [];
     goods.cards.forEach((c,i) => opts.push({
@@ -7267,6 +8115,16 @@ function openShop(node){
       run(){
         if(RL.gold < 18){ log('金币不足','bad'); return false; }
         RL.gold -= 18; goods.supplyStock = 0; changeSupplies(2); render(); return false;
+      }
+    });
+    if(goods.boonStock > 0 && RL_BOONS.some(b => rlBoonRoom(b.id))) opts.push({
+      t:'🀄 兵势请福卷　60 金　— 一次三选一：新法上身，或把已上身的深化一层（本店限购 1 次）',
+      run(){
+        if(RL.gold < 60){ log('金币不足','bad'); return false; }
+        RL.gold -= 60; goods.boonStock = 0;
+        log('🀄 货郎从怀里摸出一卷封了口的麻纸：「帐下识字的不少，识打法的只你一个。」','gold');
+        openBoonChoice(node, () => render(), true);
+        return false;
       }
     });
     if(RL.relicSlots < RELIC_SLOTS_BASE + 2) opts.push({
@@ -7699,6 +8557,35 @@ function renderRLBar(){
 }
 
 /* ---------- 北伐地图界面 ---------- */
+/* 📜 每日行军签：按真实日期轮换的风味签文（纯风味与史感，不暗示任何数值加成） */
+const RL_SIGNS = [
+  '三军未动，粮草先行——补给见底之前，先想好吃饭的路。',
+  '善战者，致人而不致于人——先压住手，看对方先出什么刀。',
+  '兵之情主速——乘胜之气正盛，能多赶一层是一层。',
+  '胜可知而不可为——打得过才打，打不过就绕。',
+  '怒气是攒出来的场面——满格那一拳，别浪费。',
+  '知己知彼，百战不殆——望楼看过的路，走得更踏实。',
+  '以正合，以奇胜——出其不意的一拳，胜过十次蛮力。',
+  '军无辎重则亡——金子该花就花，背不动的是命。',
+  '将者，智信仁勇严——今天先信自己这一拳。',
+  '善败者不亡——今晚败了，明日将作府见。',
+  '强弩之末，势不能穿鲁缟——留一口气，留给死路那一边。',
+  '上兵伐谋——先读词条，再落子。',
+  '攻心为上——军心正旺的时候，正是用兵之时。',
+  '一鼓作气，再而衰，三而竭——连战折军心，篝火该歇就歇。',
+  '水无常形，兵无常势——这局攒下的兵势，就是你的无常。',
+  '虎牢关上，吕布等的是攒够劲的你。',
+  '药水留一口，明日再战；药水留三口，明日更惜命。',
+  '北伐不必问吉凶——路，是自己一层一层走出来的。'
+];
+function dailySign(){
+  let d = '';
+  try{ d = (new Date()).toISOString().slice(0, 10); }catch(e){ d = ''; }
+  let x = 7;
+  for(let i = 0; i < d.length; i++) x = (x * 131 + d.charCodeAt(i)) | 0;
+  const idx = Math.abs(x) % RL_SIGNS.length;
+  return '其'+(idx+1)+'：'+RL_SIGNS[idx];
+}
 function renderMapScreen(){
   const h = RL.hero;
   const pct = Math.max(0, h.hp/h.maxHp*100);
@@ -7719,31 +8606,32 @@ function renderMapScreen(){
     '<div class="hpbar"><div class="hpfill '+cls+'" style="width:'+pct+'%"></div></div>'+
     '<div class="hptext">'+h.hp+' / '+h.maxHp+' · ⚔攻击 '+h.atk+' · 🛡防御 '+effectiveDef(h)+'% · 🃏卡组 '+
       RL.deck.length+' 张 · 🧪药水 '+RL.potions.filter(Boolean).length+'/3</div>'+
-    '<div class="rlmeta"><span>🚩 第 <b>'+((RL.chapter||0)+1)+' / '+RL_CHAPTERS.length+'</b> 章 · <b>'
+    '<div class="rlmeta"><span class="rlstate">🚩 第 <b>'+((RL.chapter||0)+1)+' / '+RL_CHAPTERS.length+'</b> 章 · <b>'
       +_chap.name+'</b>　守关敌将：<b>'+_chap.boss+'</b>　（有效层数 '+rlFoeLevel()+'）</span></div>'+
-    (_muts.length ? '<div class="rlmeta"><span>🎲 本局天时：'+
+    (_muts.length ? '<div class="rlmeta"><span class="rlstate">🎲 本局天时：'+
       _muts.map(m => m.icon+' <b>'+m.name+'</b> '+m.desc).join('　｜　')+'</span></div>' : '')+
-    (_ords.length ? '<div class="rlmeta"><span>⚖ 朝廷军令（'+difficultyLabel()+'）：'+
+    (_ords.length ? '<div class="rlmeta"><span class="rlstate">⚖ 朝廷军令（'+difficultyLabel()+'）：'+
       _ords.map(o => o.icon+' <b>'+o.name+'</b> '+o.desc).join('　｜　')+'</span></div>' : '')+
-    (boonList().length ? '<div class="rlmeta rlboons"><span>🀄 本局兵势：'+
-      boonList().map(b => '<b class="boonchip">'+b.icon+' '+b.name+'</b>').join('　')+
+    (boonList().length ? '<div class="rlmeta rlboons"><span class="rlstate">🀄 本局兵势：'+
+      boonList().map(b => '<b class="boonchip" title="'+boonText(b)+'">'+boonLabel(b)+'</b>').join('　')+
       '<button id="btnBoonView">看详解</button></span></div>' : '')+
     '<div class="rlmeta">'+
-      '<span>🗺 当前战区：<b>'+region.name+'</b></span>'+
-      '<span title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
-      '<span>📦 补给：<b>'+RL.supplies+'</b></span>'+
-      '<span>📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
-      (RL.flags.scouted ? '<span>🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
+      '<span class="rlstat">🗺 当前战区：<b>'+region.name+'</b></span>'+
+      '<span class="rlstat" title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
+      '<span class="rlstat">📦 补给：<b>'+RL.supplies+'</b></span>'+
+      '<span class="rlstat">📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
+      (RL.flags.scouted ? '<span class="rlstat">🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
     '</div>'+
-    '<div class="rlmeta"><span>🪖 军心三档：<b class="moraleGood">≥4 → 本战起始格挡 +4、怒气 +5%</b>'+
+    '<div class="rlmeta"><span class="rlnote">🪖 军心三档：<b class="moraleGood">≥4 → 本战起始格挡 +4、怒气 +5%</b>'+
       '　｜　<b>=3 → 无效果</b>'+
       '　｜　<b class="moraleBad">≤2 → 敌方开场怒气 +10%（Boss 战同样生效）</b>'+
       '　——　当前：<b class="'+mNow[1]+'">'+mNow[0]+'</b></span></div>'+
-    '<div class="rlmeta"><span>🪖 每打完一场非 Boss 战军心 −1（连战折损）；军道 +2、粮道 +1 可补回来，秘径不补会一路下跌。</span></div>'+
-    '<div class="rlmeta"><span>💡 押注是高风险高回报；有读心或望楼提示时，押 ×2 更容易兑现。</span></div>'+
-    (RL.flags.scoutAid ? '<div class="rlmeta"><span>🗺 侦察助益：下一场非 Boss 战敌军生命 -'+RL.flags.scoutAid+'%。</span></div>' : '')+
+    '<div class="rlmeta"><span class="rlnote">🪖 每打完一场非 Boss 战军心 −1（连战折损）；军道 +2、粮道 +1 可补回来，秘径不补会一路下跌。</span></div>'+
+    '<div class="rlmeta"><span class="rlnote">💡 押注是高风险高回报；有读心或望楼提示时，押 ×2 更容易兑现。</span></div>'+
+    '<div class="rlmeta"><span class="rlnote">📜 今日行军签 · '+dailySign()+'</span></div>'+
+    (RL.flags.scoutAid ? '<div class="rlmeta"><span class="rlnote">🗺 侦察助益：下一场非 Boss 战敌军生命 -'+RL.flags.scoutAid+'%。</span></div>' : '')+
     '<div class="rlprogress" aria-label="北伐进度"><i style="width:'+progress+'%"></i></div>'+
-    '<div class="rlmeta"><button id="btnDeckView">📚 查看卡组</button><span>进度 '+Math.min(RL.layer, totalLayers)+'/'+totalLayers+'</span></div>'+
+    '<div class="rlmeta"><button id="btnDeckView">📚 查看卡组</button><span class="rlstat">进度 '+Math.min(RL.layer, totalLayers)+'/'+totalLayers+'</span></div>'+
     '<div class="potions" id="mapPotionRow" style="margin-top:8px"></div>';
   $('rlGold').innerHTML = '💰 <b>'+RL.gold+'</b> 金　·　'+
     '<span title="'+MORALE_TIP+'">🪖 '+RL.morale+'/5</span>　·　📦 '+RL.supplies;
@@ -8012,6 +8900,7 @@ function showResult(){
 
   const t = $('resultTitle'), p = $('resultText');
   if(G.mode === 'roguelike'){
+    rlShowdownFx(G.result === 'win');
     const r = RL.report || {};
     const recap = '<br><span class="dim">战报：'+(r.rounds||0)+' 回合 · 胜场 '+(r.wins||0)+
       ' · 节点 '+(r.nodes||0)+' · 暴击 '+(r.crits||0)+' · 军略牌 '+(r.cards||0)+
@@ -8032,18 +8921,18 @@ function showResult(){
       p.innerHTML = '<b>连破 '+RL_CHAPTERS.length+' 章、'+(r.nodes||0)+' 处节点，于虎牢关诛杀吕布，还于旧都！</b><br>'+
         '共收集遗物 <b>'+RL.relics.length+
         '</b> 件，余金 <b>'+RL.gold+'</b>，'+RL.hero.ch.name+' 剩余生命 '+RL.hero.hp+'。'+
-        rlEndingHtml(end.e, end.c, newEnd)+recap;
+        rlEndingHtml(end.e, end.c, newEnd)+recap+heroRecNote()+dailyNote();
     } else if(G.result === 'draw'){
       t.textContent = '同归于尽 · 《'+end.e.name+'》'; t.className = '';
       p.innerHTML = '你与第 <b>'+((RL.chapter||0)+1)+'</b> 章【'+rlChapter().name+
         '】的守将同时倒下，谁也没能走出这张地图。<br>'+
-        rlEndingHtml(end.e, end.c, newEnd)+recap;
+        rlEndingHtml(end.e, end.c, newEnd)+recap+heroRecNote()+dailyNote();
     } else {
       t.textContent = '败北 · 《'+end.e.name+'》'; t.className = 'lose';
       p.innerHTML = '你止步于第 <b>'+((RL.chapter||0)+1)+'</b> 章【'+rlChapter().name+
         '】第 <b>'+RL.layer+'</b> 层…<br>遗物 '+RL.relics.length+
         ' 件，余金 '+RL.gold+'。整军再战，卷土重来！'+
-        rlEndingHtml(end.e, end.c, newEnd)+recap;
+        rlEndingHtml(end.e, end.c, newEnd)+recap+heroRecNote()+dailyNote();
     }
     $('overlay').classList.remove('hidden');
     return;
@@ -8134,6 +9023,7 @@ const CODEX_TABS = [
   {id:'weather', name:'🌦 天时'},
   {id:'status',  name:'✨ 状态'},
   {id:'rogue',   name:'🧭 北伐'},
+  {id:'history', name:'🏆 战史'},
   {id:'econ',    name:'💰 经济'}
 ];
 let codexTab = 'play';
@@ -8361,6 +9251,7 @@ function codexHtml(tab){
       '连平局都能烧粮道。一趟北伐攒下来的三五条兵势，会自动收敛成一种打法——'+
       '<b>这就是"这一局我是谁"</b>。</p>'+
       '<p>共 <b>'+RL_BOONS.length+'</b> 条，走⛩️ <b>祭坛 → 🀄 兵势请福</b>三选一习得；'+
+      '遇 🛒 行商还可购 <b>请福卷</b>再请一次（<b>60</b> 金，本店限购 1 次，可让新法上身或深化已修的一条）。'+
       '同一条一局只会出现一次，学过就不再刷。不想要可以换 <b>18 金</b>。'+
       '兵势<b>只在北伐局内生效</b>，打完这局就散，下局从头再攒——'+
       '跨局永久的是🏛 将作府，局内构筑的是兵势与遗物，两层不要混。</p>'+
@@ -8370,13 +9261,16 @@ function codexHtml(tab){
       const list = RL_BOONS.filter(b => ids.indexOf(b.id) >= 0);
       if(!list.length) return;
       out += '<h4>'+title+'　<span class="dim">('+list.length+' 条)</span></h4>';
-      out += cxGrid(list.map(b => cxItem(b.icon, b.name+' <span class="dim">'+b.tag+'</span>', b.desc,
-        (RL.active && rlHasBoon(b.id)) ? '本局已习得' : '')));
+      out += cxGrid(list.map(b => {
+        const owned = RL.active && rlHasBoon(b.id), r = rlBoonRank(b.id);
+        return cxItem(b.icon, b.name+' <span class="dim">'+b.tag+'</span>', owned ? boonText(b) : b.desc,
+          owned ? '本局已修到 '+BOON_ROMAN[r] + (r < BOON_MAX_RANK ? '（再请一次福可深化）' : ' · 已至极处') : '');
+      }));
     });
     out += '<h4>🀄 本局已学</h4>';
     const have = boonList();
     out += have.length
-      ? '<p>'+have.map(b => b.icon+'<b>'+b.name+'</b>').join('、')+'（共 '+have.length+' 条，地图页可点「看详解」）</p>'
+      ? '<p>'+have.map(b => '<b>'+boonLabel(b)+'</b>').join('、')+'（共 '+have.length+' 条，地图页可点「看详解」）</p>'
       : '<p>本局尚未习得兵势。北上途中留意⛩️ 祭坛节点。</p>';
     return out;
   }
@@ -8543,6 +9437,38 @@ function codexHtml(tab){
       '。九项全置办需要 <b>'+RL_MERIT_UPGRADES.reduce((s,u)=>s+u.cost,0)+'</b> 点，先买哪一项就是你想打什么样的局（续航 / 经济 / 爆发 / 遗物流）。'+
       '点错的投入可以「♻ 尽数归还」全额退回、重新分配；加成只作用于北伐，且从<b>下一局起兵</b>开始生效。</p>';
   }
+  if(tab === 'history'){
+    const hl = loadHeroLog();
+    const done = CHARS.filter(c => hl[c.id]);
+    let totR = 0, totW = 0, deep = null, deepName = '';
+    done.forEach(c => {
+      const e = hl[c.id];
+      totR += e.runs; totW += e.wins;
+      if(e.best && (!deep || e.best.layer > deep.layer)){ deep = e.best; deepName = c.name; }
+    });
+    let out = '<h4>🏆 战史</h4>'+
+      '<p>将作府增强的是<b>实力</b>，战史记下的是<b>足迹</b>：哪位武将陪你走过最深的路、破过几座关。'+
+      '胜也好败也罢，走过的每一层都算数——输了的那局也记在这里。</p>';
+    if(!done.length){
+      return out + '<p class="dim">第一次北伐还没打完。打完一局（不论胜负），这里就有第一个足迹。</p>';
+    }
+    out += cxGrid([
+      cxItem('🎖', '出征归宿', '共 <b>'+totR+'</b> 局北伐，破关 <b>'+totW+'</b> 次'+(totR ? '（总胜率 '+(totW/totR*100).toFixed(0)+'%）' : '')),
+      cxItem('🧭', '最深的足迹', deep ? '<b>'+deepName+'</b> · '+deep.date+(deep.win ? ' · 破关' : ' · 止于第 '+deep.chapter+' 章第 '+deep.layer+' 层（'+deep.diff+'）') : '——'),
+      cxItem('👥', '出战过的武将', '<b>'+done.length+' / '+CHARS.length+'</b> 位　<span class="dim">还有 '+(CHARS.length - done.length)+' 位没带过——换人，就是一段新战史。</span>')
+    ]);
+    out += '<h4>🎖 武将足迹</h4>';
+    const rows = done.slice().sort((a, b) =>
+      (hl[b.id].runs - hl[a.id].runs) || (hl[b.id].wins - hl[a.id].wins));
+    out += cxGrid(rows.map(c => {
+      const e = hl[c.id];
+      const desc = '出征 <b>'+e.runs+'</b> 次 · 破关 <b>'+e.wins+'</b> 次 · '+
+        (e.best ? (e.best.win ? '<b class="boonchip">已破关</b>' : '最深 <b>第 '+e.best.layer+' 层</b>（'+e.best.diff+'）') : '')+
+        (e.last ? '<br><span class="dim">最近：'+e.last.date+' · 第 '+e.last.chapter+' 章 · '+(e.last.win ? '破关' : '陨落')+'</span>' : '');
+      return cxItem(c.icon, c.name+(e.wins ? '　🏆×'+e.wins : ''), desc);
+    }));
+    return out;
+  }
   if(tab === 'econ'){
     return `
     <h4>💰 金币从哪来（北伐）</h4>
@@ -8555,6 +9481,7 @@ function codexHtml(tab){
     <p>· 军略牌：普通 <b>42</b> / 稀有 <b>62</b> / 史诗 <b>88</b> 金<br>
     · 遗物：普通 <b>70</b> / 稀有 <b>95</b> / 史诗 <b>120</b> / 神器 <b>150</b> 金<br>
     · 药水：<b>26~36</b> 金<br>
+    · 请福卷：<b>60</b> 金（🀄 兵势三选一，本店限购 1 次）<br>
     · 删牌服务：<b>55</b> 金（永久移除一张牌）<br>
     · 刷新商品：<b>8</b> 金，每次 +4 金</p>
     <h4>🧭 一趟北伐大约能赚多少</h4>
@@ -8853,8 +9780,11 @@ $('btnBack').addEventListener('click', () => { session++; busy = false; G.over =
   hideKO(); $('ultBanner').className = 'ultbanner hidden'; show('screen-select'); });
 $('btnQuitRL').addEventListener('click', () => {
   session++; busy = false; RL.active = false; clearRoguelikeSave(); G.over = true;
+  endDailySession(false);
   hideKO(); $('ultBanner').className = 'ultbanner hidden'; show('screen-select');
 });
+$('btnDaily').addEventListener('click', openDailyModal);
+syncDailyBar();
 
 /* 📱 手机端：实测固定操作底栏高度回填 --dock-h，给战斗页底部留出让位空间。
    桌面端该容器是 display:contents（没有盒子），高度恒为 0，直接跳过。 */
@@ -8895,7 +9825,9 @@ globalThis.__api = {
   getRL_ORIGINS: () => RL_ORIGINS, getRL_SCENES: () => RL_SCENES,
   getRL_MERIT_UPGRADES: () => RL_MERIT_UPGRADES, getRLMerit: () => rlMerit,
   getRL_BOONS: () => RL_BOONS, getRL_BOON_BY_ID: () => RL_BOON_BY_ID,
+  getBOON_MAX_RANK: () => BOON_MAX_RANK, getBOON_ROMAN: () => BOON_ROMAN,
   boonList, rlHasBoon, rollBoons, gainBoon, openBoonChoice, openBoonList,
+  rlBoonRank, boonText, boonLabel, rlChaweiCap,
   buyMerit, refundMerit, meritSpent, meritOwned, rlMeritBonuses, renderMeritScreen, openMeritScreen,
   getRL_ENDINGS: () => RL_ENDINGS, rlEndingCtx, pickRLEnding, rlEndingHtml, rlEndingDemoCtx,
   seenEndings, rlEndingTotal, recordRLEnding, storyPick, RL_ORIGIN_CODA, EVENT_EXIT_TEXT,
