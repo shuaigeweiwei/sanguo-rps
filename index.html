@@ -5553,7 +5553,8 @@ function gainBoon(id){
     return true;
   }
   RL.boons.push(id);
-  RL.boonRanks[id] = 1;
+  /* Ⅰ是默认品阶，不显式记账：resume 只回灌 ≥2，写 1 会在存读之间自相矛盾。
+     学没学只看 RL.boons 成员资格，读阶一律走 rlBoonRank（未记默认 1）。 */
   log('🀄 兵势已入营：'+b.icon+'【'+b.name+'】'+b.desc,'gold');
   renderMapScreen();
   saveRoguelike();
