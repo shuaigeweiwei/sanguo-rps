@@ -3552,6 +3552,70 @@ const RL_EVENTS_EXTRA = [
     ]}
 ];
 if(RL_EVENTS_EXTRA_ON) RL_EVENTS.push.apply(RL_EVENTS, RL_EVENTS_EXTRA);
+/* ==================== 行军运数 + 中途遇事 ====================
+   回应两条反馈：①「中间节点没有剧情」——开战先打一段遇事短叙，纯叙事零数值；
+   ②「选项收益太死板」——军议保底照旧，另掷一笔「本局才揭晓」的运数添头/失头。
+   纪律一：全程不消耗 Math.random（军议/叙事层与地图、变体的逐种子复现流严格隔离）。
+   rlFortune 把局内真实状态折成小散数来挑：地图构型、余金、层深、场数、牌册、
+   主将、军心——不同局这串状态几乎必不相同（地图每局都是新掷的），
+   同一局里位置不同落点不同，读档回放则逐位一致。 */
+function rlFortune(n){
+  const a = (((RL.map ? RL.map.length : 0) + 10139) * 2654435761) >>> 0;
+  const m = ((((RL.gold|0) + 7) * 40503) ^ ((RL.layer|0) * 31457) ^
+             ((RL.battles|0) * 17107) ^ ((RL.deck.length|0) * 7919) ^
+             ((RL.hero.atk|0) * 31) ^ ((RL.hero.def|0) * 17) ^
+             ((RL.morale|0) * 131) ^ (((RL.flags.councilTaken|0) + 1) * 2617) ^
+             ((RL.supplies|0) * 601)) >>> 0;
+  const s = (a ^ (m >>> 1) ^ (m >>> 14) ^ 48611) >>> 0;
+  return s % (n || 1);
+}
+/* 军议运数：cbs 每项 = { n:[下限,上限], fx(n) 应用落定值, line(n) 造揭晓句 }。
+   掷一项执行并返回揭晓句；先落后果，再由 chooseCouncil 把「这次到底得多少」
+   播进战报——选完才揭晓，同一选项在不同局里添头不同。各条军议自行避让
+   councilcheck 逐项精确钉死的字段，运数只落在未列字段（金/血/军心/补给/
+   攻防以及少量安全的 st 键），绝不打乱已承诺的保底数值。 */
+function rlCouncilRoll(cbs){
+  const cb = cbs[rlFortune(cbs.length)];
+  const n = cb.n[0] + rlFortune(cb.n[1] - cb.n[0] + 1);
+  cb.fx(n);
+  return '⚖ 运数揭晓：' + cb.line(n);
+}
+/* 中途遇事短叙池：按节点类型分池（Boss 有搦战叫阵，不再叠这一笔）。
+   每段 ≥24 字，与六章字幕同一纪律；纯叙事零数值，只打一行战报。 */
+const NODE_TALE_POOL = {
+  battle: [
+    '霜晨出营，前锋在隘口踩碎了薄冰；远处山脊上敌旗一线排开，晨雾里看不清旗色。',
+    '队伍里马蹄声整夜未停；探子回报说谷中的风比昨日更冷了，刀鞘上结了一层薄霜。',
+    '行军灶烟未散，游骑先报有敌踪；士卒按着刀柄，把步子放匀了再走。',
+    '途经一座废弃的驿站，箭孔犹新的墙下压着半面残旗；百夫长让全军绕开空院走。',
+    '日头未过山脊，旷野已腾起尘烟；辎重队退后半箭之地，让出一线冲锋的开阔。'
+  ],
+  elite: [
+    '前锋远远便望见那面绣金的狼旗，旗下甲士步伐一个不乱，刀出鞘的白光晃眼。',
+    '斥候回报说前面那位成名已久，寻常校尉不敢与他照面；辎重官把粮车又挪后半里。',
+    '那员老将每逢上阵必先祭旗，临阵从无败绩；老兵们默默把护心镜又正了正。',
+    '敌阵中有人高声报出名号，说他一身横练刀枪不入；都伯们改派长枪手排在最前。',
+    '对面的将旗之下挂着半面焦黑的盾，自称从七阵不曾败退的人手里缴来。'
+  ],
+  stronghold: [
+    '敌寨踞在半山，滚木横在石缝里，寨墙外还挖了三道浅沟，仰攻的路一眼便见血。',
+    '寨中炊烟细而笔直，说明里头粮足人心定；小道上明哨暗哨一层叠着一层。',
+    '寨主的名号在乡野里被说得凶：无他，只一句「守三年，门不倒」。',
+    '瞭望台上三条火把彻夜不灭，火光把寨墙照得发亮，看架势是备着重来一次的。',
+    '寨门口的拒马绑满倒刺，墙头有人摇旗喊话；山风把那几句挑衅送得很远。'
+  ],
+  challenge: [
+    '悬赏的告示在乡间贴了月余，画影图形被雨水洇过，那张脸却与眼前敌将一模一样。',
+    '乡勇说那位黑衣刀客惯在日头偏西时出刀，前锋把盔带又勒紧了半分。',
+    '赏格高得叫人起疑，肯接令的多半不为钱；前几拨领赏的人，一个都没有回来。',
+    '老捕头只看了一眼那柄佩刀便缩了手，说这刀走中路、从不虚晃，接招全在半寸。',
+    '递战书的小校面无惧色，只把赏金的名目又念了一遍；营中一时无人搭话。'
+  ]
+};
+function rlNodeTale(type){
+  const pool = NODE_TALE_POOL[type];
+  return pool && pool.length ? pool[rlFortune(pool.length)] : '';
+}
 /* 奇遇节点里刷出"剧情奇遇"的概率。前两层固定不刷（rlStoryPool 已挡），
    所以开局阶段看到的仍是老一批基础奇遇。
    调到这里是有讲究的：基础奇遇里高分项多是「遗物 / 升级」这类能滚雪球的
@@ -4598,14 +4662,38 @@ const RL_SCENES = [
             '他比谁都清楚饿比刀更快：不硬碰，专往粮道下叉，等你先熬不住。',
             '你把灯芯挑亮，把三条路一句一句问下去，问到第三遍，帐中只剩下呼吸。'],
     council:[
-      {t:'🏃 轻装急进，先夺要道', d:'金币 +20，补给 −1，开局蓄力 +25%',
-       run(){ RL.gold += 20; changeSupplies(-1, true); RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 25; }},
-      {t:'🧱 深沟高垒，一步步压过去', d:'起始格挡 +16，防御 +4，补给 −1',
-       run(){ RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + 16; RL.hero.def += 4; changeSupplies(-1, true); }},
-      {t:'🕊 细作先入祁山', d:'读心 +2，侦察前路 1 层，下一场野战敌军兵力 −8%',
+      {t:'🏃 轻装急进，先夺要道', d:'金币 +20，补给 −1，开局蓄力 +25%；轻兵疾走的深浅各有不同，选定揭晓',
+       run(){ RL.gold += 20; changeSupplies(-1, true); RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 25;
+         return rlCouncilRoll([
+           {n:[6,14], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '赶在敌军前头占了背风坡，全军歇马回血 '+n+' 点'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '抢先机者得势，前锋们眼里有了光，军心 +1'; }},
+           {n:[2,5], fx(n){ RL.hero.hp = Math.max(1, RL.hero.hp - n); },
+            line(n){ return '近道荆棘割甲，折了 '+n+' 点气力'; }}
+         ]); }},
+      {t:'🧱 深沟高垒，一步步压过去', d:'起始格挡 +16，防御 +4，补给 −1；营垒落成的得失难以一眼看尽，选定揭晓',
+       run(){ RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + 16; RL.hero.def += 4; changeSupplies(-1, true);
+         return rlCouncilRoll([
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '营成之后就地开市，收得 '+n+' 金'; }},
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '墙根安稳，伤兵睡了个整觉，回血 '+n+' 点'; }},
+           {n:[1,1], fx(){ changeMorale(-1, true); },
+            line(){ return '工期压得急，老卒在帐外嘀咕，军心 −1'; }}
+         ]); }},
+      {t:'🕊 细作先入祁山', d:'读心 +2，侦察前路 1 层，下一场野战敌军兵力 −8%；细作带回的消息有肥有瘦，选定揭晓',
        run(){ RL.hero.st.peekCharges = (RL.hero.st.peekCharges||0) + 2;
               RL.flags.scoutAid = Math.max(RL.flags.scoutAid||0, 8);
-              RL.flags.scouted = Math.max(RL.flags.scouted||0, 1); }}
+              RL.flags.scouted = Math.max(RL.flags.scouted||0, 1);
+         return rlCouncilRoll([
+           {n:[6,14], fx(n){ RL.gold += n; },
+            line(n){ return '细作顺路捎回几两私货，得 '+n+' 金'; }},
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '回程捎来的伤药地道，回血 '+n+' 点'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '消息灵通，各部传看军报列阵利落，军心 +1'; }}
+         ]); }},
     ]},
   { scene:['陈仓吊桥昼夜高悬，城头十重女墙一字排开——郝昭的守军，其实不满千数。',
             '冲车刚啃到墙根就被绳系石磨砸断，云梯还没靠上墙皮，先中了一轮火箭。',
@@ -4618,13 +4706,37 @@ const RL_SCENES = [
             '攻城的人快被城攻了——可这枚楔子不拔，它就在你背后生根发芽。',
             '军议开到第三夜，帐外更鼓一记一记：陈仓不值一城，值的是整条归路。'],
     council:[
-      {t:'🔥 昼夜环攻，务必破城', d:'攻击 +3，但我军疲敝：最大生命 −6',
+      {t:'🔥 昼夜环攻，务必破城', d:'攻击 +3，但我军疲敝：最大生命 −6；连日环攻的余势难以逆料，选定揭晓',
        run(){ RL.hero.atk += 3; RL.hero.maxHp = Math.max(20, RL.hero.maxHp - 6);
-              RL.hero.hp = Math.min(RL.hero.hp, RL.hero.maxHp); }},
-      {t:'💰 重金购粮，久战不失', d:'金币 +55，补给 +2，军心 −1',
-       run(){ RL.gold += 55; changeSupplies(2, true); changeMorale(-1, true); }},
-      {t:'📜 修书劝降，攻心为上', d:'军心 +2，此后每场战斗敌方首回合攻击 −3',
-       run(){ changeMorale(2, true); RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3; }}
+              RL.hero.hp = Math.min(RL.hero.hp, RL.hero.maxHp);
+         return rlCouncilRoll([
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '今日末阵歇战，伙夫熬了热汤，回血 '+n+' 点'; }},
+           {n:[6,14], fx(n){ RL.gold += n; },
+            line(n){ return '拆阵时缴得残械，变卖得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeMorale(-1, true); },
+            line(){ return '环攻无功者众，帐中气氛发沉，军心 −1'; }}
+         ]); }},
+      {t:'💰 重金购粮，久战不失', d:'金币 +55，补给 +2，军心 −1；商路往返盈亏不定，选定揭晓',
+       run(){ RL.gold += 55; changeSupplies(2, true); changeMorale(-1, true);
+         return rlCouncilRoll([
+           {n:[6,14], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '新粮入营伙夫加菜，全营回血 '+n+' 点'; }},
+           {n:[1,3], fx(n){ RL.hero.def += n; },
+            line(n){ return '粮车护卫打熟了器械，防御 +'+n; }},
+           {n:[3,6], fx(n){ RL.hero.maxHp += n; RL.hero.hp += n; },
+            line(n){ return '吃得饱睡得足，最大生命 +'+n; }}
+         ]); }},
+      {t:'📜 修书劝降，攻心为上', d:'军心 +2，此后每场战斗敌方首回合攻击 −3；笔墨号召之力因人而异，选定揭晓',
+       run(){ changeMorale(2, true); RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3;
+         return rlCouncilRoll([
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '回书里还夹着谢仪，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeSupplies(1, true); },
+            line(){ return '邻近坞堡见了檄文纳粮，补给 +1'; }},
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '书信传抄各营，读罢胸中一畅，回血 '+n+' 点'; }}
+         ]); }}
     ]},
   { scene:['定军山两翼对屯已过半旬，夏侯渊的旗号漫山遍野，忽东忽西像雁阵换位。',
             '千里袭人的名号不是虚的：他从不给你列阵的工夫，接战永远由他选时。',
@@ -4637,12 +4749,36 @@ const RL_SCENES = [
             '夏侯渊不信险，他赌的是你的粮翻三重山、他的粮顺水行舟。',
             '你抢的不是山头，是日子——军议之前，先算清楚这一仗要打给哪一天看。'],
     council:[
-      {t:'⚡ 抢山夺隘，先发制人', d:'开局蓄力 +35%，攻击 +1',
-       run(){ RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 35; RL.hero.atk += 1; }},
-      {t:'🛡 结硬寨，看他来攻', d:'最大生命 +24，每回合格挡 +3',
-       run(){ RL.hero.maxHp += 24; RL.hero.hp += 24; RL.hero.st.blockPerTurn = (RL.hero.st.blockPerTurn||0) + 3; }},
-      {t:'🌾 就地屯粮，断他外援', d:'补给 +3，战斗得金 +18%，军心 +1',
-       run(){ changeSupplies(3, true); RL.hero.st.goldUp = (RL.hero.st.goldUp||0) + 0.18; changeMorale(1, true); }}
+      {t:'⚡ 抢山夺隘，先发制人', d:'开局蓄力 +35%，攻击 +1；抢先手的账本要打完才算数，选定揭晓',
+       run(){ RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 35; RL.hero.atk += 1;
+         return rlCouncilRoll([
+           {n:[8,18], fx(n){ RL.gold += n; },
+            line(n){ return '山口夺道，缴获 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '先手得势，全军振奋，军心 +1'; }},
+           {n:[2,5], fx(n){ RL.hero.hp = Math.max(1, RL.hero.hp - n); },
+            line(n){ return '山径结溜，前锋滑坠，折了 '+n+' 点气力'; }}
+         ]); }},
+      {t:'🛡 结硬寨，看他来攻', d:'最大生命 +24，每回合格挡 +3；硬寨的账各人各有算法，选定揭晓',
+       run(){ RL.hero.maxHp += 24; RL.hero.hp += 24; RL.hero.st.blockPerTurn = (RL.hero.st.blockPerTurn||0) + 3;
+         return rlCouncilRoll([
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '拆营换料多有剩余，变卖得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeSupplies(1, true); },
+            line(){ return '屯区听说本营善守，自愿送来新麦，补给 +1'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '营壁加固，夜里睡得踏实，军心 +1'; }}
+         ]); }},
+      {t:'🌾 就地屯粮，断他外援', d:'补给 +3，战斗得金 +18%，军心 +1；年景丰俭全看田里的脸色，选定揭晓',
+       run(){ changeSupplies(3, true); RL.hero.st.goldUp = (RL.hero.st.goldUp||0) + 0.18; changeMorale(1, true);
+         return rlCouncilRoll([
+           {n:[10,20], fx(n){ RL.gold += n; },
+            line(n){ return '余粮折价变现，得 '+n+' 金'; }},
+           {n:[6,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '新麦养人，回血 '+n+' 点'; }},
+           {n:[2,5], fx(n){ RL.hero.st.winGold = (RL.hero.st.winGold||0) + n; },
+            line(n){ return '丰收的名声传开，此后每场战斗额外多得 '+n+' 金'; }}
+         ]); }}
     ]},
   { scene:['汉水连涨七日，浊浪已经拍上了堤腰——于禁的七军，泡在泥水和疫气里。',
             '庞德抬着一口棺材出阵巡行，箭囊上白布写的那个死字，被雨泡得更白了。',
@@ -4655,14 +4791,38 @@ const RL_SCENES = [
             '斥候回营的第一句不是敌情，而是反问：进得了城，粮从哪里来？',
             '军议开到三更，烛花爆了四次；案上的汉水图，被湿气洇出一片灰蓝。'],
     council:[
-      {t:'🌊 决水灌营，同归于险', d:'首战敌方中毒 4 层，我方生命 −8',
+      {t:'🌊 决水灌营，同归于险', d:'首战敌方中毒 4 层，我方生命 −8；水势所至，得与失都要清点，选定揭晓',
        run(){ RL.hero.st.startPoisonOnce = (RL.hero.st.startPoisonOnce||0) + 4;
-              RL.hero.hp = Math.max(1, RL.hero.hp - 8); }},
-      {t:'🩹 先救伤兵，稳军心', d:'回复 30% 生命，军心 +2，补给 −2',
-       run(){ heal(RL.hero, Math.round(RL.hero.maxHp * 0.3)); changeMorale(2, true); changeSupplies(-2, true); }},
-      {t:'🗡 选死士先登', d:'造成伤害的 10% 转为生命，暴击 +8%',
+              RL.hero.hp = Math.max(1, RL.hero.hp - 8);
+         return rlCouncilRoll([
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '水退后在低洼田里捞得浮粮，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeSupplies(1, true); },
+            line(){ return '上游截得敌筏，筏上竟载着米，补给 +1'; }},
+           {n:[1,1], fx(){ changeMorale(-1, true); },
+            line(){ return '泥水泡了半日，军士染了湿气，军心 −1'; }}
+         ]); }},
+      {t:'🩹 先救伤兵，稳军心', d:'回复 30% 生命，军心 +2，补给 −2；伤兵归队的情形不止一种，选定揭晓',
+       run(){ heal(RL.hero, Math.round(RL.hero.maxHp * 0.3)); changeMorale(2, true); changeSupplies(-2, true);
+         return rlCouncilRoll([
+           {n:[4,10], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '医馆连夜再煎一副良药，回血 '+n+' 点'; }},
+           {n:[6,14], fx(n){ RL.gold += n; },
+            line(n){ return '痊愈的老卒凑了谢仪送来，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ RL.hero.st.peekCharges = (RL.hero.st.peekCharges||0) + 1; },
+            line(){ return '伤兵营腾出的眼手替你盯哨，读心 +1'; }}
+         ]); }},
+      {t:'🗡 选死士先登', d:'造成伤害的 10% 转为生命，暴击 +8%；死士的胆气有涨有落，选定揭晓',
        run(){ RL.hero.st.lifesteal = (RL.hero.st.lifesteal||0) + 0.10;
-              RL.hero.st.critBonus = (RL.hero.st.critBonus||0) + 0.08; }}
+              RL.hero.st.critBonus = (RL.hero.st.critBonus||0) + 0.08;
+         return rlCouncilRoll([
+           {n:[1,1], fx(){ RL.hero.atk += 1; },
+            line(){ return '其余悍勇争相请战，前锋更锐，攻击 +1'; }},
+           {n:[6,14], fx(n){ RL.gold += n; },
+            line(n){ return '本地豪族凑钱送行，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeMorale(-1, true); },
+            line(){ return '点名到册的名字太沉，军中一时无言，军心 −1'; }}
+         ]); }}
     ]},
   { scene:['洛阳城下的司马懿不问战事，只问你的使者吃了几碗饭、家中妻儿安否。',
             '使者的每一句答复都进了他的册子——一条注脚，能换十日的粮算。',
@@ -4675,15 +4835,39 @@ const RL_SCENES = [
             '军中裂成两派：一派主张围而不攻坐待其变，一派主张焚桥断水逼他出城。',
             '你盯着案上的洛阳形势图良久——这张图上最先比拼的不是兵，是耐心。'],
     council:[
-      {t:'💉 反间于朝', d:'此后每场战斗敌方首回合攻击 −3，金币 −40',
+      {t:'💉 反间于朝', d:'此后每场战斗敌方首回合攻击 −3，金币 −40；暗线回音好坏各半，选定揭晓',
        run(){ RL.hero.st.foeOpeningAtkDown = (RL.hero.st.foeOpeningAtkDown||0) + 3;
-              RL.gold = Math.max(0, RL.gold - 40); }},
-      {t:'📚 尽读兵法', d:'永久：造成的伤害 +15%，受到的伤害 −6%',
+              RL.gold = Math.max(0, RL.gold - 40);
+         return rlCouncilRoll([
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '朝廷回书嘉许，帐中传阅鼓舞，军心 +1'; }},
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '行装里翻出行脚商的伤药，回血 '+n+' 点'; }},
+           {n:[1,1], fx(){ changeSupplies(1, true); },
+            line(){ return '暗线顺带护来两车仗物，补给 +1'; }}
+         ]); }},
+      {t:'📚 尽读兵法', d:'永久：造成的伤害 +15%，受到的伤害 −6%；笔上功夫落到阵前深浅不一，选定揭晓',
        run(){ RL.hero.st.dmgUp = (RL.hero.st.dmgUp||0) + 0.15;
-              RL.hero.st.dmgReduce = (RL.hero.st.dmgReduce||0) + 0.06; }},
-      {t:'🏺 散金飨士', d:'军心 +3，每场战斗额外得金，金币 −70',
+              RL.hero.st.dmgReduce = (RL.hero.st.dmgReduce||0) + 0.06;
+         return rlCouncilRoll([
+           {n:[10,20], fx(n){ RL.gold += n; },
+            line(n){ return '誊余的书简售与书商，得 '+n+' 金'; }},
+           {n:[1,2], fx(n){ RL.hero.def += n; },
+            line(n){ return '拒马营垒照图重排，防御 +'+n; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '各营传讲兵法，服气者众，军心 +1'; }}
+         ]); }},
+      {t:'🏺 散金飨士', d:'军心 +3，每场战斗额外得金，金币 −70；酒肉过后的士气有起有伏，选定揭晓',
        run(){ changeMorale(3, true); RL.hero.st.winGold = (RL.hero.st.winGold||0) + 12;
-              RL.gold = Math.max(0, RL.gold - 70); }}
+              RL.gold = Math.max(0, RL.gold - 70);
+         return rlCouncilRoll([
+           {n:[5,12], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '宴罢各归其帐，睡了一整觉，回血 '+n+' 点'; }},
+           {n:[1,2], fx(n){ RL.hero.def += n; },
+            line(n){ return '甲胄连夜擦得雪亮，防御 +'+n; }},
+           {n:[4,8], fx(n){ RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + n; },
+            line(n){ return '酒肉垫底，次日开打格挡更有底气 +'+n; }}
+         ]); }}
     ]},
   { scene:['虎牢关前尘头大起，那杆方天画戟立在门楼之下，比任何军报都直白。',
             '吕布不设疑兵、不修壕沟，只把关门的门轴，换了道新的。',
@@ -4696,13 +4880,37 @@ const RL_SCENES = [
             '身后是这些年的北伐、三军的性命，和你一个人的名字。',
             '连弩尽数抬上山脊，火光下人人紧了紧绑腿——明早第一合，谁都退不得。'],
     council:[
-      {t:'⚔ 三军齐进，正面破关', d:'攻击 +4，防御 +6，但我方不能全须全尾地进去：生命 −12',
-       run(){ RL.hero.atk += 4; RL.hero.def += 6; RL.hero.hp = Math.max(1, RL.hero.hp - 12); }},
-      {t:'🔥 火攻门楼，乱其阵脚', d:'首战敌方起火（灼烧 2 回合），开局蓄力 +30%',
+      {t:'⚔ 三军齐进，正面破关', d:'攻击 +4，防御 +6，但我方不能全须全尾地进去：生命 −12；总攻当日的变数谁也说不全，选定揭晓',
+       run(){ RL.hero.atk += 4; RL.hero.def += 6; RL.hero.hp = Math.max(1, RL.hero.hp - 12);
+         return rlCouncilRoll([
+           {n:[8,18], fx(n){ RL.gold += n; },
+            line(n){ return '破关在望，筹饷格外顺利，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '升帐点将，全军按刀而立，军心 +1'; }},
+           {n:[4,8], fx(n){ RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + n; },
+            line(n){ return '盾车载道列于关下，开局格挡 +'+n; }}
+         ]); }},
+      {t:'🔥 火攻门楼，乱其阵脚', d:'首战敌方起火（灼烧 2 回合），开局蓄力 +30%；火借风势几分，难说，选定揭晓',
        run(){ RL.hero.st.burnOnOpen = Math.max(RL.hero.st.burnOnOpen||0, 1);
-              RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 30; }},
-      {t:'🕯 全军缟素，誓以此死', d:'军心拉满，此后每场战斗胜利额外回复 12% 生命',
-       run(){ RL.morale = 5; RL.hero.st.healOnBattle = (RL.hero.st.healOnBattle||0) + 0.12; }}
+              RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 30;
+         return rlCouncilRoll([
+           {n:[1,1], fx(){ RL.hero.st.burnOnOpen = (RL.hero.st.burnOnOpen||1) + 1; },
+            line(){ return '风势回头，敌营火头更旺：首战灼烧多 1 回合'; }},
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '火场西墙掏出一窖旧藏，得 '+n+' 金'; }},
+           {n:[1,1], fx(){ changeMorale(1, true); },
+            line(){ return '火光映亮旗面，全军看得分明，军心 +1'; }}
+         ]); }},
+      {t:'🕯 全军缟素，誓以此死', d:'军心拉满，此后每场战斗胜利额外回复 12% 生命；誓师的余韵各人自领，选定揭晓',
+       run(){ RL.morale = 5; RL.hero.st.healOnBattle = (RL.hero.st.healOnBattle||0) + 0.12;
+         return rlCouncilRoll([
+           {n:[6,14], fx(n){ RL.hero.hp = Math.min(RL.hero.maxHp, RL.hero.hp + n); },
+            line(n){ return '哭罢各自收泪，夜里睡得沉，回血 '+n+' 点'; }},
+           {n:[4,8], fx(n){ RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + n; },
+            line(n){ return '誓师之后甲叶相击成阵，开局格挡 +'+n; }},
+           {n:[8,16], fx(n){ RL.gold += n; },
+            line(n){ return '各营把私房钱凑作军资，得 '+n+' 金'; }}
+         ]); }}
     ]}
 ];
 /* ---------- 结局：史官载笔（一局一评 · 可收集） ----------
@@ -5559,9 +5767,10 @@ function chooseCouncil(idx){
   const c = s && s.council && s.council[idx];
   if(!c) return false;
   RL.flags.councilTaken = ch;
-  c.run();
+  const tail = c.run();
   RL.hero.hp = Math.min(RL.hero.hp, RL.hero.maxHp);
   log('🏮 军议既定：'+c.t.replace(/^[^ ]+ /,'')+'（'+c.d+'）','gold');
+  if(tail) log(tail, 'gold');
   renderMapScreen();
   saveRoguelike();
   return true;
@@ -8459,6 +8668,9 @@ function startRLBattle(node){
             RL.flags.rival && RL.battles % 2 === 1){
     log('🗣 '+rlRivalTaunt(), 'bad');
   }
+  /* 中途遇事：每场战斗先打一段行军短叙（Boss 有搦战叫阵，故不再叠加）。 */
+  const _tale = rlNodeTale(node.type);
+  if(_tale) log('📖 '+_tale, 'sys');
   log('🃏 本局锦囊：'+JN.filter(j => j.id in items)
         .map(j => j.icon+' '+j.name).join('、')+'（各一次，随时可发动，未用尽的会带入下一场）','gold');
   show('screen-battle');
