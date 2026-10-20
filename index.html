@@ -258,6 +258,10 @@
   .history .mine b { color: #8fd48a; }
   .history .foe b { color: #e09a8a; }
   .history .hdim { color: #6f6455; letter-spacing: 1px; }
+  .history .habitline { flex-basis: 100%; text-align: center; color: #c8a96a;
+    border-top: 1px dashed var(--line); padding-top: 4px; font-size: 11.5px; letter-spacing: .5px; }
+  .history .habitline.dim { color: #8a7a5e; }
+  .history .habitline.broken { color: #b08a80; text-decoration: line-through; text-decoration-color: #7a4a40; }
 
   /* 结界（奥秘） */
   .secrets { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
@@ -805,6 +809,11 @@
 .skcard.skfoe .skstat{ color:#b08a80; }
 .skskill, .skult{ font-size:13.5px; line-height:1.75; margin-bottom:6px; color:#d8c8a8; }
 .skult{ color:#e0c090; }
+.skhabit{ font-size:12.5px; line-height:1.7; color:#d8b87a; border:1px dashed rgba(216,180,90,.28);
+  border-radius:8px; padding:6px 8px; margin:0 0 7px; background:rgba(216,180,90,.05); }
+.skhabit b{ color:#e8c98a; }
+.skhabit span{ display:block; color:#c8a96a; }
+.skhabit small{ display:block; color:#9a8a70; font-size:11.5px; line-height:1.6; margin-top:2px; }
 .skbeats{ font-size:12px; line-height:1.6; color:#9a8a70; border-top:1px dashed var(--line); padding-top:6px; }
 /* —— 北伐落幕演出（纯展示层：破关金光／止步玄幕，1.9 秒后自撤，不碰数值） —— */
 body.x-finalwin::after{ content:''; position:fixed; inset:0; z-index:9998; pointer-events:none;
@@ -860,6 +869,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>🎴 天命抽卡（绝境神抽）：</b>生命低于 <b>30%</b> 时，每回合有概率触发<b>天命抽卡</b>，立即获得强力效果 —— 雷击/罡气(下次攻击×2)/回春/铁壁(受伤−40%)/狂怒(蓄力60%)/蛊毒。一场最多 3 次，绝境翻盘靠手气！<br>
       <b>天时：</b>战场天气每 4 回合变幻 —— <b>🌫大雾</b>（双方闪避 +12%）、<b>🌬大风</b>（平局蓄力翻倍）、<b>🔥烈日</b>（伤害 +12%）、<b>🌧梅雨</b>（伤害 −10%）、<b>🌙月夜</b>（双方暴击 +10%）。<br>
       <b>读心：</b>战场上方实时记录<b>你与对手的出招次数与最近手势</b>，看破习惯、以心理战克制高难度电脑。<br>
+      <b>🧠 敌将习性（北伐）：</b>每名敌将都有一个固定时机（开局 / 得手后 / 失手后 / 相持后 / 血薄 / 蓄力后 …）和一手偏爱，出招记录里会写明；踩中两次就逼他当场变招。新兵与六章守将开战即知，老将 / 军神要交过手才摸清。<br>
       <b>怒气·超必杀：</b>攻击 +8、挨打 +12、平局 +5 积攒怒气，<b>满 100</b> 可随时发动每个武将的<b>专属超必杀</b>（不占用回合）。<br>
       <b>阵营羁绊：</b>武将分属 <b>魏/蜀/吴/群</b>，组队同阵营 ≥2、≥4 人自动激活羁绊（魏=防御、蜀=攻击、吴=闪避蓄力、群=暴击）。<br>
       <b>过关斩将：</b>单将连破对方五将，每胜一场恢复 80% 生命、攻击 +2，你只有一条命。<br>
@@ -4467,6 +4477,8 @@ let weather = 'clear';
 let items = {};                  // 锦囊剩余次数 {id: count}
 let playerMoves = [], aiMoves = [];   // 双方出招历史（读心面板）
 let aiReadMsg = '';                   // AI 读招提示（延后到揭晓出招后播报，避免剧透）
+let aiHabitFired = null;              // 本回合敌将是否按「习性」出招（揭晓后结算识破）
+let RL_HABITS_ON = true;              // 平衡 A/B 闸门：关掉即回到纯读心 AI
 let session = 0;                 // 战斗会话号：防止旧动画污染新战斗
 
 /* ==================== 战绩统计 ==================== */
@@ -4679,7 +4691,7 @@ function resetBattleState(o){
     busy = false;
   }
   if(o.arena){ G.arenaRelics = []; G.arenaRewardPending = false; }
-  if(o.moves !== false){ playerMoves = []; aiMoves = []; aiReadMsg = ''; }
+  if(o.moves !== false){ playerMoves = []; aiMoves = []; aiReadMsg = ''; aiHabitFired = null; }
   if(o.stats) resetBattleStats();
 }
 
@@ -7327,11 +7339,238 @@ function judge(pm, am){
   return ((pm - am + 3) % 3 === 2) ? 0 : 1;
 }
 
+/* ==================== 🧠 敌将习性（北伐专属读心层） ====================
+   设计要点：
+   1. 只影响「本来会随机出招」的那部分回合，AI 的连招/转手/偏爱读心仍先判定；
+      对不知道习性的玩家，边际上仍是三分之一，不凭空加难度。
+   2. 每条习性 = 一个可观察的触发时机 + 一手偏爱。触发概率 0.6~0.7，
+      看得出、猜得中、也留了失手空间；不新增第四种手势，猜拳三角原样不动。
+   3. 玩家每两次在习性回合得手，敌将就当场「变招」退役该习性——
+      既避免一招吃到底，也把「识破」变成一场有始有终的小戏。
+   4. 数据与文案全部静态；不消耗额外随机数在触发判定上（只在命中概率时掷一次）。
+*/
+const HABIT_WHENS = {
+  first:    {label:'开局两合',        test:C => C.round <= 2},
+  afterWin: {label:'他得手后的下一合', test:C => C.prevRes === 1},
+  afterLoss:{label:'他失手后的下一合', test:C => C.prevRes === 0},
+  afterDraw:{label:'相持之后',        test:C => C.prevRes === 2},
+  high:     {label:'生命高于六成时',   test:C => C.hpPct >= 0.6},
+  low:      {label:'生命低于三成半时', test:C => C.hpPct <= 0.35},
+  playerLow:{label:'你生命低于三成半时', test:C => C.foePct <= 0.35},
+  streak:   {label:'你连胜两合后',     test:C => C.playerStreak >= 2},
+  charge:   {label:'蓄力满四成后',     test:C => C.charge >= 40},
+  round3:   {label:'每第三合',        test:C => C.round % 3 === 0}
+};
+
+const FOE_HABITS = {
+  caocao:{id:'caocao', name:'多疑', when:'afterDraw', move:2, p:0.62,
+    tell:'曹操多疑，每逢相持，他宁肯先留一手✋布观望，也不肯把底牌先亮出来。',
+    broke:'你连破他两回「相持留布」，曹操眼底疑色更重，索性把袖子一甩：这路数，不用了。'},
+  liubei:{id:'liubei', name:'仁厚', when:'afterLoss', move:2, p:0.60,
+    tell:'刘备失手之后反倒收手：下一合常出✋布，像是先让你一步，再图后报。',
+    broke:'你两次踩中他的「失手留手」，刘备叹了口气，不再一味示弱。'},
+  sunquan:{id:'sunquan', name:'制衡', when:'afterDraw', move:2, p:0.60,
+    tell:'孙权最爱制衡：一合打平，下一合便换✋布，把两边的手势重新摆匀。',
+    broke:'你连破他两次「相持换布」，孙权脸色一沉，索性不再求稳。'},
+  guanyu:{id:'guanyu', name:'拖刀', when:'afterWin', move:0, p:0.64,
+    tell:'关羽得手之后必拖一刀：下一合仍出✊石头，傲气就压在这只拳上。',
+    broke:'你两次破了他的拖刀势，关羽丹凤眼一眯，刀锋一转，不再托大。'},
+  zhangfei:{id:'zhangfei', name:'咆哮', when:'streak', move:0, p:0.66,
+    tell:'张飞见你连胜两合，喉咙里一声雷，下一合必定✊石头硬砸过来。',
+    broke:'你连砸他两次「连胜硬石」，张飞哇呀一吼，改了打法。'},
+  zhaoyun:{id:'zhaoyun', name:'龙胆', when:'low', move:1, p:0.66,
+    tell:'赵云血薄时反而更险：生命低于三成半，他必以✌剪刀突阵，走的是背水一路。',
+    broke:'你两次截住他的背水剪刀，赵云枪尖一挑，换了路数。'},
+  zhugeliang:{id:'zhugeliang', name:'观星', when:'round3', move:2, p:0.64,
+    tell:'诸葛亮每三合观一次星：第三、六、九合，他常出✋布，先把阵势铺开。',
+    broke:'你两次在他观星时落子，诸葛亮羽扇一顿，星盘换了。'},
+  zhouyu:{id:'zhouyu', name:'纵火', when:'afterWin', move:1, p:0.62,
+    tell:'周瑜得手便纵火：下一合常以✌剪刀续势，不给你喘息的空当。',
+    broke:'你两次掐断他的火头，周瑜眉一挑，不再续这一手。'},
+  lvbu:{id:'lvbu', name:'无双之傲', when:'high', move:0, p:0.64,
+    tell:'吕布满势时目中无人：生命高于六成，他一律✊石头平推，懒得变招。',
+    broke:'你两次破他的平推，吕布怒极反笑，戟法终于变了。'},
+  diaochan:{id:'diaochan', name:'离间', when:'streak', move:2, p:0.64,
+    tell:'貂蝉见你连胜两合，便以柔克刚：下一合常出✋布，等你一拳打空。',
+    broke:'你两次识破她的柔布，貂蝉眼波一转，收了这层笑。'},
+  simayi:{id:'simayi', name:'忍', when:'afterLoss', move:0, p:0.64,
+    tell:'司马懿失手后最沉得住气：下一合常出✊石头，先把阵脚钉死再说。',
+    broke:'你两次撬开他的龟壳，司马懿眼中寒光一闪，不再死守。'},
+  guojia:{id:'guojia', name:'遗计', when:'first', move:2, p:0.66,
+    tell:'郭嘉开局两合最爱落子：首合、次合常出✋布，像是早把后手写好了。',
+    broke:'你两次踩中他的开局遗计，郭嘉轻咳一声，把棋谱合上了。'},
+  sunshangxiang:{id:'sunshangxiang', name:'枭姬', when:'first', move:1, p:0.66,
+    tell:'孙尚香开局先张弓：前两合常出✌剪刀，先试试你的胆色。',
+    broke:'你两次空手夺了她的起手箭，枭姬一勒马，换了打法。'},
+  huangzhong:{id:'huangzhong', name:'老辣', when:'first', move:1, p:0.64,
+    tell:'黄忠开局先射一箭：前两合常出✌剪刀，老将的手比年轻人还快。',
+    broke:'你两次截住他的开局箭，黄忠捋须一笑，不再倚老卖老。'},
+  machao:{id:'machao', name:'铁骑', when:'first', move:0, p:0.66,
+    tell:'马超开局便冲阵：前两合常出✊石头，西凉铁骑不讲虚的。',
+    broke:'你两次挡住他的冲阵，马超勒马回身，铁骑改了锋线。'},
+  xuchu:{id:'xuchu', name:'虎痴', when:'first', move:0, p:0.68,
+    tell:'许褚开局就抡拳：前两合常出✊石头，虎痴的脑子比拳头慢半拍。',
+    broke:'你两次硬接他的开局拳，许褚挠了挠头，居然也学会换招了。'},
+  dianwei:{id:'dianwei', name:'追命', when:'afterWin', move:1, p:0.64,
+    tell:'典韦得手便追命：下一合常出✌剪刀，双戟一交叉，不给人退路。',
+    broke:'你两次从双戟缝里钻出去，典韦低吼一声，收了追击。'},
+  xiahoudun:{id:'xiahoudun', name:'刚烈', when:'low', move:0, p:0.66,
+    tell:'夏侯惇越伤越烈：生命低于三成半，他必以✊石头硬顶，宁折不弯。',
+    broke:'你两次在他拼命时卸了力，夏侯惇独目一瞪，不再一味硬顶。'},
+  luxun:{id:'luxun', name:'诱敌', when:'streak', move:2, p:0.64,
+    tell:'陆逊见你连胜两合，便退半步设火：下一合常出✋布，诱你深入。',
+    broke:'你两次没有踏进他的火圈，陆逊收扇，另起一计。'},
+  daqiao:{id:'daqiao', name:'柔守', when:'afterLoss', move:2, p:0.62,
+    tell:'大乔失手后不恼：下一合常出✋布，以柔化刚，等你自己乱了阵脚。',
+    broke:'你两次破了她以柔化刚的路数，大乔轻轻一叹，不再让这一手。'},
+  xiaoqiao:{id:'xiaoqiao', name:'天香', when:'afterDraw', move:2, p:0.62,
+    tell:'小乔相持之后爱换香：下一合常出✋布，把上一合的余味轻轻带过。',
+    broke:'你两次截住她的换香手，小乔抿嘴一笑，不再照旧。'},
+  zhenji:{id:'zhenji', name:'退潮', when:'afterLoss', move:2, p:0.62,
+    tell:'甄姬失手后如水退潮：下一合常出✋布，先把自己护住再说。',
+    broke:'你两次破了她退潮似的守势，甄姬眸光一转，不再按旧谱。'},
+  huatuo:{id:'huatuo', name:'自救', when:'low', move:2, p:0.66,
+    tell:'华佗血薄时先自救：生命低于三成半，他常出✋布，把阵脚裹住再谈别的。',
+    broke:'你两次扯开他的护身布，华佗摇了摇头，换了方子。'},
+  dongzhuo:{id:'dongzhuo', name:'骄横', when:'high', move:0, p:0.66,
+    tell:'董卓满势时骄横：生命高于六成，他一律✊石头压人，从不绕弯。',
+    broke:'你两次掀翻他的压人石，董卓骂了一声，终于肯挪动身子。'},
+  yuanshao:{id:'yuanshao', name:'世家', when:'afterWin', move:0, p:0.62,
+    tell:'袁绍得手便摆世家架子：下一合常出✊石头，乘胜再压一头。',
+    broke:'你两次让他乘胜不成，袁绍脸上一阵青白，不再摆这架子。'},
+  jiangwei:{id:'jiangwei', name:'继志', when:'afterLoss', move:0, p:0.62,
+    tell:'姜维失手后不乱：下一合常出✊石头，先把师父教过的阵脚站稳。',
+    broke:'你两次摇动他的阵脚，姜维深吸一口气，变了一路枪法。'},
+  gongsunzan:{id:'gongsunzan', name:'白马', when:'first', move:1, p:0.66,
+    tell:'公孙瓒开局先纵白马：前两合常出✌剪刀，骑射开路，快得不讲理。',
+    broke:'你两次勒住他的白马，公孙瓒一夹马腹，换了锋线。'},
+  zhangliao:{id:'zhangliao', name:'断后', when:'streak', move:1, p:0.64,
+    tell:'张辽见你连胜两合，便亲自断后：下一合常出✌剪刀，逍遥津那一手又来了。',
+    broke:'你两次从他断后的刀口下穿过去，张辽收刀，不再守这一路。'},
+  ganning:{id:'ganning', name:'劫营', when:'high', move:1, p:0.62,
+    tell:'甘宁满势时爱劫营：生命高于六成，他常以✌剪刀轻骑袭扰，不与你硬碰。',
+    broke:'你两次截住他的锦帆，甘宁大笑一声，换了劫法。'},
+  pangtong:{id:'pangtong', name:'连环', when:'afterDraw', move:2, p:0.62,
+    tell:'庞统相持之后爱连环：下一合常出✋布，一环扣一环，等你先断。',
+    broke:'你两次斩断他的连环，庞统推了推酒葫芦，不再续这条链。'},
+  taishici:{id:'taishici', name:'笃烈', when:'playerLow', move:1, p:0.64,
+    tell:'太史慈见你血薄，反而更敢拼：你生命低于三成半，他常以✌剪刀抢攻。',
+    broke:'你两次在他抢攻时站住阵脚，太史慈收弓，不再小觑你。'},
+  weiyan:{id:'weiyan', name:'反骨', when:'playerLow', move:0, p:0.64,
+    tell:'魏延见你血薄，便想走子午谷：你生命低于三成半，他常出✊石头直取中军。',
+    broke:'你两次堵住他的奇袭路，魏延冷哼一声，另寻出口。'},
+  huangyueying:{id:'huangyueying', name:'机关', when:'charge', move:2, p:0.64,
+    tell:'黄月英蓄力满四成便布机关：下一合常出✋布，把木械一件件摆开。',
+    broke:'你两次拆了她的机关，黄月英眼睛一亮，换了一套新图。'},
+  xuhuang:{id:'xuhuang', name:'扎营', when:'charge', move:0, p:0.64,
+    tell:'徐晃蓄力满四成便扎营：下一合常出✊石头，先立住营盘再谈进退。',
+    broke:'你两次拔掉他的营钉，徐晃收斧，不再只守一条线。'},
+  zhanghe:{id:'zhanghe', name:'巧变', when:'afterDraw', move:1, p:0.64,
+    tell:'张郃相持之后必变：下一合常出✌剪刀，用巧不用力，专挑你的旧路。',
+    broke:'你两次抢在他变招之前落子，张郃眼中一亮，索性另起一路。'},
+  lvmeng:{id:'lvmeng', name:'白衣', when:'round3', move:1, p:0.64,
+    tell:'吕蒙每第三合便白衣渡江：第三、六、九合，他常以✌剪刀偷袭。',
+    broke:'你两次在渡口截住白衣，吕蒙收了船，换了一条水道。'},
+  lusu:{id:'lusu', name:'守盟', when:'afterDraw', move:0, p:0.62,
+    tell:'鲁肃相持之后仍守盟约：下一合常出✊石头，宁可自己先站住，也不肯先毁约。',
+    broke:'你两次在他守约时占了先手，鲁肃苦笑一声，不再一味守盟。'},
+  jiaxu:{id:'jiaxu', name:'下毒', when:'afterLoss', move:1, p:0.64,
+    tell:'贾诩失手后最爱下毒：下一合常出✌剪刀，专在你以为他要收手时递过来。',
+    broke:'你两次没接他的毒手，贾诩眯起眼，又换了一副心思。'}
+};
+
+/* Boss 沿用「名字」而不是 ch.id 查表：makeChapterBoss 全部复用 lvbu_boss 骨架，
+   用 id 会把六章守将都认成吕布。 */
+const BOSS_HABITS = {
+  '张郃':{id:'boss_zhanghe', name:'绝路巧变', when:'low', move:1, p:0.65,
+    tell:'张郃血越少越巧：生命低于三成半，他反而以✌剪刀变招，想从死路里抠出一条活路。',
+    broke:'你两次堵死他的绝路巧变，张郃把令旗一折，不再跟你斗巧。'},
+  '郝昭':{id:'boss_haozhao', name:'铁壁守城', when:'high', move:0, p:0.65,
+    tell:'郝昭满血时只会做一件事：✊石头堵门。他相信只要墙不倒，你就进不来。',
+    broke:'你两次砸开他的满血铁壁，郝昭终于挪动了那块堵门的石。'},
+  '夏侯渊':{id:'boss_xiahouyuan', name:'千里急袭', when:'first', move:1, p:0.70,
+    tell:'夏侯渊最讲快：开局两合常出✌剪刀，千里袭人，连喘息都不给你留。',
+    broke:'你两次截住他的急袭，夏侯渊勒马，第一次慢了半拍。'},
+  '庞德':{id:'boss_pangde', name:'抬棺死战', when:'low', move:0, p:0.70,
+    tell:'庞德血薄时反而抬棺向前：生命低于三成半，他必以✊石头死战不退。',
+    broke:'你两次从他棺前绕过去，庞德低吼一声，终于换了刀路。'},
+  '司马懿':{id:'boss_simayi', name:'冢虎之忍', when:'afterDraw', move:2, p:0.65,
+    tell:'司马懿最会等：一合相持之后，他常留✋布不动，等你先熬不住。',
+    broke:'你两次逼他先动，司马懿眼中阴晴不定，终于不再端坐。'},
+  '吕布':{id:'boss_lvbu', name:'无双之傲', when:'high', move:0, p:0.65,
+    tell:'吕布满势时不讲道理：生命高于六成，他一律✊石头平推，天下无双的傲气全压在这一拳上。',
+    broke:'你两次从他的方天画戟下走进来，吕布怒喝一声，终于认真了。'}
+};
+
+function cleanBossName(name){ return String(name || '').replace(/^.*·/, ''); }
+function foeHabitFor(f){
+  if(!f || !f.ch) return null;
+  if(f.ch.id === 'lvbu_boss') return BOSS_HABITS[cleanBossName(f.name)] || null;
+  return FOE_HABITS[f.ch.id] || null;
+}
+function habitCtx(){
+  if(!ai || !player || !ai.st) return null;
+  const n = aiMoves.length;
+  let prevRes = null;
+  if(n > 0 && playerMoves.length >= n) prevRes = judge(playerMoves[n-1], aiMoves[n-1]);
+  let playerStreak = 0;
+  for(let j = n - 1; j >= 0; j--){
+    if(playerMoves.length < j + 1) break;
+    if(judge(playerMoves[j], aiMoves[j]) === 0) playerStreak++;
+    else break;
+  }
+  return {
+    round: G.round, prevRes, playerStreak,
+    hpPct: ai.hp / Math.max(1, ai.maxHp),
+    foePct: player.hp / Math.max(1, player.maxHp),
+    charge: ai.charge || 0
+  };
+}
+function habitReady(h, st, C){
+  if(!h || !st || st.broken || !C) return false;
+  const w = HABIT_WHENS[h.when];
+  return !!(w && w.test(C));
+}
+function initFoeHabit(f){
+  if(!f || !f.st) return null;
+  const h = foeHabitFor(f);
+  f.st.habit = h
+    ? {id:h.id, revealed:false, fired:0, punished:0, broken:false}
+    : null;
+  return h;
+}
+/* 一次随机数同时决定「习性是否命中」与「命中失败后出哪一手」。
+   这样每回合的随机数消耗与旧版完全一致（不因为新层把后续天时/暴击流整体推位），
+   命中失败时把剩余区间线性映射回 0/1/2，仍是均匀分布。 */
+function habitRoll(h, on){
+  const r = Math.random();
+  if(!on) return Math.floor(r * 3);
+  if(r < h.p){ aiHabitFired = h; return h.move; }
+  return Math.floor(((r - h.p) / (1 - h.p)) * 3);
+}
+function habitHistoryHtml(){
+  if(!RL.active || !ai || !ai.st || !ai.st.habit) return '';
+  const h = foeHabitFor(ai), st = ai.st.habit;
+  if(!h) return '';
+  if(st.broken)
+    return '<span class="habitline broken">🧠 习性·'+h.name+'：已被你逼得变招（失效）</span>';
+  if(!st.revealed)
+    return '<span class="habitline dim">🧠 习性：未明 —— 交上手，才看得出他惯走哪一路</span>';
+  return '<span class="habitline">🧠 习性·'+h.name+'：'+HABIT_WHENS[h.when].label+
+    ' → 常出 '+MOVES[h.move].icon+MOVES[h.move].label+
+    (st.punished ? '　<span class="hdim">识破 '+st.punished+'/2</span>' : '')+'</span>';
+}
+
 function aiChoose(){
   const h = playerMoves.slice(-3);
   const rd = rlOrdRead();          /* 军令「反间」：看破概率整体提高（非北伐时为 0） */
+  aiHabitFired = null;
+  const fh = (RL_HABITS_ON && RL.active && ai && ai.st && ai.st.habit)
+    ? foeHabitFor(ai) : null;
+  const hC = fh ? habitCtx() : null;
+  const habitOn = !!(fh && habitReady(fh, ai.st.habit, hC));
   if(difficulty === 'easy'){
-    return Math.floor(Math.random()*3);
+    return habitRoll(fh, habitOn);
   }
   if(difficulty === 'hard'){
     /* 军神：25% 看破三连 */
@@ -7364,7 +7603,8 @@ function aiChoose(){
       return (h[0] + 2) % 3;
     }
   }
-  return Math.floor(Math.random()*3);
+  /* 读心没有看破时，敌将按习性落子；习性不中才回到纯随机。 */
+  return habitRoll(fh, habitOn);
 }
 
 function markovPredict(history){
@@ -7606,7 +7846,10 @@ function playRound(pm){
       }
     }
 
+    aiHabitFired = null;
     const am = (G.peekMove != null) ? G.peekMove : aiChoose();
+    const habitFired = aiHabitFired;
+    aiHabitFired = null;
     G.peekMove = null;
     aiMoves.push(am);
     const res = judge(pm, am);
@@ -7653,6 +7896,27 @@ function playRound(pm){
         'round');
     if(stakeMsg) log(stakeMsg, res === 0 ? 'gold' : 'bad');
     if(aiReadMsg){ log(aiReadMsg, 'bad'); aiReadMsg = ''; }   // AI 读招提示：揭晓后播报
+    /* 🧠 习性揭晓与识破：先让玩家看见路数，再统计「踩中旧路」的次数。
+       两次得手即逼敌将变招，防止一条习性被无限吃分。 */
+    if(habitFired && ai.st.habit && ai.st.habit.id === habitFired.id && !ai.st.habit.broken){
+      const hs = ai.st.habit;
+      hs.fired++;
+      if(!hs.revealed){
+        hs.revealed = true;
+        log('🧠 你摸清了他的路数 —— 习性·'+habitFired.name+'：'+habitFired.tell,'sys');
+      }
+      if(res === 0){
+        hs.punished++;
+        E({k:'float', side:'a', text:'识破 '+hs.punished+'/2', cls:'fate'});
+        if(hs.punished >= 2){
+          hs.broken = true;
+          log('🧠 敌将变招！'+habitFired.broke+'（习性失效）','bad');
+          E({k:'float', side:'a', text:'变招！', cls:'crit'});
+        } else {
+          log('🎯 识破 '+hs.punished+'/2：你正踩中他的旧路，再破一次他就要变招。','gold');
+        }
+      }
+    }
 
     /* 🀄 兵势·先手环节：立盾类必须赶在敌将出手与流矢之前 */
     const BC = {res:res, pm:pm, am:am,
@@ -9176,6 +9440,10 @@ function startRLBattle(node){
   dealSecrets(ai);
   clearDebuffs(player);
   resetBattleCarryover(player);
+  /* 🧠 习性档案：每场重掷一次状态（Boss 的名声在外，新兵也看得懂路数）。 */
+  const _hab = initFoeHabit(ai);
+  const _habKnown = !!_hab && (difficulty === 'easy' || node.type === 'boss');
+  if(_habKnown) ai.st.habit.revealed = true;
   if(player.st.doctrinePeek && RL.battles % 3 === 0) player.st.doctrinePeekPending = 1;
   player.rage = 0; ai.rage = 0;
   /* 词条必须在"血量/攻击/怒气全部归位"之后再挂，否则会被上面的重置吃掉。
@@ -9330,6 +9598,14 @@ function startRLBattle(node){
   /* 中途遇事：每场战斗先打一段行军短叙（Boss 有搦战叫阵，故不再叠加）。 */
   const _tale = rlNodeTale(node.type);
   if(_tale) log('📖 '+_tale, 'sys');
+  if(_hab){
+    if(_habKnown){
+      log('🧠 习性·'+_hab.name+'（'+HABIT_WHENS[_hab.when].label+' → 常出 '+
+          MOVES[_hab.move].icon+MOVES[_hab.move].label+'）：'+_hab.tell,'sys');
+    } else {
+      log('🕵 敌将的习性尚未摸清 —— 交上手，才看得出他惯走哪一路。','sys');
+    }
+  }
   log('🃏 本局锦囊：'+JN.filter(j => j.id in items)
         .map(j => j.icon+' '+j.name).join('、')+'（各一次，随时可发动，未用尽的会带入下一场）','gold');
   show('screen-battle');
@@ -10285,11 +10561,27 @@ function renderPanel(side, entering){
 /* ---------- 技能速览：战斗中随时可查双方技能（手机端主诉求） ---------- */
 function skillPeekCard(f, sideLabel){
   const ready = f.rage >= 100 ? ' · 超必杀就绪' : '';
+  let habit = '';
+  if(RL.active && f === ai && f.st && f.st.habit){
+    const h = foeHabitFor(f), hs = f.st.habit;
+    if(h){
+      habit = '<div class="skhabit">' +
+        '<b>🧠 习性·' + h.name + '</b>' +
+        (!hs.revealed
+          ? '<span>尚未识破（' + HABIT_WHENS[h.when].label + '；交上手便能看出路数）</span>'
+          : '<span>' + HABIT_WHENS[h.when].label + ' → 常出 ' +
+              MOVES[h.move].icon + MOVES[h.move].label +
+              '　识破 ' + hs.punished + '/2' + (hs.broken ? ' · 已逼其变招' : '') + '</span>' +
+            '<small>' + h.tell + '</small>') +
+      '</div>';
+    }
+  }
   return '<div class="skcard' + (sideLabel === '敌方' ? ' skfoe' : '') + '">' +
     '<div class="skhead">' + f.name + '<span>· ' + f.ch.title + '</span><em>' + sideLabel + '</em></div>' +
     '<div class="skstat">⚔ ' + f.atk + '　🛡 ' + effectiveDef(f) + '%　⚡ 蓄力 ' + f.charge + '%　🔥 怒气 ' + f.rage + '%' + ready + '</div>' +
     '<div class="skskill"><b>【' + f.ch.skill.name + '】</b>' + f.ch.skill.desc + '</div>' +
     '<div class="skult"><b>【必杀 · ' + f.ch.ult.name + '】</b>' + f.ch.ult.desc + '</div>' +
+    habit +
     '<div class="skbeats">' + ultBeats(f.ch.ult) + '</div>' +
   '</div>';
 }
@@ -10658,7 +10950,8 @@ function renderHistory(){
   const cnt = a => { const c = [0,0,0]; a.forEach(m => { if(m != null && c[m] !== undefined) c[m]++; }); return c; };
   const trail = a => a.slice(-12).map(m => m == null ? '💥' : MOVES[m].icon).join('');
   if(!playerMoves.length && !aiMoves.length){
-    box.innerHTML = '<span class="hdim">📜 出招记录：先出一手，看看你与对手的手气习惯（电脑会读你，你也能读它）</span>';
+    box.innerHTML = '<span class="hdim">📜 出招记录：先出一手，看看你与对手的手气习惯（电脑会读你，你也能读它）</span>' +
+      habitHistoryHtml();
     return;
   }
   const p = cnt(playerMoves), q = cnt(aiMoves);
@@ -10671,7 +10964,7 @@ function renderHistory(){
     : '<span class="foe">对手 最近 <b>'+trail(aiMoves)+'</b>　共 ✊'+q[0]+' ✌️'+q[1]+' ✋'+q[2]+'</span>';
   box.innerHTML =
     '<span class="mine">你 最近 <b>'+trail(playerMoves)+'</b>　共 ✊'+p[0]+' ✌️'+p[1]+' ✋'+p[2]+'</span>' +
-    foeHtml;
+    foeHtml + habitHistoryHtml();
 }
 
 function showResult(){
@@ -10957,9 +11250,11 @@ function codexHtml(tab){
     群② 暴击 +10% · 群④ 暴击伤害 +40%</p>
     <h4>👁 读心</h4>
     <p>战场上方实时记录你与对手的出招次数与最近手势。电脑会读你（难度越高越准），你也能读它。</p>
+    <p><b>🧠 北伐敌将还有一条「习性」。</b>每人都有一个固定时机（开局两合 / 得手后 / 失手后 / 相持后 / 血薄 / 蓄力后 / 你连胜后 …）和一手偏爱；时机一到，他常照旧路出招。你每识破并踩中两次，他就当场变招、这条习性作废 —— 所以「读他」不是一次性的，而是一场有始有终的心理战。</p>
+    <p><b>什么时候看得见：</b>新兵难度开局即可在出招记录里看到敌将习性；老将 / 军神要等它第一次发动、你交过手才摸清。六章守将名声在外，任何难度开战即知。点任意武将面板可随时打开「技能速览」，里面也记着这条习性。</p>
     <h4>🎚 电脑难度</h4>
-    <p><b>新兵</b>：纯随机，电脑攻击不额外获得难度加成。<b>老将</b>：电脑生命约 +14%、攻击 +1，并有 30% 概率看破你的三连。<b>军神</b>：在此基础上，25% 看破连招；有足够记录后，25% 概率按“上一手势 → 下一手势”的转移习惯预判，并有 20% 概率针对你最偏爱的招式。预测失败时仍会随机出招。</p>
-    <p><b>这套只说明"电脑有多会读你"。</b>单挑、虎牢关、擂台到这儿就完了；<b>北伐</b>还要再叠一层 —— 同一档难度，朝廷给这支部队下了几道军令。</p>
+    <p><b>新兵</b>：纯随机，电脑攻击不额外获得难度加成。<b>老将</b>：电脑生命约 +14%、攻击 +1，并有 30% 概率看破你的三连。<b>军神</b>：在此基础上，25% 看破连招；有足够记录后，25% 概率按“上一手势 → 下一手势”的转移习惯预判，并有 20% 概率针对你最偏爱的招式。预测失败时先按习性落子，习性命中失败才随机出招。</p>
+    <p><b>这套只说明"电脑有多会读你"。</b>单挑、虎牢关、擂台到这儿就完了；<b>北伐</b>还要再叠两层 —— 敌将各自的「习性」，以及同一档难度下朝廷给这支部队下的几道军令。</p>
     <h4>⚖ 朝廷军令（难度即规则）</h4>
     <p>难度不该只是"敌将血更厚"，而该是<b>规则本身变了</b>。出师时按难度定军令，一局定下不再更改，序章、地图页与终局战报都会写明是哪几条：<b>新兵 0 条</b> · <b>老将 1 条</b>（较轻的一 / 二级令）· <b>军神 3 条</b>（一 / 二 / 三级各一条，压力恒定但组合仍达 60 种）。<br>
     ${[1,2,3].map(t => '【第'+'一二三'[t-1]+'等】'+RL_ORDERS.filter(o => o.tier === t)
@@ -10975,18 +11270,30 @@ function codexHtml(tab){
   }
   if(tab === 'hero'){
     const groups = ['wei','shu','wu','qun'];
-    let out = '<p>共 <b>'+CHARS.length+'</b> 名武将。技能越强、基础属性越低（经数值校准）。「超必杀」需怒气满 100。</p>';
+    let out = '<p>共 <b>'+CHARS.length+'</b> 名武将。技能越强、基础属性越低（经数值校准）。「超必杀」需怒气满 100。' +
+      '<br>🧠 <b>北伐中若与此人为敌</b>，他还带着一条可读的「习性」：到了特定时机便容易走同一条路；你看得见、也破得掉。</p>';
     groups.forEach(c => {
       const list = CHARS.filter(x => x.camp === c);
       if(!list.length) return;
       out += '<h4>' + CAMP_NAME[c] + '　(' + list.length + ' 名)</h4>';
-      out += cxGrid(list.map(x => cxItem('🎭', x.name,
-        '【'+x.skill.name+'】'+x.skill.desc +
-        '<br>🎬 <b>技能挂在哪一环</b>：'+heroFlow(x) +
-        '<br>💥 <b>超必杀·'+x.ult.name+'</b>：'+x.ult.desc +
-        '<br>🎬 <b>四拍</b>：'+ultBeats(x.ult),
-        '⚔'+characterStat(x, 'atk')+' ❤'+characterStat(x, 'hp')+' 🛡'+characterStat(x, 'def')+'%')));
+      out += cxGrid(list.map(x => {
+        const hab = FOE_HABITS[x.id];
+        return cxItem('🎭', x.name,
+          '【'+x.skill.name+'】'+x.skill.desc +
+          '<br>🎬 <b>技能挂在哪一环</b>：'+heroFlow(x) +
+          '<br>💥 <b>超必杀·'+x.ult.name+'</b>：'+x.ult.desc +
+          '<br>🎬 <b>四拍</b>：'+ultBeats(x.ult) +
+          (hab ? '<br>🧠 <b>习性·'+hab.name+'</b>（'+HABIT_WHENS[hab.when].label+' → 常出 '+MOVES[hab.move].icon+MOVES[hab.move].label+'）：'+hab.tell : ''),
+          '⚔'+characterStat(x, 'atk')+' ❤'+characterStat(x, 'hp')+' 🛡'+characterStat(x, 'def')+'%');
+      }));
     });
+    out += '<h4>🧠 六章守将 · 阵前习性</h4>' +
+      cxGrid(Object.keys(BOSS_HABITS).map(k => {
+        const h = BOSS_HABITS[k];
+        return cxItem('🏯', k,
+          '<b>习性·'+h.name+'</b>（'+HABIT_WHENS[h.when].label+' → 常出 '+MOVES[h.move].icon+MOVES[h.move].label+'）' +
+          '<br>'+h.tell, '守关敌将');
+      }));
     return out;
   }
   if(tab === 'card'){
@@ -11622,6 +11929,10 @@ globalThis.__api = {
   buyMerit, refundMerit, meritSpent, meritOwned, rlMeritBonuses, renderMeritScreen, openMeritScreen,
   getRL_ENDINGS: () => RL_ENDINGS, rlEndingCtx, pickRLEnding, rlEndingHtml, rlEndingDemoCtx,
   seenEndings, rlEndingTotal, recordRLEnding, storyPick, RL_ORIGIN_CODA, EVENT_EXIT_TEXT,
+  getFOE_HABITS: () => FOE_HABITS, getBOSS_HABITS: () => BOSS_HABITS,
+  HABIT_WHENS, foeHabitFor, initFoeHabit, habitHistoryHtml,
+  setHabits: v => { RL_HABITS_ON = !!v; }, getHabitsOn: () => RL_HABITS_ON,
+  getAiHabit: () => (ai && ai.st ? ai.st.habit : null),
   rlBossLabel, getRL_CHAPTERS: () => RL_CHAPTERS,
   armSecret, rerollSecret, dealSecrets, tickEffects, applyDestiny, tryDestinyDraw,
   clearDebuffs, renderSecrets, resetBattleCarryover, rlBossBanter, rlBossPhase3Line,
