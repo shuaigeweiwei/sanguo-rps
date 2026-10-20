@@ -3866,6 +3866,73 @@ function rlNodeTale(type){
   const pool = NODE_TALE_POOL[type];
   return pool && pool.length ? pool[rlFortune(pool.length)] : '';
 }
+/* —— 非战斗节点遭遇短叙：rest/doctor/tavern/shop/camp/shrine/tower/ruins/
+   treasure/training/forge 每类一小池，随节点弹窗顶部落一行。走 rlFortune
+   （状态+局侧熵播种），零 Math.random、复现逐位一致；只添气氛，
+   一个数值都不动。pool 缺类型时静默返回空串，绝不挡流程。 */
+const NODE_SIDE_TALES = {
+  rest:[
+    '篝火忽明忽暗，值夜的士卒把毯角绷得笔直——没人敢真睡沉。',
+    '老伙夫往汤里又撒了一把盐，说走山路的人汗咸，得补咸。',
+    '前哨把今晚的暗号换了个新的，换法是现场想的，没落字。'
+  ],
+  treasure:[
+    '木箱的铜扣磨得发亮——想是前人开合过太多次，终究还是带不走。',
+    '锁是新的，箱底却是湿的；打头的军士蹲下去看了半晌，没说话。',
+    '几只雀在箱盖上跳来跳去，见人来了也不躲。'
+  ],
+  training:[
+    '教头拿鞭梢在土里划线，说步子乱的人，先别想出拳的事。',
+    '木桩上的刀痕深浅不一，最深的那几刀是上个月留下的。',
+    '新兵把口诀念得七扭八歪，老兵在旁边憋着不笑。'
+  ],
+  forge:[
+    '风箱一推一拉，热浪里全是铁屑味。',
+    '铁匠不用尺，拿拇指量了量旧刃的卷口，直摇头。',
+    '砧子比人还老，凹下去的窝恰是几十年锤出来的印子。'
+  ],
+  camp:[
+    '前营的拒马又往东挪了半丈，哨位换了个更背风的角落。',
+    '帐帘缝里塞着几张字条，是各队今早报平安的例行。',
+    '火头军把粥锅挪到上风口，香味顺着营道一路跑。'
+  ],
+  shop:[
+    '货郎的黑秤杆用了三代，秤星磨得只剩几个亮茬。',
+    '骰盅的口沿磕了一圈，老板说是熟客搅的，不是赌输赢。',
+    '讨价的声浪里夹着一句压低的「军爷，要的货在后头」。'
+  ],
+  shrine:[
+    '香炉里的旧灰压得极实，插新香的位子磨出了槽。',
+    '旗杆上系满还愿的红绳，风一过，半山都在动。',
+    '庙祝不看人，只看香火，念的经谁也听不清。'
+  ],
+  tower:[
+    '梯子第七级换了新木，踩上去格外有声。',
+    '望孔被前人摸得发亮，正口对着北道。',
+    '旗语手册压在砖缝里，字被雨洇过。'
+  ],
+  doctor:[
+    '郎中的药碾子响个不停，碾槽里的朱砂色洗不净。',
+    '帐角的竹架分七层，每层都拴着病人的名签。',
+    '郎中不用麻线，说热天要抢在黄昏前把伤缝完。'
+  ],
+  tavern:[
+    '退卒的碗刚放下，探子的耳朵就竖起来——酒旗底下没有闲话。',
+    '柜台底压着半张旧舆图，谁也说不上是哪年画的。',
+    '跑堂的认人极准，客人一进门就把酒端对了桌。'
+  ],
+  ruins:[
+    '蔓草从瓦缝里钻出来，把半块残碑顶得微微翘起。',
+    '洼地的积水映着天光，底下偶尔闪过一星铜绿。',
+    '老兵蹲在断墙上说，这座粮仓的方位他祖父就讲过。'
+  ]
+};
+function sideTale(type){
+  const pool = NODE_SIDE_TALES[type];
+  if(!pool || !pool.length) return '';
+  return '<p style="margin:2px 0 10px;padding:5px 9px;border-left:3px solid #8a7f5c;color:#cfc7b0;'+
+         'font-size:12.5px;line-height:1.75">📖 '+pool[rlFortune(pool.length)]+'</p>';
+}
 /* 奇遇节点里刷出"剧情奇遇"的概率。前两层固定不刷（rlStoryPool 已挡），
    所以开局阶段看到的仍是老一批基础奇遇。
    调到这里是有讲究的：基础奇遇里高分项多是「遗物 / 升级」这类能滚雪球的
@@ -9034,7 +9101,7 @@ function openFateChoice(node){
 
 function openShrine(node){
   const hpCost = Math.max(6, Math.round(RL.hero.maxHp * 0.1));
-  showModal('⛩️ 山野祭坛','旧军旗在风中猎猎作响，供奉不同，回报也不同。',[
+  showModal('⛩️ 山野祭坛', sideTale('shrine')+'旧军旗在风中猎猎作响，供奉不同，回报也不同。',[
     {t:'献血换遗物（失去 '+hpCost+' 最大生命）', run(){
       if(RL.hero.maxHp <= hpCost + 12){ log('你的生命根基太薄，祭坛没有回应。','bad'); return false; }
       /* 先问遗物池还有没有货:rollRelic 在池子抽空时返回 null,
@@ -9065,7 +9132,7 @@ function openShrine(node){
 }
 
 function openTraining(node){
-  showModal('🎯 演武场','军中教头只教一件事：先看清对手，再出拳。',[
+  showModal('🎯 演武场', sideTale('training')+'军中教头只教一件事：先看清对手，再出拳。',[
     {t:'练习读招（接下来两场战斗首回合可预知敌招）', run(){
       RL.hero.st.peekCharges = (RL.hero.st.peekCharges||0) + 2;
       log('你记住了对手的节奏，接下来两场战斗首回合可预知敌招。','gold');
@@ -9085,7 +9152,7 @@ function openTraining(node){
 }
 
 function openForge(node){
-  showModal('⚒ 铸造营','铁匠随军北上，可把一次性收益变成长期构筑优势。',[
+  showModal('⚒ 铸造营', sideTale('forge')+'铁匠随军北上，可把一次性收益变成长期构筑优势。',[
     {t:'🧘 精炼军略牌（升级一张牌）', run(){
       openUpgradeList(() => completeNode(node), () => openForge(node));
       return false;
@@ -9109,7 +9176,7 @@ function openForge(node){
 
 /* ---------- 军营（安全节点：补充锦囊 / 休整） ---------- */
 function openCamp(node){
-  showModal('🏕 军营','斥候在此处设了前营，可以稍作停留。',[
+  showModal('🏕 军营', sideTale('camp')+'斥候在此处设了前营，可以稍作停留。',[
     {t:'🏕 锦囊整备（补满锦囊至上限，回复 10% 生命）', run(){
       const cap = jnCapacity();
       const pool = shuffle(JN.filter(j => !(j.id in items)));
@@ -9142,7 +9209,7 @@ function openCamp(node){
 
 /* ---------- 烽火台（情报节点：侦察 / 换钱 / 示警） ---------- */
 function openTower(node){
-  showModal('🗼 烽火台','登上烽火台，居高临下可窥敌势。',[
+  showModal('🗼 烽火台', sideTale('tower')+'登上烽火台，居高临下可窥敌势。',[
     {t:'🗼 燃起烽火（侦察未来 2 层，下一场非 Boss 战敌方生命 −8%）', run(){
       RL.flags.scouted = Math.max(RL.flags.scouted||0, 2);
       RL.flags.scoutAid = Math.max(RL.flags.scoutAid||0, 8);
@@ -9173,7 +9240,7 @@ function openTower(node){
 function openDoctor(node){
   const fee = Math.round(22 + rlFoeLevel() * 2);
   const strong = fee * 2;
-  showModal('🚑 随军名医','帐里药香扑鼻，郎中正给伤兵缝创。诊金 '+fee+' 金，童叟无欺。',[
+  showModal('🚑 随军名医', sideTale('doctor')+'帐里药香扑鼻，郎中正给伤兵缝创。诊金 '+fee+' 金，童叟无欺。',[
     {t:'🩹 敷金疮药（回复 50% 生命，'+fee+' 金）', run(){
       if(RL.gold < fee){ log('💸 诊金不够，郎中摊开手。','bad'); return false; }
       RL.gold -= fee;
@@ -9212,7 +9279,7 @@ function openDoctor(node){
    四个方向分别喂玩家当下最缺的那样：士气、情报、战力、金币。 */
 function openTavern(node){
   const drink = 20, info = 16, recruit = 30, stake = 30;
-  showModal('🍶 军市酒馆','道旁斜挑一面酒旗，里面坐着退卒、行商与探子。',[
+  showModal('🍶 军市酒馆', sideTale('tavern')+'道旁斜挑一面酒旗，里面坐着退卒、行商与探子。',[
     {t:'🍺 请士卒痛饮（军心 +2，'+drink+' 金）', run(){
       if(RL.gold < drink){ log('💸 酒钱不够，士卒散去。','bad'); return false; }
       RL.gold -= drink; changeMorale(2);
@@ -9258,7 +9325,7 @@ function openTavern(node){
 /* ---------- 废墟（高风险挖掘：赌运气，也赌行军时间） ----------
    收益刻意做成"一次性"，挖塌要拿血换，且不额外喂遗物池。 */
 function openRuins(node){
-  showModal('🏛 前朝废墟','断墙颓垣，瓦砾下有积水反光。随军的老兵说，这里埋过一座粮仓。',[
+  showModal('🏛 前朝废墟', sideTale('ruins')+'断墙颓垣，瓦砾下有积水反光。随军的老兵说，这里埋过一座粮仓。',[
     {t:'⛏ 挖掘瓦砾（五五：45 金 + 补给 1 / 塌方受 10 伤）', run(){
       if(Math.random() < 0.5){
         RL.gold += 45; changeSupplies(1);
@@ -9307,7 +9374,7 @@ function closeModal(){ $('modal').classList.add('hidden'); }
 
 /* ---------- 篝火 ---------- */
 function openRest(node){
-  showModal('🔥 篝火营寨','连日征战，人困马乏。<b>只能择一休整</b>：',[
+  showModal('🔥 篝火营寨', sideTale('rest')+'连日征战，人困马乏。<b>只能择一休整</b>：',[
     {t:'🛏 休整（回复 35% 生命）', run(){ heal(RL.hero, Math.round(RL.hero.maxHp*0.35)); log('🏕 你睡了个好觉','gold'); completeNode(node); }},
     {t:'🧘 打坐（永久升级一张军略牌）', run(){ openUpgradeList(() => completeNode(node), () => openRest(node)); return false; }},
     {t:'🗡 打磨兵器（攻击力 +1）', run(){ RL.hero.atk += 1; log('攻击力 +1','gold'); completeNode(node); }},
@@ -9376,7 +9443,7 @@ function openTreasure(node){
     log('💰 宝藏中另有 '+g+' 金','gold');
   }
   showModal(r ? (r.icon+' '+r.name+'（'+RARITY_NAME[r.rar]+'）') : '💎 空空如也',
-            (r ? r.desc : '宝箱里只有尘埃…') + extra,
+            sideTale('treasure') + (r ? r.desc : '宝箱里只有尘埃…') + extra,
             [{t:'继续前进', run(){ completeNode(node); }}]);
 }
 
@@ -9482,6 +9549,8 @@ function openRemoveList(onDone, onCancel){
 function openShop(node){
   const goods = { cards: randomCards(3, 'shop'), potions: shuffle(POTIONS).slice(0,2),
                   relic: rollRelic('shop'), removed:false, supplyStock:1, boonStock:1, refreshCost:8 };
+  /* 侧叙只在本节点打开时抽一次：render() 会重开弹窗多次购货，不能每购一件换一条。 */
+  const sideHtml = sideTale('shop');
   function render(){
     const opts = [];
     goods.cards.forEach((c,i) => opts.push({
@@ -9560,7 +9629,7 @@ function openShop(node){
       }
     });
     opts.push({t:'🚪 离开商店', run(){ completeNode(node); }});
-    showModal('🛒 行商货郎','你身上有 <b>'+RL.gold+'</b> 金。'+
+    showModal('🛒 行商货郎', sideHtml+'你身上有 <b>'+RL.gold+'</b> 金。'+
       (goods.removed ? '' : '删牌、买牌、刷新都会改变你的卡组。'), opts);
   }
   render();
