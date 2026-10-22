@@ -1313,6 +1313,41 @@ const CHARS = [
    }}
 ];
 
+/* ==================== 敌将战法（普通敌将差异化） ====================
+   不是所有人都是同一种“随机出拳机器”：四类战法在开战时给敌将
+   一个可见的小被动，和原有技能/习性叠加。Boss 不套这层，走专属习性。 */
+const FOE_ARCH_TYPES = {
+  assault: {icon:'⚔', name:'猛攻', desc:'暴击率 +5%',
+    apply(f){ f.st.critBonus = (f.st.critBonus||0) + 0.05; }},
+  guard:   {icon:'🛡', name:'坚守', desc:'防御 +2、开局格挡 +3',
+    apply(f){ f.def += 2; f.st.block = (f.st.block||0) + 3; }},
+  scheme:  {icon:'🧠', name:'诡谋', desc:'开局蓄力 +6%',
+    apply(f){ f.charge = Math.min(chargeCap(f), (f.charge||0) + 6); }},
+  skirmish:{icon:'💨', name:'游斗', desc:'闪避 +3%',
+    apply(f){ f.st.dodge = (f.st.dodge||0) + 0.03; }}
+};
+const FOE_ARCH = {
+  guanyu:'assault', zhangfei:'assault', xuchu:'assault', dianwei:'assault',
+  dongzhuo:'assault', machao:'assault', huangzhong:'assault', weiyan:'assault',
+  sunshangxiang:'assault', ganning:'assault', taishici:'assault', xiahoudun:'assault',
+  lvbu:'assault',
+  caocao:'guard', sunquan:'guard', zhenji:'guard', xiaoqiao:'guard',
+  daqiao:'guard', lusu:'guard', huatuo:'guard', diaochan:'guard', liubei:'guard',
+  zhugeliang:'scheme', zhouyu:'scheme', simayi:'scheme', guojia:'scheme',
+  luxun:'scheme', pangtong:'scheme', huangyueying:'scheme', jiaxu:'scheme',
+  jiangwei:'scheme', zhanghe:'scheme',
+  zhaoyun:'skirmish', gongsunzan:'skirmish', zhangliao:'skirmish',
+  lvmeng:'skirmish', xuhuang:'skirmish', yuanshao:'skirmish'
+};
+function foeArchOf(f){ return f && f.ch ? FOE_ARCH[f.ch.id] || null : null; }
+function applyFoeArchetype(f){
+  const key = foeArchOf(f), t = key && FOE_ARCH_TYPES[key];
+  if(!t || !f || !f.st) return;
+  t.apply(f);
+  f.st.arch = key;
+  log('🏷 敌将战法【'+t.name+'】：'+t.desc,'sys');
+}
+
 const MOVES = [ {label:'石头',icon:'✊'}, {label:'剪刀',icon:'✌️'}, {label:'布',icon:'✋'} ];
 
 /* ---------- 天时 ---------- */
@@ -5434,6 +5469,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
+const BUILD_ID = '20261022i';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -8008,6 +8044,8 @@ function resumeRoguelike(){
   });
   RL.nodeHistory = snap.rl.nodeHistory || [];
   RL.flags = snap.rl.flags || {};
+  /* 旧档没有 runSeed 时，按当前地图补一个；否则章节守将会永远回落 pool[0]（张郃）。 */
+  if(!RL.flags.runSeed && RL.map && RL.map.length) RL.flags.runSeed = rlRunSeed();
   refreshRelicSets();
   RL.report = Object.assign(newRLReport(), snap.rl.report || {});
   RL.curNode = snap.curNode && RL.map[snap.curNode.layer]
@@ -10438,6 +10476,7 @@ function mapNode(type, layer){
       const preview = previewPool[Math.floor(Math.random()*previewPool.length)];
       node.previewId = preview.id;
       node.previewName = preview.name;
+      node.previewArch = FOE_ARCH[preview.id] || null;
     }
   } else if(type === 'shop' || type === 'treasure' || type === 'rest'){
     node.route = routeRoll < 0.62 ? 'supply' : routeRoll < 0.82 ? 'scheme' : 'war';
@@ -10970,6 +11009,8 @@ function startRLBattle(node){
     player.st.startChargeOnce = 0;
   }
   ai.charge = 0;
+  /* 战法必须在怒气/蓄力/词条全部归位之后再挂，否则会被开战重置吃掉 */
+  if(node.type !== 'boss') applyFoeArchetype(ai);
   const variant = node.variant && BATTLE_VARIANTS[node.variant] ? node.variant : 'standard';
   if(RL.supplies > 0 && node.type !== 'boss' && !node.relayWave){
     RL.supplies--;
@@ -12263,6 +12304,8 @@ function renderRLBar(){
     '<span>🃏 军略牌 '+((player.st.cardBattlePlays||0))+'/'+CARD_BATTLE_LIMIT+
       (cardWaitRounds() ? '（冷却 '+cardWaitRounds()+' 回合）' : '')+'</span>'+
     (rlCompanion() ? '<span class="rlb">🎖 '+rlCompanion().name+' · '+rlCompanion().short+'</span>' : '')+
+    (ai && ai.st && ai.st.arch && FOE_ARCH_TYPES[ai.st.arch]
+      ? '<span class="rlb">🏷 敌将战法 '+FOE_ARCH_TYPES[ai.st.arch].name+'</span>' : '')+
     (route ? '<span>'+route.icon+' '+route.name+'</span>' : '')+
     (variant && variant.desc ? '<span title="'+variant.desc+'">ℹ '+variant.desc+'</span>' : '');
 }
@@ -12352,6 +12395,7 @@ function renderMapScreen(){
     (RL.flags.scoutAid ? '<div class="rlmeta"><span class="rlnote">🗺 侦察助益：下一场非 Boss 战敌军生命 -'+RL.flags.scoutAid+'%。</span></div>' : '')+
     '<div class="rlprogress" aria-label="北伐进度"><i style="width:'+progress+'%"></i></div>'+
     '<div class="rlmeta"><button id="btnDeckView">📚 查看卡组</button><span class="rlstat">进度 '+Math.min(RL.layer, totalLayers)+'/'+totalLayers+'</span></div>'+
+    '<div class="rlmeta"><span class="rlnote">版本 '+BUILD_ID+'</span></div>'+
     '<div class="potions" id="mapPotionRow" style="margin-top:8px"></div>';
   $('rlGold').innerHTML = '💰 <b>'+RL.gold+'</b> 金　·　'+
     '<span title="'+MORALE_TIP+'">🪖 '+RL.morale+'/5</span>　·　📦 '+RL.supplies;
@@ -12428,7 +12472,8 @@ function renderMapScreen(){
             : '')
         : '尚未侦察：只能确认这是'+nodeName+'节点';
       const enemyPreview = known && node.previewName
-        ? '<small>敌将：'+node.previewName+'</small>' : '';
+        ? '<small>敌将：'+node.previewName+
+          (node.previewArch && FOE_ARCH_TYPES[node.previewArch] ? '【'+FOE_ARCH_TYPES[node.previewArch].name+'】' : '')+'</small>' : '';
       const affixPreview = known && affixTxt
         ? '<small class="mapaffix">'+affixTxt+'</small>' : '';
       return '<button class="mapnode tn-'+node.type+' '+st+'"'+(current?'':' disabled')+
@@ -13618,6 +13663,7 @@ globalThis.__api = {
   getRL_ENDINGS: () => RL_ENDINGS, rlEndingCtx, pickRLEnding, rlEndingHtml, rlEndingDemoCtx,
   seenEndings, rlEndingTotal, recordRLEnding, storyPick, RL_ORIGIN_CODA, EVENT_EXIT_TEXT,
   getFOE_HABITS: () => FOE_HABITS, getBOSS_HABITS: () => BOSS_HABITS,
+  getFOE_ARCH: () => FOE_ARCH, getFOE_ARCH_TYPES: () => FOE_ARCH_TYPES,
   HABIT_WHENS, foeHabitFor, initFoeHabit, habitHistoryHtml,
   setHabits: v => { RL_HABITS_ON = !!v; }, getHabitsOn: () => RL_HABITS_ON,
   getAiHabit: () => (ai && ai.st ? ai.st.habit : null),
