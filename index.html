@@ -10647,6 +10647,11 @@ function advanceChapter(){
   RL.chapter = prevIdx + 1;
   RL.layer = 0;
   RL.curNode = null;
+  /* 上一章的秘藏节点若没打就过章了，不把这条路吞掉：下一章重新补位 */
+  if(RL.flags && RL.flags.tigerNodeSpawned && rlTigerCount() >= 2){
+    RL.flags.tigerNodeSpawned = 0;
+    RL.flags.tigerPending = 1;
+  }
   RL.map = genMap(RL.chapter);
   const ch = rlChapter();
   heal(player, Math.round(player.maxHp * (0.26 + mutatorHealBonus())));
