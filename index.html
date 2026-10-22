@@ -445,6 +445,16 @@
   .relic { font-size:23px; background:#171310; border:1px solid var(--gold-dim);
     border-radius:10px; padding:3px 9px; cursor:help; }
   .relic.up { border-color:var(--gold); box-shadow:0 0 10px rgba(216,180,90,.35); }
+  .rlsetline { flex:1 1 100%; font-size:11.5px; color:var(--dim); margin-top:2px; }
+  .rlset { border:1px solid var(--line); border-radius:8px; padding:1px 6px; background:#171310; }
+  .rlset.on { border-color:#8a7a3f; color:var(--gold); }
+  .rlcompanion { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    font-size:12px; color:var(--dim); padding:2px 2px 5px; }
+  .rlcompanion b { color:var(--text); }
+  .rlcompanion button { font-size:11.5px; padding:3px 9px; border-radius:8px;
+    background:#171310; color:var(--gold); border:1px solid #8a7a3f; cursor:pointer; }
+  .rlcpill { border:1px solid #8a7a3f; border-radius:9px; padding:1px 8px;
+    background:#171310; color:var(--gold); }
   .norelic { font-size:12.5px; color:var(--dim); }
   .rljournal { background:var(--panel); border:1px solid var(--line); border-radius:10px;
     padding:8px 11px; margin:4px 0 6px; }
@@ -988,6 +998,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
     </div>
     <div class="rlpanel" id="rlHeroBox"></div>
     <div class="rlrelics" id="rlRelicsBox"></div>
+    <div class="rlcompanion" id="rlCompanionBox"></div>
     <div class="rljournal" id="rlJournalBox"></div>
     <h3 class="maptitle">🧭 北伐路线 —— 选择节点前进</h3>
     <div class="maplegend" id="mapLegend"></div>
@@ -4821,6 +4832,11 @@ const NODE_JOURNAL_POOL = {
     '第 {layer} 层，你在背风处扎营；伤兵终于睡了一个整觉。',
     '第 {layer} 层，营火点到后半夜；巡哨的人换了三班。'
   ],
+  tiger: [
+    '第 {layer} 层，虎符秘藏开启；{foe}守在石门之后，军械库没有主人。',
+    '第 {layer} 层，两枚虎符合拢；你从秘藏里取走一样，把其余原样封好。',
+    '第 {layer} 层，秘藏的石门在身后合上；{foe}的旗号再没人收起。'
+  ],
   travel: [
     '第 {layer} 层，队伍穿过一段难走的山道；粮车一辆没少。',
     '第 {layer} 层，前队在一处废驿歇了歇脚；墙上的旧箭孔还新着。',
@@ -4835,6 +4851,7 @@ function rlJournalCat(type){
   if(type === 'battle') return 'battle';
   if(type === 'elite' || type === 'stronghold' || type === 'challenge') return 'elite';
   if(type === 'rest' || type === 'camp') return 'rest';
+  if(type === 'tiger') return 'tiger';
   return 'travel';
 }
 function rlJournalLine(e, idx){
@@ -5042,6 +5059,62 @@ const NEW_RELICS = [
 ];
 NEW_RELICS.forEach(r => RELICS.push(r));
 RELICS.forEach(r => { r.rar = RELIC_RARITY[r.id] || 'common'; });
+
+/* ==================== 遗物流派羁绊（2/4 件套） ====================
+   只按「拥有件数」结算一次，写进 RL.flags.relicSets（随存档走）；
+   读档时只补没结算过的层级，不会每场/每次读档重复加。 */
+const RELIC_SETS = [
+  {id:'assault', icon:'⚔', name:'猛攻',
+   ids:['guandao','bingsun','yitian','liannu','jiangyin','zangu','hufu','zhuqueling','wudang','tieji'],
+   bonusText:['攻击 +1','暴击率 +6%'],
+   bonus(level, f){
+     if(level === 1) f.atk += 1;
+     else f.st.critBonus = (f.st.critBonus||0) + 0.06;
+   }},
+  {id:'guard', icon:'🛡', name:'守城',
+   ids:['bagua','huxin','tiejia','qixing','bazhentu','tengjia','shouyu','jixuan','guijia','qilinkai'],
+   bonusText:['防御 +6','每场战斗开始格挡 +8'],
+   bonus(level, f){
+     if(level === 1) f.def += 6;
+     else f.st.startBlock = (f.st.startBlock||0) + 8;
+   }},
+  {id:'scheme', icon:'🧠', name:'奇谋',
+   ids:['ershisi','taiping','yupan','wanglou','zhendu','yanmu','tongque','bayi','jiuzun'],
+   bonusText:['每场战斗开始蓄力 +6%','每场战斗起手多抽 1 张'],
+   bonus(level, f){
+     if(level === 1) f.st.startCharge = Math.min(60, (f.st.startCharge||0) + 6);
+     else f.st.drawBonus = (f.st.drawBonus||0) + 1;
+   }},
+  {id:'logistics', icon:'🌾', name:'军略',
+   ids:['dilu','jiuhu','tongjing','yuxi','chitu','muniu','junma','qingnang','jinnangdai','jubaopen','tuntianling','xuanji'],
+   bonusText:['金币收益 +10%','每场战斗胜利回复 5% 生命'],
+   bonus(level, f){
+     if(level === 1) f.st.goldUp = (f.st.goldUp||0) + 0.10;
+     else f.st.healOnBattle = (f.st.healOnBattle||0) + 0.05;
+   }}
+];
+function relicSetCount(set){
+  if(!set || !set.ids || !RL || !RL.relics) return 0;
+  return set.ids.filter(id => RL.relics.indexOf(id) >= 0).length;
+}
+function relicSetLevel(set){ const n = relicSetCount(set); return n >= 4 ? 2 : n >= 2 ? 1 : 0; }
+function refreshRelicSets(){
+  if(!RL || !RL.hero) return;
+  const st = RL.flags.relicSets || {};
+  let changed = false;
+  RELIC_SETS.forEach(set => {
+    const lvl = relicSetLevel(set);
+    const old = st[set.id] || 0;
+    if(lvl <= old) return;
+    for(let i = old + 1; i <= lvl; i++){
+      set.bonus(i, RL.hero);
+      log('🧩 遗物羁绊【'+set.name+'】'+(i === 1 ? '2' : '4')+'件：'+set.bonusText[i-1], 'gold');
+    }
+    st[set.id] = lvl;
+    changed = true;
+  });
+  if(changed) RL.flags.relicSets = st;
+}
 
 /* ==================== 药水（3 格，可购买/掉落） ==================== */
 const POTIONS = [
@@ -5641,8 +5714,42 @@ const RELIC_SLOTS_BASE = 6, RELIC_SLOTS_MAX = 9;
 const RL = { active:false, hero:null, gold:0, map:[], layer:0, relics:[], relicSlots:RELIC_SLOTS_BASE, log:[], result:null,
              deck:[], drawPile:[], discard:[], hand:[], potions:[], pendingReward:null,
              curNode:null, battles:0, doctrine:null, morale:4, supplies:3,
-             chapter:0, mutators:[], orders:[], boons:[], boonRanks:{},
+             chapter:0, mutators:[], orders:[], boons:[], boonRanks:{}, companion:null,
              nodeHistory:[], flags:{}, report:null };
+/* ==================== 副将随行（一局一次三选一） ====================
+   每 3 回合触发一次小支援；数值刻意压低（约每回合 1~1.5 点等效），
+   作为构筑的“第五个零件”，不替代猜拳与卡牌。 */
+const RL_COMPANIONS = [
+  {id:'fazheng', icon:'🧠', name:'法正', title:'军师',
+   desc:'每 3 回合抽 1 张军略牌', short:'每3回合抽1张',
+   act(){ drawCards(1); log('🧠 副将法正在帐中递来一张新牌（抽 1 张军略牌）','gold'); }},
+  {id:'zhaoyun', icon:'🐉', name:'赵云', title:'虎将',
+   desc:'每 3 回合对敌造成 4 点伤害', short:'每3回合4伤',
+   act(){ if(ai && ai.alive){ dealDamage(ai, 4, player); log('🐉 副将赵云突入敌阵，造成 4 点伤害','good'); } }},
+  {id:'huatuo', icon:'🌿', name:'华佗', title:'医官',
+   desc:'每 3 回合回复 3 点生命', short:'每3回合回3血',
+   act(){ heal(player, 3); log('🌿 副将华佗替你处理旧伤（回复 3 血）','good'); }}
+];
+const RL_COMPANION_BY_ID = {};
+RL_COMPANIONS.forEach(c => RL_COMPANION_BY_ID[c.id] = c);
+function rlCompanion(){ return RL_COMPANION_BY_ID[RL.companion] || null; }
+function companionTick(){
+  if(!RL.active || !RL.companion || !player || !ai || !player.alive || !ai.alive) return;
+  if(G.round % 3 !== 0) return;
+  const c = rlCompanion();
+  if(c) c.act();
+}
+function openCompanionChoice(){
+  if(RL.companion) return;
+  showModal('🎖 点将 · 副将随行', '一局只能点一名副将。他不会替你出拳，但每 3 回合会支援一次：', RL_COMPANIONS.map(c => ({
+    t: c.icon+' '+c.name+'（'+c.title+'）— '+c.desc,
+    run(){
+      RL.companion = c.id;
+      log('🎖 副将【'+c.name+'】入帐：'+c.desc,'gold');
+      renderMapScreen(); saveRoguelike();
+    }
+  })));
+}
 /* 军令「重役」会占用格位，所以格位要等规则算完才定得下来 */
 function rlRelicSlots(){ return Math.max(1, Math.min(RELIC_SLOTS_MAX, (RL.relicSlots || RELIC_SLOTS_BASE) + rlOrderSlots())); }
 const HAND_MAX = 8;
@@ -7699,7 +7806,7 @@ function saveRoguelike(){
         doctrine: RL.doctrine, morale: RL.morale, supplies: RL.supplies,
         origin: RL.origin || null,
         chapter: RL.chapter || 0, mutators: RL.mutators || [], orders: RL.orders || [],
-        boons: RL.boons || [], boonRanks: RL.boonRanks || {},
+        boons: RL.boons || [], boonRanks: RL.boonRanks || {}, companion: RL.companion || null,
         nodeHistory: RL.nodeHistory, flags: RL.flags, report: RL.report
       },
       hero: saveFighter(RL.hero),
@@ -7749,6 +7856,7 @@ function resumeRoguelike(){
   RL.orders = snap.rl.orders || [];
   /* 兵势同理：改表后旧档里的未知 id 会让回合结算找不到 when/act，直接滤掉 */
   RL.boons = (snap.rl.boons || []).filter(id => RL_BOON_BY_ID[id]);
+  RL.companion = RL_COMPANION_BY_ID[snap.rl.companion] ? snap.rl.companion : null;
   /* 品阶跟着 id 一起重建：Ⅰ 是隐式的（rlBoonRank 默认回 1），所以只存 2 以上。
      未知 id 的残档、小数/超上限的脏数值都会把「文案说 Ⅳ、数值走 Ⅱ」撕开，一律夹掉。 */
   RL.boonRanks = {};
@@ -7759,6 +7867,7 @@ function resumeRoguelike(){
   });
   RL.nodeHistory = snap.rl.nodeHistory || [];
   RL.flags = snap.rl.flags || {};
+  refreshRelicSets();
   RL.report = Object.assign(newRLReport(), snap.rl.report || {});
   RL.curNode = snap.curNode && RL.map[snap.curNode.layer]
     ? RL.map[snap.curNode.layer][snap.curNode.index] || null : null;
@@ -9153,6 +9262,7 @@ function playRound(pm){
     decayStatus(player); decayStatus(ai);
     /* 北伐：回合结束 → 结算军略牌增益、弃置手牌、重置能量与格挡、抽新牌 */
     if(RL.active && player.alive && ai.alive) endCardTurn();
+    companionTick();
     finishCheck();
   } finally { rec = null; saveRoguelike(); }
   return evs;
@@ -9757,7 +9867,28 @@ function openRelicReward(node){
 
 function openRLReward(node, kind){
   if(kind === 'relic') openRelicReward(node);
+  else if(kind === 'tiger') openTigerReward(node);
   else openCardReward(node);
+}
+function openTigerReward(node){
+  showModal('🐯 虎符秘藏','两枚虎符合拢，秘藏的门开了一道缝。只取一样：',[
+    {t:'🗡 秘藏兵器 — 获得一件神器遗物', run(){
+      const rr = gainRelic('boss');
+      if(rr) log('🐯 秘藏兵器入库：【'+rr.name+'】','gold');
+      else { RL.gold += 80; log('🐯 行囊已满，秘藏兵器折作 80 金','gold'); }
+      saveRoguelike();
+    }},
+    {t:'💰 秘藏金帛 — 金币 +90，补给 +2', run(){
+      RL.gold += 90; changeSupplies(2);
+      log('🐯 秘藏金帛入账（+90 金，补给 +2）','gold');
+      saveRoguelike();
+    }},
+    {t:'🪖 秘藏兵符 — 最大生命 +12，攻击 +1', run(){
+      RL.hero.maxHp += 12; RL.hero.hp += 12; RL.hero.atk += 1;
+      log('🐯 秘藏兵符上身：最大生命 +12，攻击 +1','gold');
+      saveRoguelike();
+    }}
+  ]);
 }
 
 /* ==================== 北伐（Roguelike）逻辑 ==================== */
@@ -9778,6 +9909,7 @@ const NODE_INFO = {
   doctor:   {icon:'🚑', name:'名医'},
   tavern:   {icon:'🍶', name:'酒馆'},
   ruins:    {icon:'🏛', name:'废墟'},
+  tiger:    {icon:'🐯', name:'秘藏'},
   boss:     {icon:'👑', name:'吕布'}
 };
 
@@ -9881,7 +10013,7 @@ const ENEMY_AFFIXES = [
 const AFFIX_BY_ID = {};
 ENEMY_AFFIXES.forEach(a => AFFIX_BY_ID[a.id] = a);
 /* 会出词条的节点类型（与 applyBattleAffixes 的调用点保持一致） */
-const AFFIXABLE_TYPES = ['battle','elite','stronghold','challenge','boss'];
+const AFFIXABLE_TYPES = ['battle','elite','stronghold','challenge','tiger','boss'];
 
 /* 独立的小型确定性随机源：词条在地图生成时就要定下来（供玩家预览），
    若共用 Math.random 会挪动既有随机数流，导致老测试与平衡模拟全部失准。
@@ -9909,6 +10041,8 @@ function affixCountFor(node, rnd){
      让"先看词条再决定打不打"成为真选择 */
   if(node.type === 'elite')  return r() < 0.45 ? 1 + (L >= 4 && r() < 0.22 ? 1 : 0) : 0;
   if(node.type === 'challenge') return r() < 0.5 ? 1 + (r() < 0.22 ? 1 : 0) : 0;
+  /* 秘藏：必带一条，深层可能两条——高回报的硬仗 */
+  if(node.type === 'tiger') return 1 + (L >= 3 && r() < 0.35 ? 1 : 0);
   /* 普通战斗：前两层不给，第三层起逐渐加压——词条是"越往北越危险"的信号 */
   if(L <= 1) return 0;
   if(L <= 4) return r() < 0.12 ? 1 : 0;
@@ -10198,6 +10332,10 @@ function genMap(ch){
       pinLayer[pinIdx].variant = null;
     }
   }
+  /* 虎符秘藏若上一章没来得及落位，在本章中段补一个（不消耗随机流） */
+  if(RL.flags && RL.flags.tigerPending && !RL.flags.tigerNodeSpawned && rlTigerCount() >= 2){
+    if(spawnTigerInMap(m, 3)){ RL.flags.tigerPending = 0; RL.flags.tigerNodeSpawned = 1; }
+  }
   /* 军令必须在词条预生成之前定下：「骁将」会把 Boss 的词条数 +1，而
      "地图上写几条 = 开战真挨几条"是北伐的可信度底线。
      只在第一章建图时抽一次，一局定下不再更改（后续章节的 genMap 不会重洗）。 */
@@ -10241,6 +10379,7 @@ function startRoguelike(){
   RL.orders = [];
   RL.boons = [];               /* 兵势是本局的构筑，绝不能串到下一局 */
   RL.boonRanks = {};
+  RL.flags = {};               /* genMap 会读 tigerPending 等 flags，必须先清掉上一局 */
   RL.map = genMap(RL.chapter);
   RL.deck = starterDeck();
   RL.drawPile = []; RL.discard = []; RL.hand = [];
@@ -10250,6 +10389,7 @@ function startRoguelike(){
   RL.battles = 0;
   RL.doctrine = null;
   RL.origin = null;
+  RL.companion = null;
   RL.morale = 4;
   RL.supplies = 3 + merit.supplies;
   RL.nodeHistory = [];
@@ -10438,7 +10578,15 @@ function rlFinish(){
   player.maxHp += 4; player.hp = Math.min(player.maxHp, player.hp + 4);
   if(RL.battles % 2 === 0){ player.atk += 1; log('🎖 战功累积：最大生命 +4，攻击 +1','gold'); }
   else log('🎖 战功累积：最大生命 +4','gold');
-  RL.pendingReward = { node: n, kind: (n.type === 'challenge' || n.type === 'stronghold') ? 'relic' : 'card' };
+  if(n.type === 'tiger'){
+    RL.flags.tiger = Math.max(0, rlTigerCount() - 2);
+    RL.flags.tigerNodeSpawned = 0;
+    log('🐯 秘藏开启：虎符碎片 −2（余 '+rlTigerCount()+'/2）','gold');
+    RL.pendingReward = { node: n, kind: 'tiger' };
+  } else {
+    RL.pendingReward = { node: n, kind: (n.type === 'challenge' || n.type === 'stronghold') ? 'relic' : 'card' };
+    if(n.type === 'elite' || n.type === 'stronghold' || n.type === 'challenge') awardTigerFragment();
+  }
   E({k:'rlWin', gold});
   /* 推进一层，并结束本场战斗（回到地图，等待玩家选择下一节点） */
   completeNode(n);
@@ -10529,7 +10677,7 @@ function enterNode(layer, idx){
   RL.curNode = node;
 
   if(node.type==='battle' || node.type==='elite' || node.type==='stronghold' ||
-     node.type==='challenge' || node.type==='boss'){
+     node.type==='challenge' || node.type==='tiger' || node.type==='boss'){
     startRLBattle(node);
   } else if(node.type==='rest'){
     openRest(node);
@@ -10605,6 +10753,12 @@ function startRLBattle(node){
       foe.hp = foe.maxHp;
       foe.atk += 2;
       foe.name = '悬赏·'+foe.name;
+    } else if(node.type === 'tiger'){
+      foe.maxHp = Math.round(foe.maxHp * 1.40);
+      foe.hp = foe.maxHp;
+      foe.atk += 3;
+      foe.def = Math.min(46, foe.def + 6);
+      foe.name = '秘藏·'+foe.name;
     }
     if(RL.chapter === 0 && L === 0 && node.type === 'battle' && !node.relayWave){
       foe.maxHp = Math.max(10, Math.round(foe.maxHp * 0.8));
@@ -10799,6 +10953,38 @@ function startRLBattle(node){
   renderBattle();
   updateTeams();
   saveRoguelike();
+}
+
+/* ---------- 🐯 虎符秘藏：精英/敌寨/悬赏掉碎片，2 枚在当前地图后续层生成秘藏 ---------- */
+function rlTigerCount(){ return Math.max(0, Math.min(3, Number(RL.flags && RL.flags.tiger) || 0)); }
+function spawnTigerInMap(m, fromLayer){
+  if(!Array.isArray(m)) return false;
+  for(let l = Math.max(3, fromLayer || 0); l < m.length - 1; l++){
+    const layer = m[l] || [];
+    const i = layer.findIndex(n => n && n.type === 'battle' && !n.pinnedStory);
+    if(i < 0) continue;
+    const n = layer[i];
+    n.type = 'tiger'; n.route = 'war'; n.variant = n.variant || 'standard';
+    return n;
+  }
+  return false;
+}
+function spawnTigerNode(){
+  if(rlTigerCount() < 2 || (RL.flags && RL.flags.tigerNodeSpawned)) return false;
+  const n = spawnTigerInMap(RL.map, (RL.layer || 0) + 1);
+  if(n){
+    RL.flags.tigerNodeSpawned = 1;
+    log('🐯 虎符合拢，前方出现一处【秘藏】！','gold');
+    return true;
+  }
+  RL.flags.tigerPending = 1;
+  return false;
+}
+function awardTigerFragment(){
+  const n = Math.min(3, rlTigerCount() + 1);
+  RL.flags.tiger = n;
+  log('🐯 虎符碎片 +1（'+n+'/2）'+(n >= 2 ? '——秘藏已可开启' : ''), 'gold');
+  if(n >= 2) spawnTigerNode();
 }
 
 /* 非战斗节点完成 → 推进一层 */
@@ -11200,6 +11386,7 @@ function applyRelic(r){
   RL.relics.push(r.id);
   r.apply(RL.hero);
   log('💎 获得遗物【'+r.name+'】('+RARITY_NAME[r.rar]+')：'+r.desc,'gold');
+  refreshRelicSets();
   return r;
 }
 function openTreasure(node){
@@ -11823,6 +12010,7 @@ function renderRLBar(){
     '<span>🎒 锦囊 '+leftJn+'/'+jnCapacity()+'</span>'+
     '<span>🃏 军略牌 '+((player.st.cardBattlePlays||0))+'/'+CARD_BATTLE_LIMIT+
       (cardWaitRounds() ? '（冷却 '+cardWaitRounds()+' 回合）' : '')+'</span>'+
+    (rlCompanion() ? '<span class="rlb">🎖 '+rlCompanion().name+' · '+rlCompanion().short+'</span>' : '')+
     (route ? '<span>'+route.icon+' '+route.name+'</span>' : '')+
     (variant && variant.desc ? '<span title="'+variant.desc+'">ℹ '+variant.desc+'</span>' : '');
 }
@@ -11890,6 +12078,7 @@ function renderMapScreen(){
       '<span class="rlstat">🗺 当前战区：<b>'+region.name+'</b></span>'+
       '<span class="rlstat" title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
       '<span class="rlstat">📦 补给：<b>'+RL.supplies+'</b></span>'+
+      '<span class="rlstat">🐯 虎符：<b>'+rlTigerCount()+'/2</b>'+(rlTigerCount()>=2?'（秘藏可开）':'')+'</span>'+
       '<span class="rlstat">📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
       (RL.flags.scouted ? '<span class="rlstat">🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
     '</div>'+
@@ -11906,12 +12095,26 @@ function renderMapScreen(){
     '<div class="potions" id="mapPotionRow" style="margin-top:8px"></div>';
   $('rlGold').innerHTML = '💰 <b>'+RL.gold+'</b> 金　·　'+
     '<span title="'+MORALE_TIP+'">🪖 '+RL.morale+'/5</span>　·　📦 '+RL.supplies;
+  const setBits = RELIC_SETS.filter(s => relicSetCount(s) > 0).map(s => {
+    const n = relicSetCount(s), lv = relicSetLevel(s);
+    return '<span class="rlset'+(lv ? ' on' : '')+'">'+s.icon+s.name+' '+n+'/4'+(lv ? ' ✓' : '')+'</span>';
+  }).join('　');
   $('rlRelicsBox').innerHTML =
     '<span class="norelic" title="行囊格位：军令「重役」会占掉一格，商店可扩建">🎒 '+RL.relics.length+'/'+rlRelicSlots()+'</span>'+
     (RL.relics.length
     ? RL.relics.map(id => { const r = RELICS.find(x=>x.id===id);
         return r ? '<span class="relic '+(r.rar==='boss'?'up':'')+'" title="【'+r.name+'】('+RARITY_NAME[r.rar]+')：'+r.desc+'">'+r.icon+'</span>' : ''; }).join('')
-    : '<span class="norelic">尚无遗物（装备）</span>');
+    : '<span class="norelic">尚无遗物（装备）</span>')+
+    '<span class="rlsetline">🧩 '+(setBits || '遗物羁绊未成派')+'</span>';
+  const cp = rlCompanion();
+  const cpBox = $('rlCompanionBox');
+  if(cpBox){
+    cpBox.innerHTML = cp
+      ? '<span class="rlcpill">🎖 '+cp.icon+' '+cp.name+' · '+cp.title+'</span><span>'+cp.short+'（每 3 回合）</span>'
+      : '<button id="btnCompanion">🎖 点将 · 招募副将（一局一次）</button><span>副将每 3 回合支援一次</span>';
+    const cb = $('btnCompanion');
+    if(cb) cb.onclick = openCompanionChoice;
+  }
   renderPotions();
   const deckBtn = $('btnDeckView');
   if(deckBtn) deckBtn.onclick = openDeckViewer;
@@ -11922,7 +12125,7 @@ function renderMapScreen(){
   /* 图例：本局地图中出现过的节点类型 */
   const seen = {};
   RL.map.forEach(l => l.forEach(n => { seen[n.type] = 1; }));
-  const legendTypes = ['battle','elite','stronghold','challenge','rest','camp','tower','doctor',
+  const legendTypes = ['battle','elite','stronghold','challenge','tiger','rest','camp','tower','doctor',
                        'tavern','ruins','treasure','event','shop','shrine','training','forge','boss']
                       .filter(t => seen[t]);
   const lg = $('mapLegend');
@@ -11943,12 +12146,15 @@ function renderMapScreen(){
       const st = node.done ? 'done' : current ? 'cur' : 'future';
       const variant = node.variant && BATTLE_VARIANTS[node.variant];
       const route = RL_ROUTE_INFO[node.route] || RL_ROUTE_INFO.scheme;
-      const known = node.done || current || l <= RL.layer + (RL.flags.scouted || 0) || !!node.pinnedStory;
+      const known = node.done || current || l <= RL.layer + (RL.flags.scouted || 0) || !!node.pinnedStory || node.type === 'tiger';
       const label = known && node.pinnedStory ? '本章剧情'
+        : known && node.type === 'tiger' ? '秘藏'
         : known && variant ? variant.name : (known ? nodeName : '未侦察');
       const affixTxt = node.affixes && node.affixes.length ? affixListText(node.affixes) : '';
       const tip = known
-        ? (variant ? variant.desc : nodeName)+'；'+route.name+'：'+route.desc+
+        ? (node.type === 'tiger'
+            ? '🐯 虎符秘藏：高风险硬仗，胜利后三选一（神器遗物 / 金帛 / 兵符）；'+(variant ? variant.desc+'；' : '')
+            : (variant ? variant.desc : nodeName)+'；')+route.name+'：'+route.desc+
           (node.pinnedStory ? '；📖 本章剧情节点：走进去必然演一段【'+rlChapter().name+'】的戏' : '')+
           (AFFIXABLE_TYPES.indexOf(node.type) >= 0
             ? (affixTxt
@@ -12516,6 +12722,10 @@ function codexHtml(tab){
       out += '<h4><span class="rar-'+r+'">'+RARITY_NAME[r]+'</span>（'+list.length+' 件）</h4>';
       out += cxGrid(list.map(x => cxItem(x.icon, x.name, x.desc)));
     });
+    out += '<h4>🧩 遗物流派羁绊</h4><p>同一流派凑齐 <b>2 件 / 4 件</b> 各结算一次永久小加成；只结算一次，读档不会重复加。</p>';
+    out += cxGrid(RELIC_SETS.map(s => cxItem(s.icon, s.name+' '+relicSetCount(s)+'/4',
+      '<b>2件：</b>'+s.bonusText[0]+'<br><b>4件：</b>'+s.bonusText[1],
+      s.ids.map(id => (RELICS.find(x => x.id === id) || {}).name || id).join('、'))));
     return out;
   }
   if(tab === 'item'){
@@ -12704,6 +12914,9 @@ function codexHtml(tab){
       '每章都是一张独立重铺的地图，越往后章地图越长、精英与悬赏越多；敌将强度按「有效层数」'+
       '（本章层数 + 已完成章数 × '+RL_CHAPTER_LEVEL_STEP+'）成长。攻克一章的守将即得过关赏赐（大幅休整、必得遗物、金币、补给与军心提振），'+
       '随后进入下一章。<b>只有在最后一章诛杀鬼神·吕布，整趟北伐才算功成。</b></p>'+
+      '<p>🧩 <b>遗物羁绊</b>：41 件遗物分【猛攻 / 守城 / 奇谋 / 军略】四派，凑齐 2 件、4 件各结算一次永久小加成，地图遗物栏会显示进度。<br>'+
+      '🎖 <b>副将随行</b>：地图页可点将一次，三选一（法正/赵云/华佗）；每 3 回合支援一次，不替你出拳。<br>'+
+      '🐯 <b>虎符秘藏</b>：精英、敌寨、悬赏胜利掉虎符碎片；集 2 枚会在当前地图后续层生成【秘藏】节点，胜利后三选一（神器遗物 / 金帛 / 兵符）。</p>'+
       '<p>🎲 <b>局内天时（mutators）</b>：每局开战随机 roll 1~2 条全局修饰——'+
       RL_MUTATORS.map(m=>m.icon+'【'+m.name+'】').join('、')+'。'+
       '它们是「这一趟」的规则改动（改敌我属性、改天气、改金币与物价、改开场状态），'+
@@ -13139,7 +13352,7 @@ globalThis.__api = {
   clearDebuffs, renderSecrets, resetBattleCarryover, rlBossBanter, rlBossPhase3Line,
   openFateChoice, fateRnd, fateMaxHp,
   /* 卡组构筑 */
-  CARDS, POTIONS, RELICS, cardDef, cardEffect, applyFx, beginDeckBattle, endCardTurn,
+  CARDS, POTIONS, RELICS, RELIC_SETS, cardDef, cardEffect, applyFx, beginDeckBattle, endCardTurn,
   drawCards, addCardToDeck, removeCardFromDeck, rollRelic, applyRelic, gainRelic,
   openCardReward, openRelicReward, openRLReward, completeNode, cardWaitRounds, canPlayCard,
   randomCards, starterDeck, fxDesc, spinDuel, doPeek, renderCodex,
