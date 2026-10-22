@@ -550,9 +550,12 @@
   .hcard.upg .hn { color:#8fd48a; }
   .hcard.r-rare { border-color:#5f8fd0; }
   .hcard.r-epic { border-color:#b06fd0; box-shadow:0 0 10px rgba(176,111,208,.25); }
+  .hcard.r-curse { border-color:#a2463b; box-shadow:0 0 10px rgba(162,70,59,.3); }
+  .hcard.r-curse .hn { color:#d88a7e; }
   .rar-common { color:#9b8f7c; }
   .rar-rare { color:#7fb0e8; }
   .rar-epic { color:#c88ae0; }
+  .rar-curse { color:#d88a7e; }
   .rar-boss { color:#e0a0ff; }
   .cardtip { font-size:12px; color:#6f6455; letter-spacing:1px; }
 
@@ -4520,6 +4523,67 @@ const RL_STORY_P9 = [
     ]}
 ];
 RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P9);
+/* —— P11 诅咒奇遇（高风险高回报：拿钱/遗物，换一张不可打出的诅咒牌）——
+   诅咒从新增的 CARDS type:'curse' 来，只能在商店/铁匠/奇遇删除；
+   全部确定性分支，加牌走 addFixedCard（不消耗 Math.random 的 uid）。 */
+const RL_STORY_P11 = [
+  { icon:'🌀', name:'贪泉', ch:-1,
+    text:'泉眼冒着黑气，旁边石上刻着「饮者得金，亦得心病」。士卒都绕着走，只有你勒住了马。',
+    opts:[
+      {t:'饮下一口（+50 金，获诅咒【疑虑】）', run(R){
+        R.gold += 50; addFixedCard('c_doubt');
+        R.log('泉水入喉，钱袋忽然沉了（+50 金）。可自那以后，你每回拔剑都要多疑一下——【疑虑】入了卡组。');
+      }},
+      {t:'只取一瓢（回复 8 血）', run(R){
+        healSelf(8);
+        R.log('你只沾了沾唇，把水囊灌满（回复 8 血）。');
+      }},
+      {t:'砸了泉眼（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('你命人把泉眼填死。士卒松了口气，脚步都轻了（军心 +1）。');
+      }}
+    ]},
+  { icon:'🧰', name:'古匣', ch:-1,
+    text:'军士挖出一只上锁的铜匣，锁孔里塞着半截断箭。匣身刻着一行小字：开者得宝，亦担其债。',
+    opts:[
+      {t:'撬开铜匣（得遗物一件，获诅咒【悔恨】）', run(R){
+        if(R.canRelic()){
+          const rr = R.gainRelic('elite');
+          addFixedCard('c_regret');
+          R.log('匣中果然有宝'+(rr?'【'+rr.name+'】':'')+'，匣底却压着一封没写完的家书——【悔恨】入了卡组。');
+        } else {
+          R.gold += 30;
+          R.log('匣中只有些旧钱，你收起三十金，把断箭留在原处（+30 金）。');
+        }
+      }},
+      {t:'上交军中（+18 金）', run(R){
+        R.gold += 18;
+        R.log('铜匣入了军需簿，折了十八两（+18 金）。');
+      }},
+      {t:'埋回原处（军心 +1）', run(R){
+        R.adjustMorale(1);
+        R.log('你把土重新踩实。士卒看见主帅不贪，心里踏实（军心 +1）。');
+      }}
+    ]},
+  { icon:'🎲', name:'赌债', ch:-1,
+    text:'一个赌坊账房拦住马头，说前军欠下的赌债可以一笔勾销，只要主帅肯在借据上签个名字。',
+    opts:[
+      {t:'签字画押（+70 金，获诅咒【疼痛】）', run(R){
+        R.gold += 70; addFixedCard('c_pain');
+        R.log('账房把七十金推过来（+70 金）。借据一签，你的手背便隐隐作痛——【疼痛】入了卡组。');
+      }},
+      {t:'替他们还债（-30 金，军心 +1）', run(R){
+        if(R.gold < 30){ R.log('你拿不出三十金，账房冷笑一声，收起借据走了。'); return 'hold'; }
+        R.gold -= 30; R.adjustMorale(1);
+        R.log('你替前军还了赌债（-30 金）。这事传开，士卒说主帅肯替死人背账（军心 +1）。');
+      }},
+      {t:'把人绑了送官（+15 金，军心 -1）', run(R){
+        R.gold += 15; R.adjustMorale(-1);
+        R.log('你命亲兵把账房绑了，赌坊的现钱充了军资（+15 金）。可营中有人说：主帅连讨债的都容不下（军心 -1）。');
+      }}
+    ]}
+];
+RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P11);
 /* 分章取池：走到哪一章就演哪一章的戏（ch:-1 为全章通用）。
    若某章专属奇遇不足，则回落通用池，保证第 2 层以后总能撞见剧情。 */
 function rlStoryPoolFor(ch){
@@ -4995,7 +5059,7 @@ const POTIONS = [
 /* ==================== 军略牌（卡组构筑 · 北伐专属） ====================
    cost 能量 / rar 稀有度 / type 类型 / fx 效果（通用解释器）/ upg 升级覆盖
 ================================================================ */
-const CARD_TYPE = { atk:'攻', def:'守', tech:'术' };
+const CARD_TYPE = { atk:'攻', def:'守', tech:'术', curse:'咒' };
 const CARDS = [
   /* ---- 攻（红色伤害牌） ---- */
   {id:'strike', name:'突刺', icon:'🗡', cost:0, rar:'common', type:'atk',
@@ -5134,11 +5198,21 @@ const CARDS = [
    desc:'抽 2 张牌，获得 15% 蓄力', fx:{draw:2, charge:15}, upg:{draw:2, charge:25}},
   {id:'breakthrough', name:'破阵', icon:'🪓', cost:2, rar:'epic', type:'atk',
    desc:'造成 10 点伤害（无视防御，可被格挡），本回合攻击伤害 ×1.4，自身承受 3 点反噬',
-   fx:{damage:10, dmgMult:1.4, selfDamage:3}, upg:{damage:14, dmgMult:1.6, selfDamage:2}}
+   fx:{damage:10, dmgMult:1.4, selfDamage:3}, upg:{damage:14, dmgMult:1.6, selfDamage:2}},
+  /* ---- 诅咒牌：不可打出，只在冒险里被塞进卡组；商店/铁匠/奇遇可删 ---- */
+  {id:'c_wound', name:'伤口', icon:'🩸', cost:0, rar:'curse', type:'curse',
+   desc:'无法打出。抽到只是占一张手牌。', fx:{}, unplayable:true},
+  {id:'c_doubt', name:'疑虑', icon:'🌫', cost:0, rar:'curse', type:'curse',
+   desc:'无法打出。回合结束时若还在手里，失去 2 点生命。', fx:{}, unplayable:true, curseDmg:2},
+  {id:'c_regret', name:'悔恨', icon:'🕯', cost:0, rar:'curse', type:'curse',
+   desc:'无法打出。回合结束时若还在手里，失去 1 点生命。', fx:{}, unplayable:true, curseDmg:1},
+  {id:'c_pain', name:'疼痛', icon:'🩹', cost:0, rar:'curse', type:'curse',
+   desc:'无法打出。它在手里时，你每打出一张军略牌，失去 1 点生命。', fx:{}, unplayable:true, cursePain:1}
 ];
 CARDS.forEach(c => {
-  const t = CARD_TYPE[c.type];
-  c.tag = t + '·' + (c.rar==='epic'?'史诗':c.rar==='rare'?'稀有':'普通');
+  const t = CARD_TYPE[c.type] || '牌';
+  c.tag = c.type === 'curse' ? '诅咒' :
+    t + '·' + (c.rar==='epic'?'史诗':c.rar==='rare'?'稀有':'普通');
 });
 
 /* 起始卡组（10 张） */
@@ -9416,6 +9490,13 @@ function beginDeckBattle(){
 /* 回合结束：清增益、弃手牌、重置能量与格挡、抽新牌 */
 function endCardTurn(){
   if(!RL.active || !player || !player.alive) return;
+  let curseDmg = 0;
+  RL.hand.forEach(e => { const d = cardDef(e); if(d && d.curseDmg) curseDmg += d.curseDmg; });
+  if(curseDmg){
+    log('🩸 手中的诅咒发作，'+player.name+' 失去 '+curseDmg+' 点生命','bad');
+    dealDamage(player, curseDmg, player);
+    if(!player.alive) return;
+  }
   clearRoundBuffs(player);
   if(RL.hand.length){ RL.discard.push.apply(RL.discard, RL.hand); RL.hand = []; }
   player.st.block = 0;
@@ -9435,6 +9516,10 @@ function cardEffect(uid){
   const entry = RL.hand[i];
   const d = cardDef(entry);
   if(!d) return;
+  if(d.unplayable){
+    log('🩸 【'+d.name+'】是诅咒牌，无法打出；可到商店 / 铁匠 / 奇遇里删除。','bad');
+    return;
+  }
   if((player.st.cardBattlePlays||0) >= CARD_BATTLE_LIMIT){
     log('本战军略牌已用尽，接下来靠猜拳决胜。','sys');
     return;
@@ -9445,6 +9530,12 @@ function cardEffect(uid){
     return;
   }
   if(player.st.energy < d.cost){ log('💠 能量不足，无法打出【'+d.name+'】','bad'); return; }
+  const pain = RL.hand.some(e => { const cd = cardDef(e); return cd && cd.cursePain; });
+  if(pain){
+    log('🩸 【疼痛】发作：你打出一张军略牌，失去 1 点生命','bad');
+    dealDamage(player, 1, player);
+    if(!player.alive) return;
+  }
   player.st.energy -= d.cost;
   player.st.cardPlays = (player.st.cardPlays||0) + 1;
   player.st.cardBattlePlays = (player.st.cardBattlePlays||0) + 1;
@@ -9464,7 +9555,7 @@ async function animateCard(uid){
   const i = RL.hand.findIndex(c => c.uid === uid);
   if(i < 0) return;
   const d = cardDef(RL.hand[i]);
-  if(!d || player.st.energy < d.cost || !canPlayCard()) return;
+  if(!d || d.unplayable || player.st.energy < d.cost || !canPlayCard()) return;
   busy = true;
   const my = session;
   setRpsDisabled(true);
@@ -9593,15 +9684,18 @@ function renderCards(){
     const d = cardDef(e);
     if(!d) return;
     const b = document.createElement('button');
-    b.className = 'hcard r-'+d.rar + (e.up?' upg':'') +
-      ((player.st.energy < d.cost || !canPlayCard() || busy || G.over) ? ' dis' : '');
+    b.className = 'hcard r-'+d.rar + (e.up?' upg':'') + (d.unplayable?' curse':'') +
+      ((d.unplayable || player.st.energy < d.cost || !canPlayCard() || busy || G.over) ? ' dis' : '');
     b.dataset.uid = e.uid;
-    b.title = (e.up?'【已升级】':'') + d.desc;
+    b.title = (e.up?'【已升级】':'') + (d.unplayable?'诅咒牌，无法打出。':'') + d.desc;
     b.innerHTML = '<span class="hcost">'+d.cost+'</span>'+
                   '<span class="hn">'+d.icon+' '+d.name+(e.up?'+':'')+'</span>'+
                   '<span class="hd">'+d.desc+'</span>'+
                   '<span class="ht">'+d.tag+'</span>';
-    b.onclick = () => animateCard(e.uid);
+    b.onclick = () => {
+      if(d.unplayable){ log('🩸 【'+d.name+'】无法打出；可到商店 / 铁匠 / 奇遇里删除。','bad'); return; }
+      animateCard(e.uid);
+    };
     row.appendChild(b);
   });
   if(!RL.hand.length){
@@ -12406,6 +12500,11 @@ function codexHtml(tab){
           (c.upg ? '<br>升级：'+c.upgDesc : ''),
           '<span class="rar-'+c.rar+'">'+RARITY_NAME[c.rar]+'</span>')));
     });
+    const curses = CARDS.filter(c => c.type === 'curse');
+    if(curses.length){
+      out += '<h4>🩸 诅咒牌</h4><p>诅咒<b>无法打出</b>，会占手牌/牌堆；部分还会在回合末或出牌时反噬。它们不会出现在战利三选一里，只从高风险奇遇获得；商店删牌、铁匠与部分奇遇可以清掉。</p>';
+      out += cxGrid(curses.map(c => cxItem(c.icon, c.name, c.desc, '<span class="rar-curse">诅咒</span>')));
+    }
     out += '<p><b>节奏限制：</b>军略牌每两回合最多使用一张、每场最多三张；胜负与主要伤害仍由石头、剪刀、布的判断结果决定。</p>';
     return out;
   }
