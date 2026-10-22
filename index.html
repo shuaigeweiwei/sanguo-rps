@@ -446,6 +446,16 @@
     border-radius:10px; padding:3px 9px; cursor:help; }
   .relic.up { border-color:var(--gold); box-shadow:0 0 10px rgba(216,180,90,.35); }
   .norelic { font-size:12.5px; color:var(--dim); }
+  .rljournal { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:8px 11px; margin:4px 0 6px; }
+  .rljhead { display:flex; align-items:center; justify-content:space-between;
+    color:var(--gold); font-size:12.5px; letter-spacing:1px; }
+  .rljhead button { font-size:11px; padding:2px 7px; border-radius:7px;
+    background:#171310; color:var(--dim); border:1px solid var(--line); cursor:pointer; }
+  .rljline { font-size:12px; line-height:1.65; color:var(--dim);
+    border-top:1px dashed var(--line); margin-top:5px; padding-top:5px; }
+  .rljline b { color:var(--text); font-weight:600; }
+  .rljempty { border-top:0; margin-top:4px; padding-top:0; }
   .maptitle { text-align:center; font-size:16px; color:var(--gold);
     letter-spacing:3px; margin:10px 0 12px; }
   .map { display:flex; flex-direction:column; align-items:center; }
@@ -768,6 +778,9 @@
     .rlhname { font-size: 19px; }
     .rlmeta { font-size: 11.5px; gap: 5px 10px; }
     .maptitle { font-size: 14px; margin: 8px 0 10px; }
+    .rljournal { padding: 7px 9px; }
+    .rljhead { font-size: 11.5px; }
+    .rljline { font-size: 11.5px; line-height: 1.55; }
     .layernum { width: 40px; font-size: 11px; }
     .maplayer { gap: 8px; }
     .mapnode { width: 88px; padding: 8px 4px; font-size: 23px; }
@@ -972,6 +985,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
     </div>
     <div class="rlpanel" id="rlHeroBox"></div>
     <div class="rlrelics" id="rlRelicsBox"></div>
+    <div class="rljournal" id="rlJournalBox"></div>
     <h3 class="maptitle">🧭 北伐路线 —— 选择节点前进</h3>
     <div class="maplegend" id="mapLegend"></div>
     <div class="map" id="mapTree"></div>
@@ -4387,6 +4401,125 @@ const RL_STORY_P8 = [
     ]}
 ];
 RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P8);
+/* —— P9 支线链（2 条三步链：故人托孤 / 旧营的旗）——
+   埋钩在第 1 章，隔章回收，最后一步落在后段章节；flags 随存档走，
+   不新增随机流。错过前一步也能走「无钩」分支，不会卡死。 */
+const RL_STORY_P9 = [
+  { icon:'✉', name:'阵亡者的家书', ch:0,
+    text:'道旁一具魏军尸首压着半封家书，封皮上写着「若儿长成，教他识几个字」。',
+    opts:[
+      {t:'收下家书（军心 +1）', run(R){
+        R.RL.flags.chainLetter = 1; R.adjustMorale(1);
+        R.log('你把家书收进内襟。此后每回扎营，都记得问一句随军书吏识不识字（军心 +1）。');
+      }},
+      {t:'交给军需官（+8 金）', run(R){
+        R.gold += 8;
+        R.log('军需官把遗物折了八两银子入账。你把那半封家书也一并交了（+8 金）。');
+      }},
+      {t:'放回原处', run(R){
+        R.log('你把家书压回他胸前，命人就地掩埋。土盖上去时，风把纸角吹得响了一下。');
+      }}
+    ]},
+  { icon:'🏚', name:'城南旧宅', ch:2,
+    text:'队伍路过一处城南旧宅，门楣上的姓与那半封家书对得上。院里有人咳嗽，也有人探头。',
+    opts:[
+      {t:'登门送信', run(R){
+        if(R.RL.flags.chainLetter === 1){
+          R.RL.flags.chainLetter = 2; R.adjustMorale(1); R.addSupplies(1);
+          R.log('门里出来一个瘦孩子，把家书捧在手里，一个字一个字地认。邻里围过来，有人往你车上塞了半袋米（军心 +1，补给 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('门里人说那姓早搬走了。你留下几升米，没提家书的事（军心 +1）。');
+        }
+      }},
+      {t:'留些钱粮就走（-6 金）', run(R){
+        if(R.gold < 6){ R.log('你摸不出六两，只好把随身的干粮留下。'); return 'hold'; }
+        R.gold -= 6; R.adjustMorale(1);
+        R.log('你把六两银子压在门槛下，没敲门（-6 金，军心 +1）。');
+      }},
+      {t:'军情要紧，不扰民', run(R){
+        R.log('你令前队绕开旧宅。走出半里，院里的咳嗽声还追在背后。');
+      }}
+    ]},
+  { icon:'🎖', name:'孤儿从军', ch:4,
+    text:'洛阳城外的难民营里，一个半大孩子拦住马头，说他父亲的名字，与那半封家书上的落款一样。',
+    opts:[
+      {t:'收他做亲兵', run(R){
+        if(R.RL.flags.chainLetter === 2){
+          R.RL.flags.chainLetter = 3; R.hero.atk += 1; R.adjustMorale(1);
+          R.log('孩子把家书贴身收好，替你牵马。全军看着这一大一小，没人笑（攻 +1，军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('孩子说不清父亲的名字。你还是让人给他盛了一碗热饭（军心 +1）。');
+        }
+      }},
+      {t:'送他去后方读书（-10 金）', run(R){
+        if(R.gold < 10){ R.log('你凑不出十两安家钱，只能把他托给营中书吏。'); return 'hold'; }
+        R.gold -= 10; R.adjustMorale(1);
+        R.log('你托人把孩子送去后方，留了十两束脩（-10 金，军心 +1）。');
+      }},
+      {t:'让他留在难民营', run(R){
+        R.log('你给了他一块干粮，让人记下名字。队伍开拔时，他站在营门口没动。');
+      }}
+    ]},
+  { icon:'🥁', name:'旧营残鼓', ch:1,
+    text:'陈仓道旁有一座烧毁的旧营，焦土里半埋着一面鼓，鼓皮破了个口，鼓钉还亮。',
+    opts:[
+      {t:'把鼓带回营（军心 +1）', run(R){
+        R.RL.flags.chainDrum = 1; R.adjustMorale(1);
+        R.log('你让鼓手把破鼓背上。当夜营里敲了一下，声音哑，却传得很远（军心 +1）。');
+      }},
+      {t:'拆鼓钉换钱（+10 金）', run(R){
+        R.gold += 10;
+        R.log('鼓钉是铜的，卖了十两。破鼓皮丢在焦土里，风一吹就响（+10 金）。');
+      }},
+      {t:'不碰旧营的东西', run(R){
+        R.log('你令全军绕开焦土。走出很远，那面破鼓还在风里响。');
+      }}
+    ]},
+  { icon:'🥁', name:'鼓手后人', ch:3,
+    text:'樊城外的村子里有个老鼓手，说他父亲当年就在陈仓守营，营破之后鼓也没了。',
+    opts:[
+      {t:'把破鼓还给他', run(R){
+        if(R.RL.flags.chainDrum === 1){
+          R.RL.flags.chainDrum = 2; R.adjustMorale(1); R.addSupplies(1);
+          R.log('老鼓手摸着鼓钉，半天没说话。他让全村凑了两车粮，非要你收下（军心 +1，补给 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('老鼓手听你说完，摇了摇头。你陪他坐了一会儿（军心 +1）。');
+        }
+      }},
+      {t:'请他教新鼓手（-8 金）', run(R){
+        if(R.gold < 8){ R.log('你拿不出教习的饷，老鼓手摆摆手。'); return 'hold'; }
+        R.gold -= 8; R.adjustMorale(1);
+        R.log('老鼓手在营里教了三日鼓点，新鼓手的手腕终于稳了（-8 金，军心 +1）。');
+      }},
+      {t:'听完故事就走', run(R){
+        R.log('你听他把旧营的事讲完，谢过，带队继续北上。');
+      }}
+    ]},
+  { icon:'🔥', name:'虎牢旧鼓', ch:5,
+    text:'虎牢关下，老鼓手托人送来一面新绷的鼓，鼓皮上写着旧营的名字。他说：这一回，鼓不能先停。',
+    opts:[
+      {t:'亲擂三通', run(R){
+        if(R.RL.flags.chainDrum === 2){
+          R.RL.flags.chainDrum = 3; healSelf(12); R.adjustMorale(1);
+          R.log('你亲自擂了三通，鼓声撞在关墙上又弹回来。全军热血上涌，伤兵也坐直了（回复 12 血，军心 +1）。');
+        } else {
+          R.adjustMorale(1);
+          R.log('你擂了一通鼓，关上的火把晃了晃。鼓声落时，全军齐声应了一句（军心 +1）。');
+        }
+      }},
+      {t:'把鼓留给后军', run(R){
+        R.hero.st.startBlockOnce = (R.hero.st.startBlockOnce||0) + 10;
+        R.log('你把鼓交给后军压阵。后军说：鼓在，阵脚就在（下一场开局格挡 +10）。');
+      }},
+      {t:'收下鼓，不敲', run(R){
+        R.log('你把鼓收进行囊。老鼓手没问为什么，只把鼓槌也塞了进来。');
+      }}
+    ]}
+];
+RL_STORY_EVENTS.push.apply(RL_STORY_EVENTS, RL_STORY_P9);
 /* 分章取池：走到哪一章就演哪一章的戏（ch:-1 为全章通用）。
    若某章专属奇遇不足，则回落通用池，保证第 2 层以后总能撞见剧情。 */
 function rlStoryPoolFor(ch){
@@ -4594,6 +4727,89 @@ const NODE_TALE_POOL = {
 function rlNodeTale(type){
   const pool = NODE_TALE_POOL[type];
   return pool && pool.length ? pool[rlFortune(pool.length)] : '';
+}
+/* —— 行军纪事：地图页常驻的“这条路发生过什么” ——
+   只读 RL.nodeHistory（已随存档走），用 runSeed + 层号 + 序号做散列挑句，
+   零 Math.random、读档/同种子复现一致；不新增任何战斗状态。 */
+const NODE_JOURNAL_POOL = {
+  battle: [
+    '第 {layer} 层，与{foe}接战；鼓声压过山风，阵脚一步未退。',
+    '第 {layer} 层，{foe}列阵来迎；两军交锋半日，终于撕开一条路。',
+    '第 {layer} 层，前锋与{foe}撞上；刀兵声里，你把中军稳稳压住。',
+    '第 {layer} 层，{foe}据险而守；你绕了半圈，从侧后敲开了缺口。',
+    '第 {layer} 层，与{foe}血战；收兵时旗还在，人也还在。',
+    '第 {layer} 层，{foe}的旗号乱了；你趁势推进，把战场留在了身后。'
+  ],
+  elite: [
+    '第 {layer} 层，{foe}把守要道；你亲自压阵，硬生生啃了下来。',
+    '第 {layer} 层，{foe}披甲叫阵；一场恶斗，连山风都停了半刻。',
+    '第 {layer} 层，{foe}的旗号比人先到；你让前锋顶住，自己抄了侧翼。',
+    '第 {layer} 层，{foe}不肯让路；你把最后一支预备队也投了进去。'
+  ],
+  event: [
+    '第 {layer} 层途中遇事「{story}」；你做了决断，队伍继续北上。',
+    '第 {layer} 层，路旁生出一桩「{story}」；处理完时，天色已暗了半分。',
+    '第 {layer} 层，你因「{story}」停了半日；再上路时，营中议论未停。',
+    '第 {layer} 层，一桩「{story}」拦在道上；你选了「{choice}」。'
+  ],
+  rest: [
+    '第 {layer} 层，全军歇脚；锅灶的热气把夜里的寒气顶了回去。',
+    '第 {layer} 层，你在背风处扎营；伤兵终于睡了一个整觉。',
+    '第 {layer} 层，营火点到后半夜；巡哨的人换了三班。'
+  ],
+  travel: [
+    '第 {layer} 层，队伍穿过一段难走的山道；粮车一辆没少。',
+    '第 {layer} 层，前队在一处废驿歇了歇脚；墙上的旧箭孔还新着。',
+    '第 {layer} 层，你在岔路口摊开舆图；最后选了更窄的那条。',
+    '第 {layer} 层，山雾散得晚；旗号在雾里时隐时现。',
+    '第 {layer} 层，收编了几个本地向导；他们说话的口音很重。',
+    '第 {layer} 层，军中传开一句闲话：再往北，天就凉了。'
+  ]
+};
+function rlJournalCat(type){
+  if(type === 'event') return 'event';
+  if(type === 'battle') return 'battle';
+  if(type === 'elite' || type === 'stronghold' || type === 'challenge') return 'elite';
+  if(type === 'rest' || type === 'camp') return 'rest';
+  return 'travel';
+}
+function rlJournalLine(e, idx){
+  const ch = (e && e.chapter != null) ? e.chapter : (RL.chapter || 0);
+  if(e && e.type === 'boss'){
+    const after = rlBossAftermath(ch);
+    return '第 ' + (ch + 1) + ' 章 · ' + (after || '守将已破，北伐继续。');
+  }
+  const pool = NODE_JOURNAL_POOL[rlJournalCat(e && e.type)] || NODE_JOURNAL_POOL.travel;
+  let h = (((RL.flags && RL.flags.runSeed) | 0) >>> 0) ^
+          Math.imul(((e && e.layer) | 0) + 1, 2654435761) ^
+          Math.imul((idx | 0) + 1, 40503);
+  h = Math.imul(h ^ (h >>> 16), 2246822507) >>> 0;
+  const line = pool[((h ^ (h >>> 16)) >>> 0) % pool.length];
+  return rlFill(line)
+    .replace(/\{layer\}/g, ((e && e.layer) | 0) + 1)
+    .replace(/\{foe\}/g, (e && e.foeName) || '敌将')
+    .replace(/\{story\}/g, (e && e.storyName) || '途中小事')
+    .replace(/\{choice\}/g, (e && e.storyChoice) || '继续赶路');
+}
+function renderJournal(){
+  const box = $('rlJournalBox');
+  if(!box) return;
+  const all = RL.nodeHistory || [];
+  const start = Math.max(0, all.length - 3);
+  const lines = all.slice(start).reverse().map((e, i) =>
+    '<div class="rljline">'+rlJournalLine(e, start + i)+'</div>').join('');
+  box.innerHTML = '<div class="rljhead"><span>📜 行军纪事</span>'+
+    '<button id="btnJournalAll">全部 '+all.length+'</button></div>'+
+    (lines || '<div class="rljline rljempty">北伐的第一页还空着；走出第一步，这里就会记下沿途的事。</div>');
+  const b = $('btnJournalAll');
+  if(b) b.onclick = openJournal;
+}
+function openJournal(){
+  const all = (RL.nodeHistory || []).slice().reverse();
+  const body = all.length
+    ? all.map((e, i) => '<div class="rljline">'+rlJournalLine(e, all.length - 1 - i)+'</div>').join('')
+    : '<p>还没有行军记录。走出第一步，史官就会落笔。</p>';
+  showModal('📜 行军纪事', body, [{t:'关闭', run(){}}]);
 }
 /* —— 非战斗节点遭遇短叙：rest/doctor/tavern/shop/camp/shrine/tower/ruins/
    treasure/training/forge 每类一小池，随节点弹窗顶部落一行。走 rlFortune
@@ -5631,23 +5847,23 @@ const RL_REGIONS = [
    chapter 存进 RL.chapter（随存档序列化，旧档默认 0）。 */
 const RL_CHAPTERS = [
   {name:'出祁山',  boss:'张郃',     title:'巧变', hpK:0.62, atkK:0.72, defK:0.9,
-   pool:['张郃','郭淮','费耀'],
+   pool:['张郃','郭淮','费耀','戴陵','游楚'],
    intro:'📜 建兴六年，大军北出祁山。魏将张郃据街亭要道，此乃北伐第一关。',
    banter:['🔥 张郃勒兵列阵：「蜀狗，街亭天险，你插翅难飞！」']},
   {name:'陈仓道',  boss:'郝昭',     title:'守城', hpK:0.78, atkK:0.80, defK:1.25,
-   pool:['郝昭','王双','曹真'],
+   pool:['郝昭','王双','曹真','孙礼','贾逵'],
    intro:'🏯 陈仓城高墙厚，守将郝昭善守，久攻不下——只能智取。',
    banter:['🏯 郝昭登城冷笑：「此城固若金汤，诸葛亮来也打不开！」']},
   {name:'夺汉中',  boss:'夏侯渊',   title:'妙才', hpK:0.92, atkK:0.92, defK:1.0,
-   pool:['夏侯渊','徐晃','曹洪'],
+   pool:['夏侯渊','徐晃','曹洪','夏侯尚','曹彰'],
    intro:'⛰ 定军山下，夏侯渊虎踞汉中。夺下此地，北伐才有根基。',
    banter:['⛰ 夏侯渊横刀立马：「定军山前，有来无回！」']},
   {name:'战樊城',  boss:'庞德',     title:'抬棺', hpK:1.05, atkK:1.05, defK:1.05,
-   pool:['庞德','曹仁','于禁'],
+   pool:['庞德','曹仁','于禁','满宠','吕常'],
    intro:'🌊 樊城之外，庞德抬棺出战，誓死不退。此战凶险异常。',
    banter:['🌊 庞德抬棺而来：「今日不是你死，就是我亡！」']},
   {name:'破洛阳',  boss:'司马懿',   title:'冢虎', hpK:1.18, atkK:1.12, defK:1.15,
-   pool:['司马懿','曹休','蒋济'],
+   pool:['司马懿','曹休','蒋济','夏侯楙','钟繇'],
    intro:'🦊 洛阳城下，冢虎司马懿亲自督军。他最擅以静制动、后发制人。',
    banter:['🦊 司马懿羽扇轻摇：「我等你很久了——你越急，我越稳。」']},
   {name:'虎牢关',  boss:'鬼神·吕布', title:'无双', hpK:1.30, atkK:1.20, defK:1.1,
@@ -5657,7 +5873,7 @@ const RL_CHAPTERS = [
            '👑 吕布按戟而立，虎目如电：「鼠辈，也敢言勇？今日便教你知道——什么叫天下无双！」']}
 ];
 /* ==================== 守将轮换（每局从各章池中抽一人） ====================
-   前五章各备三名守将，终章固定吕布。选人只读 RL.flags.runSeed（genMap 后
+   前五章各备五名守将，终章固定吕布。选人只读 RL.flags.runSeed（genMap 后
    一次写定、随存档走），用三次乘法散列折叠章节号——零 Math.random 消耗，
    同局读档、同 seed 复跑看到的守将逐位一致，地图与变体的随机流一位不动。
    旧存档没有 runSeed 时回落到本章史实守将（pool[0]），不会把老档读崩。 */
@@ -5781,7 +5997,127 @@ const RL_BOSS_ALTS = {
     },
     rumor:['传闻蒋济最会守拙：相持之后仍留一手布，等你先露破绽。',
            '也有人说，蒋济的城不好打，不是墙厚，是他从不肯按你的节奏走。'],
-    aftermath:'蒋济的琴弦断了；他把断弦收进袖里，出城时仍不肯走快一步。'}
+    aftermath:'蒋济的琴弦断了；他把断弦收进袖里，出城时仍不肯走快一步。'},
+  '戴陵':{name:'戴陵', title:'突骑', hpK:0.63, atkK:0.75, defK:0.90,
+    intro:'📜 魏将戴陵率突骑扼守祁山北道，来去如风，专截落单的粮队。',
+    banter:['🏔 戴陵勒马坡上，马刀朝你的粮车一指：「突骑不问阵，只问你的粮车走到哪了。」',
+            '🏔 他一夹马腹，数十骑已经散开，像一把撒出去的钉子。'],
+    parley:{
+      a:'戴陵纵马出阵，马刀在头顶绕了一圈：「突骑者不列阵。你若追得上，这阵就算你的。」',
+      b:'你骂他「只敢劫粮」，戴陵在马上大笑：「劫得动你的粮，便算真本事。你骂完这一句，粮车又少一队。」',
+      c:'你闭垒不出，戴陵的突骑在远处转了两日，马刀始终没出鞘——他等不到破绽，只能先走。'
+    },
+    rumor:['传闻戴陵得手便追，胜了一合就咬着不放；他不肯给对手喘气的工夫。',
+           '也有人说，戴陵的突骑最怕结阵；你越不动，他越找不到下口的地方。'],
+    aftermath:'戴陵的突骑在坚壁前跑瘦了马；他退走时，四野的蹄印比来时浅了一半。'},
+  '游楚':{name:'游楚', title:'守陇', hpK:0.61, atkK:0.68, defK:1.02,
+    intro:'📜 陇西太守游楚据城自守，先把四门堵死，再把城中水井重新淘了一遍。',
+    banter:['🏔 游楚立在城头，身后是堵死的四门：「陇西小城，守的不是墙，是城里的人。」',
+            '🏔 城下鹿角三层，城上弩机一字排开，连水门都钉了铁条。'],
+    parley:{
+      a:'游楚不出城，只让人把一面陇西父老的旧旗挂上城楼：「先问问这面旗，再问我的守不守。」',
+      b:'你骂他「缩头太守」，游楚在城头笑了：「太守的头缩一缩，城里的人头就保住了。」',
+      c:'你围而不攻，游楚每日巡城三遍，命人把城内水井重新淘了一遍——他比你更清楚，围城先围心。'
+    },
+    rumor:['传闻游楚满城时绝不轻出，先把你耗到没脾气，再谈反击。',
+           '也有人说，游楚的城守得太死；一旦城破，他自己也没有退路。'],
+    aftermath:'游楚的城门终于开了；他未降，只把城头最后一面旗叠好，放在门槛上。'},
+  '孙礼':{name:'孙礼', title:'陷阵', hpK:0.83, atkK:0.85, defK:1.16,
+    intro:'🏯 陈仓城下，魏将孙礼率陷阵士先登，重甲长刀，专冲你的攻城器械。',
+    banter:['🏯 孙礼把长刀往地上一插：「陷阵之士，不进则死。你带了多少云梯，够不够我砍？」',
+            '🏯 重甲士在城下列成三排，刀背拍盾，声如闷雷。'],
+    parley:{
+      a:'孙礼提刀出阵，靴底把冻土踩出两个坑：「陈仓城高，我的刀也不薄。你带了多少面盾，够不够我砍？」',
+      b:'你骂他「一介莽夫」，孙礼不怒，反把刀在头顶抡圆了：「莽夫一刀，够你写三封家书。」城头守军哄然叫好。',
+      c:'你收兵入垒，孙礼在城下骂了半日，刀砍在空处，声比雷响。到了傍晚，他先勒马回城——重甲不能久立。'
+    },
+    rumor:['传闻孙礼开局最凶，前两合必抢；挡不住的人，后面也不用打了。',
+           '也有降卒说，孙礼的刀重，回手也慢；只要熬过他头两下，他就要喘。'],
+    aftermath:'孙礼的长刀陷在泥里，陷阵士再也列不成排——陈仓城头的守军第一次往后退了半步。'},
+  '贾逵':{name:'贾逵', title:'持节', hpK:0.79, atkK:0.80, defK:1.28,
+    intro:'🏯 陈仓守将贾逵持节督军，先立粮道后立营，城上旌旗整肃，一步不乱。',
+    banter:['🏯 贾逵立在城楼，节杖靠在垛口：「持节者不轻进。你远来，我近守——先算算你的粮。」',
+            '🏯 城上鼓声不疾不徐，像在替城里的人数更。'],
+    parley:{
+      a:'贾逵不出城，只让人把节杖往城楼上一立：「节在，城在。你要战，先问问这根节杖。」',
+      b:'阵前骂他「文官守城」，贾逵在城头沉默良久，只回一句：「文官守的也是国门，你让我往哪退？」',
+      c:'你令深垒，贾逵在城上看了半日，命人往城下吊了两桶水——他守城，也守人心。'
+    },
+    rumor:['传闻贾逵用兵只求无过：满势时绝不轻出，宁可把城守成一只铁桶。',
+           '也有人说，贾逵最怕的不是攻城，是朝中有人说他「畏蜀」。'],
+    aftermath:'贾逵的节杖倒在城头；他退走时仍把粮册抱在怀里，一页没丢。'},
+  '夏侯尚':{name:'夏侯尚', title:'宗亲', hpK:0.93, atkK:0.91, defK:1.02,
+    intro:'⛰ 汉中魏军宗亲夏侯尚据险列阵，旗号一色，后军护着前军，一步不乱。',
+    banter:['⛰ 夏侯尚按剑立马：「宗亲守国门，退一步便是宗庙。你说我敢不敢退？」',
+            '⛰ 后军的旗号跟着他的马头，一步不落。'],
+    parley:{
+      a:'夏侯尚拍马出阵，先回头看了一眼后军的旗：「看见没有？那面旗不倒，我就不退。」',
+      b:'你骂他「靠宗室混功名」，夏侯尚脸色一沉，却不冲阵，只把剑攥得发白：「宗室的门，总得有人守。」',
+      c:'你深垒不出，夏侯尚在阵前走了几遭，几次想冲都忍住了——他身后那面旗，比他的脾气重。'
+    },
+    rumor:['传闻夏侯尚见主将势危便拼命，你越逼近中军，他越不肯让路。',
+           '也有老兵说，夏侯尚守得住山口，守不住自己的火气。'],
+    aftermath:'夏侯尚的宗亲旗倒在山口，后军却大多逃了——他护得住旗，护不住人心。'},
+  '曹彰':{name:'曹彰', title:'黄须', hpK:0.96, atkK:0.96, defK:0.95,
+    intro:'⛰ 曹彰率黄须铁骑驰至汉中，马快刀沉，专冲中军，连旗号都追不上他。',
+    banter:['⛰ 曹彰勒马高处，黄须在风里乱飞：「父亲说我只会打猎，今日猎的是你的中军。」',
+            '⛰ 铁骑不列阵，散在四野，像一把撒出去的豆子。'],
+    parley:{
+      a:'曹彰纵马绕阵半圈，也不下马：「黄须儿不摆阵。你若追得上，这阵就算你的。」',
+      b:'你骂他「只会跑」，曹彰在马背上大笑：「跑得快的才配活着。你站在原地骂，中军可不会等你。」',
+      c:'你闭垒不出，曹彰的铁骑在远处转了两日，马蹄声从密到疏——他等不到破绽，只能先走。'
+    },
+    rumor:['传闻曹彰开局最急，前两合必抢；他不肯给人列阵的工夫。',
+           '也有人说，曹彰的快是双刃；你只要站住头两合，他的锐气就要落。'],
+    aftermath:'曹彰的黄须旗折在定军山口；他退得极快，连断后的鼓都没来得及带走。'},
+  '满宠':{name:'满宠', title:'坚城', hpK:1.03, atkK:0.99, defK:1.20,
+    intro:'🌊 樊城守将满宠，先把城外民居烧成白地，再把人畜粮草全收进城——他守的是一座空野。',
+    banter:['🌊 满宠立在城头，身后是烧成白地的城郊：「野都烧了，你还想从哪儿借粮？」',
+            '🌊 城下鹿角三层，城上弩机一字排开，连水门都钉了铁条。'],
+    parley:{
+      a:'满宠不出城，只让人把城门从里面又加了一道杠：「坚城不是喊出来的，是一根一根钉出来的。」',
+      b:'你骂他「烧民房守城」，满宠在城头沉默了一瞬：「烧的是房，保的是人。你骂完这一句，粮车又少一辆。」',
+      c:'你围而不攻，满宠每日巡城三遍，命人把城内水井重新淘了一遍——他比你更清楚，围城先围心。'
+    },
+    rumor:['传闻满宠满血时绝不冒进，先把你耗到没脾气，再谈反击。',
+           '也有人说，满宠的城守得太死；一旦城破，他自己也没有退路。'],
+    aftermath:'满宠的坚城裂了；他退到内城时仍命人把最后一道门堵上——败也败得像一面墙。'},
+  '吕常':{name:'吕常', title:'死守', hpK:1.04, atkK:1.00, defK:1.16,
+    intro:'🌊 襄阳守将吕常，兵不满千，却把城门堵死，连自己的退路都不留。',
+    banter:['🌊 吕常立在城头，身后是堵死的城门：「门已封了。你要进来，只能从墙上走。」',
+            '🌊 城上守军不多，旗号却一面不少。'],
+    parley:{
+      a:'吕常不出城，只让人把城门从里面又加了一道杠：「死守不是喊出来的，是一根一根钉出来的。」',
+      b:'你骂他「千人小城也配称将」，吕常探手取弓，朝叫阵的鼓架虚悬一箭：「姓名留着教子弟用——你，不配。」',
+      c:'你围而不攻，吕常每日巡城三遍，命人把城内水井重新淘了一遍——他比你更清楚，围城先围心。'
+    },
+    rumor:['传闻吕常血越薄越不肯退，守城的人不给自己留后路。',
+           '也有人说，吕常最凶的时候不是满血，是只剩一口气的时候。'],
+    aftermath:'吕常的城门终于开了；他未降，只把城头最后一面旗叠好，放在门槛上。'},
+  '夏侯楙':{name:'夏侯楙', title:'纨绔', hpK:1.15, atkK:1.10, defK:1.05,
+    intro:'🦊 洛阳守将夏侯楙，宗室子弟，兵甲鲜亮，号令却一日三改——他自己也拿不准该守哪门。',
+    banter:['🦊 夏侯楙勒马城下，甲胄亮得晃眼：「我兵多将广，你拿什么跟我打？」',
+            '🦊 他身后的旗号忽左忽右，传令兵跑得比骑兵还急。'],
+    parley:{
+      a:'夏侯楙纵马出阵，也不看地形：「宗室子弟不摆阵。你若追得上，这阵就算你的。」',
+      b:'你骂他「只会靠祖宗」，夏侯楙脸色涨红：「祖宗的门，我守不住也不会让给你！」',
+      c:'你闭垒不出，夏侯楙在阵前转了两日，号令换了三次，终于把前锋挪回城里——他等不到破绽，只能先走。'
+    },
+    rumor:['传闻夏侯楙用兵一日三改，连他自己的部将都摸不准号令。',
+           '也有人说，夏侯楙兵甲鲜亮，真打起来却最怕被断后路。'],
+    aftermath:'夏侯楙的鲜亮甲胄丢在城门口；他退走时连号令旗都没顾上带。'},
+  '钟繇':{name:'钟繇', title:'镇关', hpK:1.16, atkK:1.06, defK:1.22,
+    intro:'🦊 洛阳守将钟繇，老于关中，先立粮道后立营，城头不挂甲，只挂一张旧琴。',
+    banter:['🦊 钟繇在城头抚琴，弦音不乱：「镇关者不争先。你远来，我等你先老。」',
+            '🦊 琴声一停，城上弩机才露出来——他连吓人都省着用。'],
+    parley:{
+      a:'钟繇抱琴出城，在阵前坐下：「镇关之人，先听一曲。听完你要战，再战。」',
+      b:'你骂他「文弱老翁」，钟繇把琴弦一拨：「老翁守城，靠的不是力气，是让你白费力气。」',
+      c:'你深垒不出，钟繇在城头弹了一夜的琴；第二天城上换防，他的琴还在原处——他比谁都能等。'
+    },
+    rumor:['传闻钟繇最会守拙：相持之后仍留一手布，等你先露破绽。',
+           '也有人说，钟繇的城不好打，不是墙厚，是他从不肯按你的节奏走。'],
+    aftermath:'钟繇的琴弦断了；他把断弦收进袖里，出城时仍不肯走快一步。'}
 };
 /* 本局守将：只读 runSeed，不掷骰子。pool[0] 是史实守将（旧档回落用）。 */
 function rlBossPick(chIdx){
@@ -8176,7 +8512,37 @@ const BOSS_HABITS = {
     broke:'你两次在他追胜时站住，曹休勒马，不再把轻骑往坚壁上撞。'},
   '蒋济':{id:'boss_jiangji', name:'守拙待隙', when:'afterDraw', move:2, p:0.66,
     tell:'蒋济相持之后最会守拙：下一合常留✋布不动，等你先露破绽。',
-    broke:'你两次逼他先动，蒋济指下的琴弦一紧，终于不再只守一手。'}
+    broke:'你两次逼他先动，蒋济指下的琴弦一紧，终于不再只守一手。'},
+  '戴陵':{id:'boss_dailing', name:'突骑追胜', when:'afterWin', move:1, p:0.66,
+    tell:'戴陵得手便追：胜了一合之后，下一合常出✌剪刀咬着不放。',
+    broke:'你两次在他追胜时站住，戴陵勒马，不再把突骑往坚壁上撞。'},
+  '游楚':{id:'boss_youchu', name:'守陇不出', when:'high', move:0, p:0.63,
+    tell:'游楚满势时只守不出：生命高于六成，他常以✊石头堵住中路。',
+    broke:'你两次撬开他的城门，游楚终于挪动了堵门的那块石。'},
+  '孙礼':{id:'boss_sunli', name:'陷阵再进', when:'afterWin', move:0, p:0.65,
+    tell:'孙礼得手便再进：胜了一合之后，下一合常出✊石头硬顶。',
+    broke:'你两次在他再进时站住，孙礼喘了口气，刀路终于变了。'},
+  '贾逵':{id:'boss_jiakui', name:'持节待变', when:'afterDraw', move:2, p:0.62,
+    tell:'贾逵相持之后仍持节不动：下一合常留✋布，等你先露破绽。',
+    broke:'你两次逼他先动，贾逵把节杖一顿，终于不再只守一手。'},
+  '夏侯尚':{id:'boss_xiahoushang', name:'宗亲稳阵', when:'afterDraw', move:0, p:0.63,
+    tell:'夏侯尚相持之后先稳阵脚：下一合常出✊石头，把阵脚钉死再说。',
+    broke:'你两次摇动他的阵脚，夏侯尚深吸一口气，不再一味稳守。'},
+  '曹彰':{id:'boss_caozhang', name:'黄须先登', when:'first', move:0, p:0.67,
+    tell:'曹彰开局便先登：前两合常出✊石头，重得不讲道理。',
+    broke:'你两次架住他的先登，曹彰喘了口气，马刀终于换了路。'},
+  '满宠':{id:'boss_manchong', name:'坚城蓄势', when:'charge', move:2, p:0.64,
+    tell:'满宠蓄力满四成便借城势：下一合常出✋布，等你撞上他的墙。',
+    broke:'你两次逆着他的城势走，满宠收了弩，不再只靠一层布。'},
+  '吕常':{id:'boss_lvchang', name:'死守孤城', when:'low', move:0, p:0.66,
+    tell:'吕常血薄时反而死守：生命低于三成半，他必以✊石头死战不退。',
+    broke:'你两次从他城下绕过去，吕常低吼一声，终于换了守法。'},
+  '夏侯楙':{id:'boss_xiahoumao', name:'纨绔乱手', when:'afterLoss', move:2, p:0.62,
+    tell:'夏侯楙失手便乱：下一合常出✋布，越急越拿不定主意。',
+    broke:'你两次接住他的乱手，夏侯楙涨红了脸，终于按部就班打了一合。'},
+  '钟繇':{id:'boss_zhongyao', name:'镇关老笔', when:'round3', move:2, p:0.64,
+    tell:'钟繇每第三合便落一笔：第三、六、九合，他常以✋布压住阵脚。',
+    broke:'你两次在他落笔时抢了先手，钟繇收了琴，另换一路。'}
 };
 
 function cleanBossName(name){ return String(name || '').replace(/^.*·/, ''); }
@@ -10002,7 +10368,7 @@ function advanceChapter(){
   changeSupplies(2, true);
   changeMorale(2, true);
   trackRLStat('nodes');
-  RL.nodeHistory.push({layer:0, type:'boss', route:null, chapter:prevIdx});
+  RL.nodeHistory.push({layer:0, type:'boss', route:null, chapter:prevIdx, foeName:prev.boss});
   log('🎉 第 '+(prevIdx+1)+' 章【'+prev.name+'】攻克！斩落 '+prev.boss+'。','round');
   if(rlBossAftermath(prevIdx)) log('📜 '+rlBossAftermath(prevIdx), 'sys');
   log('🏆 过关赏赐：金币 +'+bonusGold+(rr?'，遗物【'+rr.name+'】':'')+'，补给 +2，军心提振，全军休整。','gold');
@@ -10107,6 +10473,8 @@ function startRLBattle(node){
     applyMutatorFoe(foe);
   }
   ai = foe;
+  node.foeName = foe.name;
+  node.chapter = RL.chapter;
   clearDebuffs(ai);
   resetBattleCarryover(ai);
   if(player.st.counterspy) ai.st.openingAtkDown = 1;
@@ -10298,7 +10666,10 @@ function completeNode(node){
   if(!node || node.done) return;
   node.done = true;
   trackRLStat('nodes');
-  RL.nodeHistory.push({layer:node.layer, type:node.type, route:node.route||null});
+  RL.nodeHistory.push({layer:node.layer, type:node.type, route:node.route||null,
+    chapter:(node.chapter == null ? (RL.chapter||0) : node.chapter),
+    foeName:node.foeName||null, storyName:node.storyName||null,
+    storyChoice:node.storyChoice||null});
   if(RL.flags.scouted > 0) RL.flags.scouted--;
   RL.layer++;
   closeModal();
@@ -10734,10 +11105,14 @@ function openEvent(node){
      否则只能重新随机一个事件,或直接把节点推进掉。 */
   let mySig = '', exitShown = false;
   function showEvent(){
-    /* 剧情奇遇的文案里可能带 {rival}/{hero} 占位符，显示前统一替换 */
+    /* 剧情奇遇的文案里可能带 {rival}/{hero}/{boss} 占位符，显示前统一替换 */
+    node.storyName = rlFill(e.name);
+    node.storyIcon = e.icon;
+    node.chapter = RL.chapter;
     const opts = e.opts.map(o => ({
       t: rlFill(o.t),
       run(){
+        node.storyChoice = rlFill(o.t);
         const r = o.run(R);
         if(!RL.hero.alive){
           /* 奇遇中死亡 */
@@ -10771,7 +11146,7 @@ function openEvent(node){
     }));
     if(exitShown)
       opts.push({ t: EVENT_EXIT_TEXT,
-        run(){ R.log('你没有插手，队伍重新上路。'); completeNode(node); return true; } });
+        run(){ node.storyChoice = EVENT_EXIT_TEXT; R.log('你没有插手，队伍重新上路。'); completeNode(node); return true; } });
     showModal(e.icon+' '+rlFill(e.name), rlFill(e.text), opts);
     mySig = eventModalSig();
   }
@@ -11462,6 +11837,7 @@ function renderMapScreen(){
   });
   const cur = tree.querySelector('.maplayer.cur');
   if(cur && cur.scrollIntoView) cur.scrollIntoView({block:'center'});
+  renderJournal();
   saveRoguelike();
 }
 
@@ -11899,7 +12275,7 @@ function codexHtml(tab){
     <b>🧭 北伐 Roguelike</b>：肉鸽远征，见下。</p>
     <h4>🧭 北伐（肉鸽）流程</h4>
     <p>选 1 名武将出征，须<b>连破 ${RL_CHAPTERS.length} 章</b>，每章都是一张 <b>10-14 层</b> 的新地图；节点类型共 ${Object.keys(NODE_INFO).length} 种：<br>
-    <b>⚔ 战斗</b>（金币 + 卡牌三选一，含 <b>${Object.keys(BATTLE_VARIANTS).length}</b> 种变体：雾战 / 伏击 / 决斗 / 粮道 / 天时 / 夜战 / 攻城 / 车轮 / 谍战 / 决死 / 天灾 / 旱战 / 狂风 / 雨战 / 灰野 / 挟民 / 斗将 / 壕沟 / 死士 / 征粮）、<b>👹 精英</b>（更多金币 + 遗物 + 药水）、<b>🏴 敌寨</b>（血厚防高的寨主，必带词条，胜利<b>三选一领遗物</b>）、<b>🏹 悬赏</b>（更强敌将，胜利三选一领遗物）、<b>🔥 篝火</b>（回血 / 升级卡牌 / 强化攻击三选一）、<b>🏕 军营</b>（补满锦囊 / 回血 / 军心补给）、<b>🗼 烽火台</b>（侦察路线 / 火攻示警 / 变卖器械）、<b>🚑 名医</b>（付费回血 / 配药 / 强身）、<b>🍶 酒馆</b>（军心 / 敌情 / 佣兵 / 赌局）、<b>🏛 废墟</b>（挖掘：赌运气，也可能塌方）、<b>💎 宝藏</b>（遗物 + 额外收获）、<b>❓ 奇遇</b>（随机事件，第 3 层起混入按章剧情）、<b>🛒 商人</b>（买牌 / 药水 / 遗物 / 删牌）、<b>⛩️ 祭坛</b>（以代价换取永久强化）、<b>🎯 演武</b>（预知 / 蓄力 / 攻击强化）、<b>⚒ 铸造</b>（升级 / 删牌 / 攻击）、<b>👑 守关敌将</b>（每章三名守将中抽一位，终章固定鬼神·吕布）。</p>
+    <b>⚔ 战斗</b>（金币 + 卡牌三选一，含 <b>${Object.keys(BATTLE_VARIANTS).length}</b> 种变体：雾战 / 伏击 / 决斗 / 粮道 / 天时 / 夜战 / 攻城 / 车轮 / 谍战 / 决死 / 天灾 / 旱战 / 狂风 / 雨战 / 灰野 / 挟民 / 斗将 / 壕沟 / 死士 / 征粮）、<b>👹 精英</b>（更多金币 + 遗物 + 药水）、<b>🏴 敌寨</b>（血厚防高的寨主，必带词条，胜利<b>三选一领遗物</b>）、<b>🏹 悬赏</b>（更强敌将，胜利三选一领遗物）、<b>🔥 篝火</b>（回血 / 升级卡牌 / 强化攻击三选一）、<b>🏕 军营</b>（补满锦囊 / 回血 / 军心补给）、<b>🗼 烽火台</b>（侦察路线 / 火攻示警 / 变卖器械）、<b>🚑 名医</b>（付费回血 / 配药 / 强身）、<b>🍶 酒馆</b>（军心 / 敌情 / 佣兵 / 赌局）、<b>🏛 废墟</b>（挖掘：赌运气，也可能塌方）、<b>💎 宝藏</b>（遗物 + 额外收获）、<b>❓ 奇遇</b>（随机事件，第 3 层起混入按章剧情）、<b>🛒 商人</b>（买牌 / 药水 / 遗物 / 删牌）、<b>⛩️ 祭坛</b>（以代价换取永久强化）、<b>🎯 演武</b>（预知 / 蓄力 / 攻击强化）、<b>⚒ 铸造</b>（升级 / 删牌 / 攻击）、<b>👑 守关敌将</b>（每章五名守将中抽一位，终章固定鬼神·吕布）。</p>
     <p>阵亡即止；连破各章守将、最终在虎牢关诛杀鬼神·吕布才算通关。层数与章节越靠后，敌将血量 / 攻击 / 防御同步成长，不同战斗变体会改变开局条件、天气或奖励。</p>
     <h4>🃏 军略牌（卡组构筑 · 杀戮尖塔式）</h4>
      <p>北伐模式下你拥有一副 <b>卡组</b>（起始 10 张）。每回合开始：<b>重置格挡与能量（默认 3 点）</b>，<b>抽 5 张牌</b>。每两回合在出拳之前最多打出<b> 1 张</b>军略牌，每场最多<b> 3 张</b>，然后猜拳结束本回合，胜负仍由石头剪刀布决定。</p>
@@ -11965,7 +12341,7 @@ function codexHtml(tab){
           '⚔'+characterStat(x, 'atk')+' ❤'+characterStat(x, 'hp')+' 🛡'+characterStat(x, 'def')+'%');
       }));
     });
-    out += '<h4>🧠 守关大将 · 阵前习性</h4><p class="dim">前五章每章三名守将，开局按本局地图抽定一位；终章固定鬼神·吕布。同一章换一位守将，阵前戏文、传闻与习性都会换。</p>' +
+    out += '<h4>🧠 守关大将 · 阵前习性</h4><p class="dim">前五章每章五名守将，开局按本局地图抽定一位；终章固定鬼神·吕布。同一章换一位守将，阵前戏文、传闻与习性都会换。</p>' +
       cxGrid(Object.keys(BOSS_HABITS).map(k => {
         const h = BOSS_HABITS[k];
         return cxItem('🏯', k,
@@ -12090,7 +12466,7 @@ function codexHtml(tab){
       '每章都是一张独立地图（'+
       RL_CHAPTERS.map((c,i) => '第'+(i+1)+'章 '+c.name+' · 守将'+(c.pool||[c.boss]).join('/')).join('　')
       + '）。<br>'+
-      '前五章每章有 <b>三名守将</b>，开局按本局地图抽定一位；同一章换一位守将，阵前搦战、阵前传闻、本章奇遇与习性都会换。终章虎牢关固定鬼神·吕布。<br>'+
+      '前五章每章有 <b>五名守将</b>，开局按本局地图抽定一位；同一章换一位守将，阵前搦战、阵前传闻、本章奇遇与习性都会换。终章虎牢关固定鬼神·吕布。<br>'+
       '每攻克一章的守关敌将，全军休整、得遗物与过关赏赐，随即<b>重铺一张更长的地图</b>，'+
       '战报里会出现该章的<b>剧情过场</b>；宿敌「{rival}」会在精英 / 悬赏战前叫阵，最终与吕布一同登场。<br>'+
       '开局还会 roll <b>局内天时（mutators）</b>，同一位武将每一趟北伐的手感都不相同。<br>'+
@@ -12599,6 +12975,7 @@ globalThis.__api = {
   setDiff: d => { difficulty = d; }, itemEffect, animateItem, makeBoss, rollWeather,
   executeUlt, factionBuffs, startRoguelike, renderMapScreen, enterNode, gainRelic, genMap,
   openPrologue, chooseOrigin, openCouncil, chooseCouncil, councilTaken, bossParley, mapNodeClick,
+  openJournal, renderJournal, rlJournalLine,
   getRL_ORIGINS: () => RL_ORIGINS, getRL_SCENES: () => RL_SCENES,
   getRL_MERIT_UPGRADES: () => RL_MERIT_UPGRADES, getRLMerit: () => rlMerit,
   getRL_BOONS: () => RL_BOONS, getRL_BOON_BY_ID: () => RL_BOON_BY_ID,
