@@ -5717,31 +5717,31 @@ const RL = { active:false, hero:null, gold:0, map:[], layer:0, relics:[], relicS
              chapter:0, mutators:[], orders:[], boons:[], boonRanks:{}, companion:null,
              nodeHistory:[], flags:{}, report:null };
 /* ==================== 副将随行（一局一次三选一） ====================
-   每 3 回合触发一次小支援；数值刻意压低（约每回合 1~1.5 点等效），
-   作为构筑的“第五个零件”，不替代猜拳与卡牌。 */
+   每场战斗只触发一次（第 3 回合），数值压低到“半件遗物”量级；
+   作为构筑的第五个零件，不替代猜拳与卡牌。 */
 const RL_COMPANIONS = [
   {id:'fazheng', icon:'🧠', name:'法正', title:'军师',
-   desc:'每 3 回合抽 1 张军略牌', short:'每3回合抽1张',
+   desc:'每场战斗第 3 回合抽 1 张军略牌', short:'第3回合抽1张',
    act(){ drawCards(1); log('🧠 副将法正在帐中递来一张新牌（抽 1 张军略牌）','gold'); }},
   {id:'zhaoyun', icon:'🐉', name:'赵云', title:'虎将',
-   desc:'每 3 回合对敌造成 4 点伤害', short:'每3回合4伤',
-   act(){ if(ai && ai.alive){ dealDamage(ai, 4, player); log('🐉 副将赵云突入敌阵，造成 4 点伤害','good'); } }},
+   desc:'每场战斗第 3 回合对敌造成 3 点伤害', short:'第3回合3伤',
+   act(){ if(ai && ai.alive){ dealDamage(ai, 3, player); log('🐉 副将赵云突入敌阵，造成 3 点伤害','good'); } }},
   {id:'huatuo', icon:'🌿', name:'华佗', title:'医官',
-   desc:'每 3 回合回复 3 点生命', short:'每3回合回3血',
-   act(){ heal(player, 3); log('🌿 副将华佗替你处理旧伤（回复 3 血）','good'); }}
+   desc:'每场战斗第 3 回合回复 2 点生命', short:'第3回合回2血',
+   act(){ heal(player, 2); log('🌿 副将华佗替你处理旧伤（回复 2 血）','good'); }}
 ];
 const RL_COMPANION_BY_ID = {};
 RL_COMPANIONS.forEach(c => RL_COMPANION_BY_ID[c.id] = c);
 function rlCompanion(){ return RL_COMPANION_BY_ID[RL.companion] || null; }
 function companionTick(){
   if(!RL.active || !RL.companion || !player || !ai || !player.alive || !ai.alive) return;
-  if(G.round % 3 !== 0) return;
+  if(G.round !== 3) return;
   const c = rlCompanion();
   if(c) c.act();
 }
 function openCompanionChoice(){
   if(RL.companion) return;
-  showModal('🎖 点将 · 副将随行', '一局只能点一名副将。他不会替你出拳，但每 3 回合会支援一次：', RL_COMPANIONS.map(c => ({
+  showModal('🎖 点将 · 副将随行', '一局只能点一名副将。他不会替你出拳，但每场战斗第 3 回合会支援一次：', RL_COMPANIONS.map(c => ({
     t: c.icon+' '+c.name+'（'+c.title+'）— '+c.desc,
     run(){
       RL.companion = c.id;
@@ -7921,8 +7921,6 @@ function resumeRoguelike(){
     renderMapScreen();
     if(RL.pendingReward){
       const r = RL.pendingReward;
-      RL.pendingReward = null;
-      saveRoguelike();
       openRLReward(r.node, r.kind);
     } else if(!RL.doctrine || !RL.origin){
       openPrologue();
@@ -9640,11 +9638,14 @@ function cardEffect(uid){
     return;
   }
   if(player.st.energy < d.cost){ log('💠 能量不足，无法打出【'+d.name+'】','bad'); return; }
-  const pain = RL.hand.some(e => { const cd = cardDef(e); return cd && cd.cursePain; });
+  const pain = RL.hand.reduce((s, e) => {
+    const cd = cardDef(e);
+    return s + (cd && cd.cursePain ? cd.cursePain : 0);
+  }, 0);
   if(pain){
-    log('🩸 【疼痛】发作：你打出一张军略牌，失去 1 点生命','bad');
-    dealDamage(player, 1, player);
-    if(!player.alive) return;
+    log('🩸 【疼痛】发作：你打出一张军略牌，失去 '+pain+' 点生命','bad');
+    dealDamage(player, pain, player);
+    if(!player.alive){ finishCheck(); saveRoguelike(); return; }
   }
   player.st.energy -= d.cost;
   player.st.cardPlays = (player.st.cardPlays||0) + 1;
@@ -9833,14 +9834,15 @@ function openCardReward(node){
   if(!pool.length) return;
   const opts = pool.map(c => ({
     t: c.icon+' '+c.name+'（'+c.cost+' 费 · '+RARITY_NAME[c.rar]+'）— '+c.desc,
-    run(){ addCardToDeck(c.id); saveRoguelike(); }
+    run(){ RL.pendingReward = null; addCardToDeck(c.id); saveRoguelike(); }
   }));
   opts.push({t:'💰 放弃卡牌，领取 16 金', run(){
+    RL.pendingReward = null;
     RL.gold += 16;
     log('你没有扩充卡组，改取 16 金作为军费。','gold');
     saveRoguelike();
   }});
-  opts.push({t:'🚫 跳过（不要卡牌）', run(){ log('你放弃了这个战利品','sys'); saveRoguelike(); }});
+  opts.push({t:'🚫 跳过（不要卡牌）', run(){ RL.pendingReward = null; log('你放弃了这个战利品','sys'); saveRoguelike(); }});
   showModal('🃏 战利 · 军略牌','择一收入卡组，壮大你的牌库：', opts);
 }
 
@@ -9855,9 +9857,10 @@ function openRelicReward(node){
   }
   const opts = choices.map(r => ({
     t:r.icon+' '+r.name+'（'+RARITY_NAME[r.rar]+'）— '+r.desc,
-    run(){ applyRelic(r); saveRoguelike(); }
+    run(){ RL.pendingReward = null; applyRelic(r); saveRoguelike(); }
   }));
   opts.push({t:'💰 放弃遗物，领取 25 金', run(){
+    RL.pendingReward = null;
     RL.gold += 25;
     log('你没有携带遗物，改取 25 金作为军费。','gold');
     saveRoguelike();
@@ -9873,17 +9876,20 @@ function openRLReward(node, kind){
 function openTigerReward(node){
   showModal('🐯 虎符秘藏','两枚虎符合拢，秘藏的门开了一道缝。只取一样：',[
     {t:'🗡 秘藏兵器 — 获得一件神器遗物', run(){
+      RL.pendingReward = null;
       const rr = gainRelic('boss');
       if(rr) log('🐯 秘藏兵器入库：【'+rr.name+'】','gold');
       else { RL.gold += 80; log('🐯 行囊已满，秘藏兵器折作 80 金','gold'); }
       saveRoguelike();
     }},
     {t:'💰 秘藏金帛 — 金币 +90，补给 +2', run(){
+      RL.pendingReward = null;
       RL.gold += 90; changeSupplies(2);
       log('🐯 秘藏金帛入账（+90 金，补给 +2）','gold');
       saveRoguelike();
     }},
     {t:'🪖 秘藏兵符 — 最大生命 +12，攻击 +1', run(){
+      RL.pendingReward = null;
       RL.hero.maxHp += 12; RL.hero.hp += 12; RL.hero.atk += 1;
       log('🐯 秘藏兵符上身：最大生命 +12，攻击 +1','gold');
       saveRoguelike();
@@ -10581,7 +10587,7 @@ function rlFinish(){
   if(n.type === 'tiger'){
     RL.flags.tiger = Math.max(0, rlTigerCount() - 2);
     RL.flags.tigerNodeSpawned = 0;
-    log('🐯 秘藏开启：虎符碎片 −2（余 '+rlTigerCount()+'/2）','gold');
+    log('🐯 秘藏开启：虎符碎片 −2（余 '+rlTigerCount()+'/3）','gold');
     RL.pendingReward = { node: n, kind: 'tiger' };
   } else {
     RL.pendingReward = { node: n, kind: (n.type === 'challenge' || n.type === 'stronghold') ? 'relic' : 'card' };
@@ -10969,7 +10975,13 @@ function spawnTigerInMap(m, fromLayer){
     const i = layer.findIndex(n => n && n.type === 'battle' && !n.pinnedStory);
     if(i < 0) continue;
     const n = layer[i];
-    n.type = 'tiger'; n.route = 'war'; n.variant = n.variant || 'standard';
+    n.type = 'tiger'; n.route = 'war'; n.variant = 'standard';
+    /* 变成秘藏后按 tiger 规则重掷词条（只走节点 uid 的独立 LCG，不碰主随机流） */
+    let h = ((n.uid | 0) * 7919 + 13) >>> 0;
+    const key = 'tiger|' + (n.previewId || '') + '|standard';
+    for(let k = 0; k < key.length; k++) h = (Math.imul(h, 31) + key.charCodeAt(k)) >>> 0;
+    const rnd = seededRng(h);
+    n.affixes = rollAffixes(n, affixCountFor(n, rnd), rnd);
     return n;
   }
   return false;
@@ -10988,7 +11000,7 @@ function spawnTigerNode(){
 function awardTigerFragment(){
   const n = Math.min(3, rlTigerCount() + 1);
   RL.flags.tiger = n;
-  log('🐯 虎符碎片 +1（'+n+'/2）'+(n >= 2 ? '——秘藏已可开启' : ''), 'gold');
+  log('🐯 虎符碎片 +1（'+n+'/3）'+(n >= 2 ? '——秘藏已可开启' : ''), 'gold');
   if(n >= 2) spawnTigerNode();
 }
 
@@ -11869,7 +11881,6 @@ function endAnim(my){
   /* 北伐：战斗胜利后的卡牌三选一战利 */
   if(RL.active && RL.pendingReward){
     const r = RL.pendingReward;
-    RL.pendingReward = null;
     openRLReward(r.node, r.kind);
   }
   if(G.mode === 'arena' && G.arenaRewardPending && !G.over){
@@ -12083,7 +12094,10 @@ function renderMapScreen(){
       '<span class="rlstat">🗺 当前战区：<b>'+region.name+'</b></span>'+
       '<span class="rlstat" title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
       '<span class="rlstat">📦 补给：<b>'+RL.supplies+'</b></span>'+
-      '<span class="rlstat">🐯 虎符：<b>'+rlTigerCount()+'/2</b>'+(rlTigerCount()>=2?'（秘藏可开）':'')+'</span>'+
+      '<span class="rlstat">🐯 虎符：<b>'+rlTigerCount()+'/3</b>'+
+        (rlTigerCount() >= 2
+          ? (RL.flags.tigerPending && !RL.flags.tigerNodeSpawned ? '（秘藏下一章补位）' : '（2 枚可开）')
+          : '')+'</span>'+
       '<span class="rlstat">📜 方针：<b>'+(doctrine ? doctrine.name : '待选择')+'</b></span>'+
       (RL.flags.scouted ? '<span class="rlstat">🔭 已掌握未来 '+RL.flags.scouted+' 层路线</span>' : '')+
     '</div>'+
@@ -12102,7 +12116,8 @@ function renderMapScreen(){
     '<span title="'+MORALE_TIP+'">🪖 '+RL.morale+'/5</span>　·　📦 '+RL.supplies;
   const setBits = RELIC_SETS.filter(s => relicSetCount(s) > 0).map(s => {
     const n = relicSetCount(s), lv = relicSetLevel(s);
-    return '<span class="rlset'+(lv ? ' on' : '')+'">'+s.icon+s.name+' '+n+'/4'+(lv ? ' ✓' : '')+'</span>';
+    const mark = lv >= 2 ? ' ·4件★' : (lv >= 1 ? ' ·2件✓' : '');
+    return '<span class="rlset'+(lv ? ' on' : '')+'">'+s.icon+s.name+' '+n+'/4'+mark+'</span>';
   }).join('　');
   $('rlRelicsBox').innerHTML =
     '<span class="norelic" title="行囊格位：军令「重役」会占掉一格，商店可扩建">🎒 '+RL.relics.length+'/'+rlRelicSlots()+'</span>'+
@@ -12115,8 +12130,8 @@ function renderMapScreen(){
   const cpBox = $('rlCompanionBox');
   if(cpBox){
     cpBox.innerHTML = cp
-      ? '<span class="rlcpill">🎖 '+cp.icon+' '+cp.name+' · '+cp.title+'</span><span>'+cp.short+'（每 3 回合）</span>'
-      : '<button id="btnCompanion">🎖 点将 · 招募副将（一局一次）</button><span>副将每 3 回合支援一次</span>';
+      ? '<span class="rlcpill">🎖 '+cp.icon+' '+cp.name+' · '+cp.title+'</span><span>'+cp.short+'（每场第 3 回合）</span>'
+      : '<button id="btnCompanion">🎖 点将 · 招募副将（一局一次）</button><span>副将每场战斗第 3 回合支援一次</span>';
     const cb = $('btnCompanion');
     if(cb) cb.onclick = openCompanionChoice;
   }
@@ -12920,7 +12935,7 @@ function codexHtml(tab){
       '（本章层数 + 已完成章数 × '+RL_CHAPTER_LEVEL_STEP+'）成长。攻克一章的守将即得过关赏赐（大幅休整、必得遗物、金币、补给与军心提振），'+
       '随后进入下一章。<b>只有在最后一章诛杀鬼神·吕布，整趟北伐才算功成。</b></p>'+
       '<p>🧩 <b>遗物羁绊</b>：41 件遗物分【猛攻 / 守城 / 奇谋 / 军略】四派，凑齐 2 件、4 件各结算一次永久小加成，地图遗物栏会显示进度。<br>'+
-      '🎖 <b>副将随行</b>：地图页可点将一次，三选一（法正/赵云/华佗）；每 3 回合支援一次，不替你出拳。<br>'+
+      '🎖 <b>副将随行</b>：地图页可点将一次，三选一（法正/赵云/华佗）；每场战斗第 3 回合支援一次，不替你出拳。<br>'+
       '🐯 <b>虎符秘藏</b>：精英、敌寨、悬赏胜利掉虎符碎片；集 2 枚会在当前地图后续层生成【秘藏】节点，胜利后三选一（神器遗物 / 金帛 / 兵符）。</p>'+
       '<p>🎲 <b>局内天时（mutators）</b>：每局开战随机 roll 1~2 条全局修饰——'+
       RL_MUTATORS.map(m=>m.icon+'【'+m.name+'】').join('、')+'。'+
