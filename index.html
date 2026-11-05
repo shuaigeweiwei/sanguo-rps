@@ -404,6 +404,12 @@
   .mopts { display:flex; flex-direction:column; gap:9px; }
   .mopts button { padding:10px 14px; font-size:14px; text-align:left; line-height:1.62; }
   .mopts button:hover { border-color: var(--gold); }
+  .mopts button .fopt { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .mopts button .fopt em { font-style:normal; color:var(--gold); font-size:11.5px; letter-spacing:1px;
+    border:1px solid rgba(216,180,90,.35); border-radius:999px; padding:1px 8px; white-space:nowrap; }
+  .mopts button small { display:block; color:var(--dim); font-size:12.5px; line-height:1.66; margin-top:4px; }
+  .mopts button small .fboon { color:#a9e6a0; }
+  .mopts button small .fcost { color:#e9a090; }
 
   /* ---------- 军议会·卷首叙事（电影字幕式逐句渐显） ---------- */
   #mBody { display:block; margin-bottom:16px; }
@@ -905,7 +911,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>过关斩将：</b>单将连破对方五将，每胜一场恢复 80% 生命、攻击 +2，你只有一条命。<br>
       <b>虎牢关：</b>选 3 名武将车轮迎战 <b>鬼神·吕布</b>（60 血、攻击 15、连击率 35%），三英齐心方可破之。<br>
       <b>🏆 擂台·无尽：</b>单将守擂，<b>每胜一场恢复 30% 生命、攻击 +1 并随机补一枚锦囊</b>；每 <b>5 连胜</b> 额外三选一领取遗物或锦囊。下一位擂主血量 +8%、攻击与防御随连胜提升，<b>战败即止</b>，冲击最高连胜纪录。<br>
-      <b>🧭 北伐 Roguelike：</b>选 1 将踏上随机分支地图，须<b>连破六章</b>（每章重铺一张 10-14 层的地图、斩一位守关敌将），节点含战斗、精英、敌寨、悬赏、篝火、军营、烽火台、名医、酒馆、废墟、宝藏、行商、奇遇、祭坛、演武、铸造；每局还会随机 roll 1~2 条<b>天时（全局修饰）</b>，战斗另有<b>雾战、伏击、决斗、粮道、天时、夜战、攻城、车轮、谍战、决死、天灾、旱战、狂风、雨战、灰野、挟民、斗将、壕沟、死士、征粮</b>等二十种变体，敌将更会随机携带<b>词条</b>。第 2 层起奇遇会刷出<b>按章分组的剧情奇遇</b>，且每章地图都<b>钉死一个「本章剧情」节点</b>。开局先演<b>🏮 序章（起兵之本三选一）→ 方针 → 章首过场与军议三选一</b>，点 Boss 前还有<b>🥁 阵前搦战</b>；打完一局由史官给出一条<b>🏛 结局</b>（条目与达成条件见图鉴「🏛 结局史册」页）；仗若打成「谁也打不动谁」的死局，第 15 回合起会有<b>⏳ 久战疲惫</b>逼它收场；只有在最后一章诛杀鬼神·吕布才算功成，阵亡即止。<br>
+      <b>🧭 北伐 Roguelike：</b>选 1 将踏上随机分支地图，须<b>连破六章</b>（每章重铺一张 10-14 层的地图、斩一位守关敌将），节点含战斗、精英、敌寨、悬赏、篝火、军营、烽火台、名医、酒馆、废墟、宝藏、行商、奇遇、祭坛、演武、铸造；每局还会随机 roll 1~2 条<b>天时（全局修饰）</b>，战斗另有<b>雾战、伏击、决斗、粮道、天时、夜战、攻城、车轮、谍战、决死、天灾、旱战、狂风、雨战、灰野、挟民、斗将、壕沟、死士、征粮</b>等二十种变体，敌将更会随机携带<b>词条</b>。第 2 层起奇遇会刷出<b>按章分组的剧情奇遇</b>，且每章地图都<b>钉死一个「本章剧情」节点</b>。开局先演<b>🏮 序章（起兵之本三选一）→ 方针 → 章首过场与军议三选一</b>，点 Boss 前还有<b>🥁 阵前搦战</b>；每场战斗开打前可<b>🚩 临阵布阵</b>（十阵随机三选一，也可跳过，阵法只在本战生效）；打完一局由史官给出一条<b>🏛 结局</b>（条目与达成条件见图鉴「🏛 结局史册」页）；仗若打成「谁也打不动谁」的死局，第 15 回合起会有<b>⏳ 久战疲惫</b>逼它收场；只有在最后一章诛杀鬼神·吕布才算功成，阵亡即止。<br>
        <b>🃏 军略牌（卡组构筑）：</b>北伐中你自带一副 10 张卡组 —— 每回合 3 点能量、抽 5 张，每两回合出拳前最多打出 1 张、每场最多 3 张（伤害 / 格挡 / 增益 / 读招），战斗胜利可三选一添牌，篝火升级、商店删牌买牌，猜拳仍是胜负核心。<br>
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
       <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
@@ -1189,7 +1195,7 @@ const CHARS = [
    skill:{name:'火烧连营', desc:'攻击命中后使对方灼烧：每回合损失 1 点生命，持续 2 回合（无视防御）。'},
    ult:{name:'火烧七百里', desc:'对方灼烧 5 回合，每回合 3 点。', burn:{turns:5,dmg:3}},
    hooks:{
-     afterAttack(f,foe,C){ if(foe.alive){ applyBurn(foe,2,1); log('【火烧连营】'+foe.name+' 身陷火海，每回合损失1点生命','bad'); } }
+     afterAttack(f,foe,C){ if(foe.alive){ const d = 1 + ((f === player && player.st.formation === 'huode') ? 1 : 0); applyBurn(foe,2,1, f === player ? player : null); log('【火烧连营】'+foe.name+' 身陷火海，每回合损失'+d+'点生命','bad'); } }
    }},
 
   {id:'daqiao', camp:'wu', name:'大乔', title:'国色天香', atk:11, hp:25, def:13,
@@ -5422,8 +5428,16 @@ CARDS.forEach(c => {
   });
 });
 function applyTagBonus(tag){
-  if(tag === '火' && ai && ai.alive){ applyBurn(ai, 2, 2); log('🔥 火势连成一片：敌方再灼烧 2 回合','good'); }
-  else if(tag === '毒' && ai && ai.alive){ addPoison(ai, 1, player); log('☠ 毒势接上：敌方再中毒 1 层','good'); }
+  if(tag === '火' && ai && ai.alive){
+    const _d = 2 + ((player.st.formation === 'huode') ? 1 : 0);
+    applyBurn(ai, 2, 2, player);
+    log('🔥 火势连成一片：敌方再灼烧 2 回合（每回合 '+_d+' 点）','good');
+  }
+  else if(tag === '毒' && ai && ai.alive){
+    const _p = 1 + (player.st.poisonPlus || 0) + ((player.st.formation === 'dusha') ? 1 : 0);
+    addPoison(ai, 1, player);
+    log('☠ 毒势接上：敌方再中毒 '+_p+' 层','good');
+  }
   else if(tag === '守'){ player.st.block += 3; log('🛡 守势连成：获得 3 点格挡','gold'); }
   else if(tag === '势' && player.charge < chargeCap(player)){ player.charge = Math.min(chargeCap(player), player.charge + 10); log('⚡ 势势相续：蓄力 +10%','gold'); }
   else if(tag === '粮'){ RL.gold += 10; log('🌾 粮道接济：获得 10 金','gold'); }
@@ -5469,7 +5483,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261022j';
+const BUILD_ID = '20261105a';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -5817,6 +5831,15 @@ function resetBattleCarryover(f){
   f.st.bossPhase3 = false;
   f.st.openingAtkDown = 0;
   f.st.doctrinePeekPending = 0;
+  /* 🚩 本战阵法：新一场战斗重新选，绝不能把上一场的阵形带进来 */
+  f.st.formation = null;
+  f.st.formationWins = 0;
+  f.st.formationDmg = 0;
+  f.st.formationReduce = 0;
+  f.st.formationHeal = 0;
+  f.st.formationEnergyPenalty = 0;
+  f.st.formationPeek = 0;
+  f.st._beishuiShown = 0;
 }
 /* 清除本回合的军略牌增益（回末结算） */
 function clearRoundBuffs(f){
@@ -5824,9 +5847,13 @@ function clearRoundBuffs(f){
   f.st.cardDmgMult = 1; f.st.cardCritAdd = 0; f.st.cardIgnoreDef = false;
   f.st.cardDodge = 0; f.st.cardThorns = 0; f.st.cardCombo = 0;
   f.st.cardLifesteal = 0; f.st.cardReduce = 0;
+  /* 阵法的回合修正也随回合清空，由 formationOnRoundStart / formationOnResult 重算 */
+  f.st.formationDmg = 0; f.st.formationReduce = 0;
 }
-function applyBurn(f, turns, dmg){
+function applyBurn(f, turns, dmg, src){
   if(!f) return;
+  /* 🚩 火德阵：玩家造成的灼烧每跳 +1；阵法自身的开局火走 src=undefined，不重复吃 */
+  if(src && src === player && player.st && player.st.formation === 'huode') dmg += 1;
   if(!f.st.burn){
     f.st.burn = {turns, dmg};
     return;
@@ -5846,7 +5873,9 @@ function applyVuln(f, mult, turns){
 function addPoison(f, amount, src){
   if(!f || !amount) return;
   const bonus = src && src.st ? (src.st.poisonPlus || 0) : 0;
-  f.st.poison = (f.st.poison || 0) + amount + bonus;
+  /* 🚩 毒煞阵：玩家施加的中毒额外 +1 层；开阵自身那一下走 src=null，不重复吃加成 */
+  const formBonus = (src && src === player && src.st && src.st.formation === 'dusha') ? 1 : 0;
+  f.st.poison = (f.st.poison || 0) + amount + bonus + formBonus;
 }
 
 /* ==================== 北伐（Roguelike）run 状态 ==================== */
@@ -7308,7 +7337,7 @@ const RL_BOONS = [
        '灼烧改为 4 回合 × 4，火里还卷走他 6% 蓄力。'],
    when:C => C.res === 0 && C.pm === 2,
    act(){ const r = rlBoonRank('juanqi');
-     applyBurn(ai, r >= 4 ? 4 : (r >= 3 ? 3 : 2), r >= 3 ? 4 : 3);
+     applyBurn(ai, r >= 4 ? 4 : (r >= 3 ? 3 : 2), r >= 3 ? 4 : 3, player);
      if(r >= 4) rlDimCharge(ai, 6);
      log('✋ 【卷旗】旗风卷火，敌营火起！','gold'); }},
   {id:'lianshi', icon:'🔁', name:'连势', tag:'同一手势连用得势',
@@ -7358,7 +7387,7 @@ const RL_BOONS = [
        '灼烧改为 3 回合 × 4，自己 +10% 蓄力，火边歇一口气回复 1 点生命。'],
    when:C => C.res === 2,
    act(){ const r = rlBoonRank('liaoyuan');
-     applyBurn(ai, r >= 3 ? 3 : 2, r >= 4 ? 4 : 3);
+     applyBurn(ai, r >= 3 ? 3 : 2, r >= 4 ? 4 : 3, player);
      rlAddCharge(player, [6,8,8,10][r-1]);
      if(r >= 4) heal(player, 1);
      log('🔥 【燎原】相持不下，火星落进他的粮堆。','gold'); }},
@@ -7549,6 +7578,226 @@ const RL_DOCTRINES = [
   {id:'march', icon:'🏇', name:'疾行', desc:'最大生命 +4；每场战斗首回合闪避 +8%。',
    apply(f){ f.maxHp += 4; f.hp += 4; f.st.firstRoundDodge = (f.st.firstRoundDodge||0) + 0.08; }}
 ];
+
+/* ==================== 🚩 临阵布阵（本战阵法） ====================
+   设计目的：在「猜拳 + 军略牌」之间加一层每战一次、看得懂、可跳过的选择。
+   十阵全部是「一利一弊」的侧向阵形，不白送长期数值；只在本战生效。
+   参考成熟肉鸽的三选一赐福（Hades）与风险换收益（Slay the Spire / Balatro），
+   但把代价写在同一张卡上，避免变成纯雪球。
+   选阵使用节点 uid + runSeed 的独立 LCG，不占用地图/战斗的主随机流。 */
+const RL_FORMATIONS = [
+  {id:'fengshi', icon:'🗡', name:'锋矢阵', tag:'攻',
+   boon:'得势时伤害 +12%；连续得势改为 +20%',
+   cost:'受到伤害 +5%',
+   desc:'全军收拢成一支箭，胜势时越扎越深；可一旦箭头折了，侧翼也露给敌人。'},
+  {id:'fangyuan', icon:'🛡', name:'方圆阵', tag:'守',
+   boon:'失势时受到伤害 −10%，并获得 2 点格挡',
+   cost:'攻击伤害 −10%',
+   desc:'外圆内方，先把自己护住。适合血线吃紧、准备拖到蓄力或毒火发作的仗。'},
+  {id:'yanxing', icon:'🪶', name:'雁行阵', tag:'势',
+   boon:'平局时额外获得 18% 蓄力',
+   cost:'攻击伤害 −5%',
+   desc:'两翼如雁，相持时悄悄把力气攒到下一击；但阵线铺得太开，正面刀锋会钝一点。'},
+  {id:'changshe', icon:'🐍', name:'长蛇阵', tag:'奇',
+   boon:'出招与上回合不同：怒气 +4；相同：格挡 +2',
+   cost:'攻击伤害 −4%',
+   desc:'兵无常势，水无常形。专治被敌将读招，也奖励敢在石头剪刀布里变线的人。'},
+  {id:'beishui', icon:'🌊', name:'背水阵', tag:'攻',
+   boon:'生命低于 35% 时：伤害 +18%，受到伤害 −10%',
+   cost:'所有治疗效果 −15%',
+   desc:'退无可退时，全军反而爆发出最凶的一口气；代价是伤药也救不回那么多。'},
+  {id:'huode', icon:'🔥', name:'火德阵', tag:'火',
+   boon:'开局使敌将灼烧 2 回合（每回合 3 点）；你造成的灼烧 +1 点',
+   cost:'受到伤害 +3%',
+   desc:'火德主攻，先以火势乱其阵脚。火烧得越旺，自己的营寨也越怕走水。'},
+  {id:'dusha', icon:'☠', name:'毒煞阵', tag:'毒',
+   boon:'开局使敌将中毒 2 层；你施加的中毒 +1 层',
+   cost:'攻击伤害 −5%',
+   desc:'以毒烟、毒泉与淬箭迟滞敌军，适合长线消耗；但毒士不擅正面硬碰。'},
+  {id:'tuntian', icon:'🌾', name:'屯田阵', tag:'粮',
+   boon:'每回合回复 1 点生命；战斗胜利额外缴获 8 金',
+   cost:'攻击伤害 −8%',
+   desc:'且战且耕，把营盘扎成一座会走的粮仓。打得慢，却能把血线和军费一起养回来。'},
+  {id:'yibing', icon:'🕵', name:'疑兵阵', tag:'谋',
+   boon:'开场预知敌将首回合出招',
+   cost:'敌方最大生命 +4%',
+   desc:'多立旗号、虚设灶台，让敌将先暴露第一手；代价是对方也把营垒加厚了一层。'},
+  {id:'bamen', icon:'⛩', name:'八门阵', tag:'奇',
+   boon:'每 3 回合获得 3 点格挡、3 点怒气',
+   cost:'每回合能量 −1',
+   desc:'休、生、伤、杜、景、死、惊、开，八门轮转；阵法要人守，军略牌的能量自然就少了。'}
+];
+function formationById(id){
+  return RL_FORMATIONS.find(f => f.id === id) || null;
+}
+/* 同一节点读档重进时 offer 不变：只用 uid / runSeed / 章层坐标，不消耗主随机流 */
+function formationOfferList(node){
+  const pool = RL_FORMATIONS.slice();
+  let h = (((node && node.uid) ? node.uid : 1) * 7919 + 13) >>> 0;
+  const rs = ((RL.flags && RL.flags.runSeed) || rlRunSeed() || 0) >>> 0;
+  h = (Math.imul(h, 31) + rs) >>> 0;
+  h = (Math.imul(h, 31) + (((RL.chapter||0) + 1) * 17) + (((RL.layer||0) + 1) * 31)) >>> 0;
+  const rnd = seededRng(h);
+  for(let i = pool.length - 1; i > 0; i--){
+    const j = Math.floor(rnd() * (i + 1));
+    const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  return pool.slice(0, 3);
+}
+function openFormationChoice(node, after){
+  if(!RL.active){ after(); return; }
+  const offers = formationOfferList(node);
+  const body = '<p>临阵之前，三军可择一阵。<b>阵法只在本战生效</b>，有得必有失；'+
+    '不选也能直接开战。</p>'+
+    '<p class="dim">选阵不消耗金币、行动或军略牌。'+
+    (node && node.type === 'boss' ? '决战在前，阵脚先立。' : '')+'</p>';
+  const opts = offers.map(f => ({
+    html:'<span class="fopt"><span>'+f.icon+' <b>'+f.name+'</b></span><em>'+f.tag+'</em></span>'+
+      '<small><span class="fboon">利：'+f.boon+'</span><br><span class="fcost">弊：'+f.cost+'</span></small>',
+    run(){
+      if(!RL.flags) RL.flags = {};
+      RL.flags.formation = f.id;
+      log('🚩 临阵布阵：'+f.icon+'【'+f.name+'】——'+f.boon+'；'+f.cost,'gold');
+      after();
+    }
+  }));
+  opts.push({t:'⚔ 不布阵，直接开战', run(){
+    if(RL.flags) RL.flags.formation = null;
+    log('🚩 你没有布阵，命全军以常阵接敌。','sys');
+    after();
+  }});
+  showModal('🚩 临阵布阵 · 本战择一阵', body, opts);
+}
+/* 开战初始化：此时敌将、词条、天时与军心都已结算完毕，阵法最后挂上 */
+function applyBattleFormation(f, foe, id){
+  const F = formationById(id);
+  if(!f || !f.st || !F) return false;
+  f.st.formation = id;
+  f.st.formationWins = 0;
+  f.st.formationDmg = 0;
+  f.st.formationReduce = 0;
+  f.st.formationHeal = 0;
+  f.st.formationEnergyPenalty = 0;
+  f.st.formationPeek = 0;
+  if(id === 'fengshi'){ f.st.formationReduce = -0.05; }
+  else if(id === 'fangyuan'){ f.st.formationDmg = -0.10; }
+  else if(id === 'yanxing'){ f.st.formationDmg = -0.05; }
+  else if(id === 'changshe'){ f.st.formationDmg = -0.04; }
+  else if(id === 'beishui'){ f.st.formationHeal = -0.15; }
+  else if(id === 'huode'){
+    f.st.formationReduce = -0.03;
+    if(foe && foe.alive){
+      applyBurn(foe, 2, 3);
+      log('🔥 火德阵：'+foe.name+' 开局被火势罩住，灼烧 2 回合（每回合 3 点）','gold');
+    }
+  }
+  else if(id === 'dusha'){
+    f.st.formationDmg = -0.05;
+    if(foe && foe.alive){
+      addPoison(foe, 2, null);
+      log('☠ 毒煞阵：'+foe.name+' 开局中毒 2 层','gold');
+    }
+  }
+  else if(id === 'tuntian'){ f.st.formationDmg = -0.08; }
+  else if(id === 'yibing'){
+    f.st.formationPeek = 1;
+    if(foe){
+      const old = foe.maxHp;
+      foe.maxHp = Math.max(1, Math.round(foe.maxHp * 1.04));
+      foe.hp = foe.maxHp;
+      log('🕵 疑兵阵：敌军营垒加厚（最大生命 '+old+' → '+foe.maxHp+'），但首回合出招已被你探明。','gold');
+    }
+  }
+  else if(id === 'bamen'){ f.st.formationEnergyPenalty = 1; }
+  log('🚩 本战阵法：'+F.icon+'【'+F.name+'】——'+F.boon+'；'+F.cost,'gold');
+  return true;
+}
+/* 回合开始：先清本回合阵形修正，再按血量/回合数重算 */
+function formationOnRoundStart(f, foe){
+  if(!f || !f.st || !f.st.formation) return;
+  const id = f.st.formation;
+  f.st.formationDmg = 0;
+  f.st.formationReduce = 0;
+  if(id === 'fengshi'){ f.st.formationReduce = -0.05; }
+  else if(id === 'fangyuan'){ f.st.formationDmg = -0.10; }
+  else if(id === 'yanxing'){ f.st.formationDmg = -0.05; }
+  else if(id === 'changshe'){ f.st.formationDmg = -0.04; }
+  else if(id === 'beishui'){
+    if(f.hp <= f.maxHp * 0.35){
+      f.st.formationDmg = 0.18;
+      f.st.formationReduce = 0.10;
+      if(!f.st._beishuiShown){
+        f.st._beishuiShown = 1;
+        log('🌊 背水阵发动：退无可退，伤害 +18%、受伤 −10%！','gold');
+      }
+    }
+  }
+  else if(id === 'huode'){ f.st.formationReduce = -0.03; }
+  else if(id === 'dusha'){ f.st.formationDmg = -0.05; }
+  else if(id === 'tuntian'){
+    f.st.formationDmg = -0.08;
+    if(f.hp < f.maxHp){
+      f.hp++;
+      E({k:'heal', side:'p', amt:1, hp:f.hp});
+    }
+  }
+  else if(id === 'bamen' && G.round > 0 && G.round % 3 === 0){
+    f.st.block += 3;
+    addRage(f, 3);
+    log('⛩ 八门阵：第 '+G.round+' 回合阵门转动，格挡 +3、怒气 +3','gold');
+  }
+}
+/* 猜拳判定后、真正结算伤害前：把本回合的阵形触发挂上 */
+function formationOnResult(res, pm, am){
+  const f = player;
+  if(!f || !f.st || !f.st.formation) return;
+  const id = f.st.formation;
+  const prev = playerMoves.length > 1 ? playerMoves[playerMoves.length - 2] : null;
+  if(id === 'fengshi'){
+    if(res === 0){
+      f.st.formationWins = (f.st.formationWins || 0) + 1;
+      f.st.formationDmg = f.st.formationWins >= 2 ? 0.20 : 0.12;
+      log('🗡 锋矢阵：'+(f.st.formationWins >= 2 ? '连捷，箭锋更深' : '得势')+
+          '，本击伤害 +'+Math.round(f.st.formationDmg*100)+'%','gold');
+    } else {
+      f.st.formationWins = 0;
+      f.st.formationDmg = 0;
+    }
+  }
+  else if(id === 'fangyuan'){
+    if(res === 1){
+      f.st.formationReduce = 0.10;
+      f.st.block += 2;
+      E({k:'block', side:'p', val:f.st.block});
+      log('🛡 方圆阵：失势收阵，受伤 −10%，格挡 +2','gold');
+    }
+  }
+  else if(id === 'yanxing'){
+    if(res === 2 && !(f.st.noCharge > 0)){
+      const before = f.charge;
+      f.charge = Math.min(chargeCap(f), f.charge + 18);
+      const got = f.charge - before;
+      if(got > 0){
+        noteCharge(f);
+        E({k:'charge', side:'p', val:f.charge});
+        log('🪶 雁行阵：相持时两翼收力，蓄力 +'+got+'%','gold');
+      }
+    }
+  }
+  else if(id === 'changshe'){
+    if(prev != null){
+      if(pm !== prev){
+        addRage(f, 4);
+        E({k:'float', side:'p', text:'长蛇·变招', cls:'fate'});
+        log('🐍 长蛇阵：变招如蛇行，怒气 +4','gold');
+      } else {
+        f.st.block += 2;
+        E({k:'float', side:'p', text:'长蛇·同手 +2盾', cls:'block'});
+        log('🐍 长蛇阵：同手收阵，格挡 +2','gold');
+      }
+    }
+  }
+}
 
 /* ==================== 北伐剧情线 ====================
    纯叙事层：只往战报里写文案，不碰任何数值，因此对平衡零影响。
@@ -7864,36 +8113,50 @@ function bossParley(node){
     [{t:'⚔ 擂鼓搦战，照常交锋',
       run(){ node.parleyDone = true;
               RL.flags.parleyFinal = 'drum';   /* ✒ 史笔·改：终阵选法留档，缚虎/归山据此分流 */
-              startRLBattle(node); }},
+              openFormationChoice(node, function(){ startRLBattle(node); });
+              return false; }},
      {t:'🗣 阵前辱敌，激其轻进（敌攻 +4，我方开局蓄力 +40%、怒气 +30）',
       run(){ node.parleyDone = true;
               RL.flags.parleyFinal = 'taunt';
               RL.hero.st.startCharge = (RL.hero.st.startCharge||0) + 40;
               RL.hero.st.rage = (RL.hero.st.rage||0) + 30;
-              startRLBattle(node);
-              if(ai && ai.alive) ai.atk += 4; }},
+              openFormationChoice(node, function(){
+                startRLBattle(node);
+                if(ai && ai.alive) ai.atk += 4;
+              });
+              return false; }},
      {t:'🛡 深垒固守，先避其锋（开局格挡 +24，最大生命 +10）',
       run(){ node.parleyDone = true;
               RL.flags.parleyFinal = 'bunker';
               RL.hero.st.startBlock = (RL.hero.st.startBlock||0) + 24;
               RL.hero.maxHp += 10; RL.hero.hp += 10;
-              startRLBattle(node); }}]);
+              openFormationChoice(node, function(){ startRLBattle(node); });
+              return false; }}]);
 }
-/* 地图点击走这里：只有 Boss 多一道阵前对话。enterNode 本身保持"调用即开战"，
-   免得既有测试（bossphase / chapterprobe）的同步战斗断言被弹窗打断。 */
+/* 地图点击走这里：Boss / 秘藏多一道阵前对话，战斗节点多一道临阵布阵。
+   enterNode 本身保持"调用即开战"，免得既有测试（bossphase / chapterprobe）
+   的同步战斗断言被弹窗打断；需要布阵的只有真实玩家点击路径。 */
 function mapNodeClick(layer, idx){
   if(layer !== RL.layer) return;
   const node = RL.map[layer] && RL.map[layer][idx];
   if(!node || node.done) return;
   if(node.type === 'boss'){ RL.curNode = node; bossParley(node); return; }
   if(node.type === 'tiger'){ RL.curNode = node; tigerParley(node, layer, idx); return; }
+  if(AFFIXABLE_TYPES.indexOf(node.type) >= 0){
+    /* 先记下这一战要打的节点：布阵弹窗里若要看节点 uid / 预览，不能还停在上一个节点 */
+    RL.curNode = node;
+    openFormationChoice(node, function(){ enterNode(layer, idx); });
+    return;
+  }
   enterNode(layer, idx);
 }
 /* 秘藏先问进/绕：同层有岔路，绕行只关弹窗，不消耗碎片、不推进层 */
 function tigerParley(node, layer, idx){
   showModal('🐯 秘藏 · 进还是绕',
     '两枚虎符合拢，石门后是硬仗与三选一；同层还有别的路。进则扣 2 枚碎片，绕则保留。',
-    [{t:'⚔ 进入秘藏（扣 2 枚虎符）', run(){ enterNode(layer, idx); }},
+    [{t:'⚔ 进入秘藏（扣 2 枚虎符）', run(){
+        openFormationChoice(node, function(){ enterNode(layer, idx); });
+        return false; }},
      {t:'🚶 绕行，保留虎符', run(){ log('你绕开秘藏，把虎符收回行囊。','sys'); }}]);
 }
 
@@ -8124,6 +8387,8 @@ function makeBoss(){
 
 function heal(f, amt){
   if(!f.alive) return;
+  /* 🚩 背水阵的代价：本场战斗内一切治疗效果 −15%（战后结算前会清掉） */
+  if(f.st && f.st.formationHeal) amt = Math.max(0, Math.round(amt * (1 + f.st.formationHeal)));
   const before = f.hp;
   f.hp = Math.min(f.maxHp, f.hp + amt);
   if(f.hp > before){
@@ -8264,6 +8529,13 @@ function resolveHit(att, def, o){
   if(o.bonus) atkPart += ' ＋' + o.bonus;
   if(o.mult !== 1) atkPart += ' ×' + (+o.mult).toFixed(2);
   if(o.bonus || o.mult !== 1) atkPart += ' = ' + Math.round(base);
+  /* 🚩 阵法攻方修正已经并进上面那个 ×倍率里，这里点一句名字，
+     玩家才看得懂刀为什么钝了 —— 只加展示，不参与任何计算。 */
+  if(att.st.formation && att.st.formationDmg){
+    const _fa = formationById(att.st.formation);
+    atkPart += '（阵·'+(_fa ? _fa.name : '阵法')+(att.st.formationDmg > 0 ? ' +' : ' −')+
+               Math.round(Math.abs(att.st.formationDmg)*100)+'%）';
+  }
   const chain = ['🧮 ' + att.name + ' ' + atkPart,
                  (o.ignoreDef ? '无视防御' : '−防 ' + defNow + '%') + ' = ' + dmg];
   const nightCrit = weather === 'night' ? 0.10 : 0;      // 月夜：暴击 +10%
@@ -8288,6 +8560,15 @@ function resolveHit(att, def, o){
               reduce: (1 - (def.st.dmgReduce||0)) * (1 - (def.st.cardReduce||0)),
               reflect:0, heal:0, phase:'dodge' };
   if(!isUlt) chain.push('刀兵结算 ×' + DMG_RATE.toFixed(2) + ' = ' + ctx.dmg);
+  /* 🚩 阵法减伤 / 增伤：在闪避、格挡与最终减伤之前并入同一条乘法链。
+     来源写进 _redNote，交给下面那条汇总行一起点名，免得同一件事在战报里刷两遍。 */
+  let _redNote = '';
+  if(def.st.formation && def.st.formationReduce){
+    const _fr = def.st.formationReduce;
+    const _ff = formationById(def.st.formation);
+    ctx.reduce *= (1 - _fr);
+    _redNote = '阵·'+(_ff ? _ff.name : '阵法')+' '+(_fr > 0 ? '−' : '+')+Math.round(Math.abs(_fr)*100)+'%';
+  }
 
   /* 完全闪避（evade：司马懿/小乔/张郃 ult） */
   if(def.st.evade){
@@ -8341,7 +8622,10 @@ function resolveHit(att, def, o){
   }
 
   ctx.dmg = Math.max(1, Math.round(ctx.dmg * ctx.reduce));
-  if(ctx.reduce < 1) chain.push('减伤 ' + Math.round((1 - ctx.reduce)*100) + '% = ' + ctx.dmg);
+  if(ctx.reduce < 1) chain.push('减伤 ' + Math.round((1 - ctx.reduce)*100) + '%' +
+    (_redNote ? '（含 '+_redNote+'）' : '') + ' = ' + ctx.dmg);
+  else if(ctx.reduce > 1) chain.push('受伤 +' + Math.round((ctx.reduce - 1)*100) + '%' +
+    (_redNote ? '（含 '+_redNote+'）' : '') + ' = ' + ctx.dmg);
   /* 结界·护体：单次伤害超过 10 → 降为 10 */
   if(def.st.secret && !def.st.secretUsed && def.st.secret.id === 'armor' && ctx.dmg > 10){
     secretReveal(def, '触发！'+def.name+' 单次受到的伤害降为 10 点');
@@ -8419,6 +8703,7 @@ function attack(att, def){
   if(weather === 'rain') C.mult *= 0.9;         // 梅雨：攻击 −10%
   if(att.st.dmgUp) C.mult *= 1 + att.st.dmgUp;  // 羁绊·蜀
   if(att.st.cardDmgMult && att.st.cardDmgMult !== 1){ C.mult *= att.st.cardDmgMult; }  // 军略牌增益
+  if(att.st.formationDmg) C.mult *= 1 + att.st.formationDmg;  // 🚩 本战阵法
   if(att.st.cardCritAdd) C.critAdd += att.st.cardCritAdd;
   if(att.st.cardIgnoreDef) C.ignoreDef = true;
   if(att.st.flatDmg) C.bonus += att.st.flatDmg;                                        // 遗物·战鼓
@@ -8672,8 +8957,9 @@ function executeUlt(att, def, u){
         (def.alive ? '，'+def.name+' 余 '+def.hp+'/'+def.maxHp : '，'+def.name+' 当场倒下'), 'gold');
   }
   if(u.burn && def.alive){
-    applyBurn(def, u.burn.turns, u.burn.dmg);
-    log('　✦ 次效：'+def.name+' 身陷火海，灼烧 '+u.burn.turns+' 回合 ×每回合 '+u.burn.dmg+' 点（无视格挡）','bad');
+    const _bd = u.burn.dmg + ((att === player && player.st.formation === 'huode') ? 1 : 0);
+    applyBurn(def, u.burn.turns, u.burn.dmg, att === player ? player : null);
+    log('　✦ 次效：'+def.name+' 身陷火海，灼烧 '+u.burn.turns+' 回合 ×每回合 '+_bd+' 点（无视格挡）','bad');
   }
   if(u.vuln && def.alive){
     applyVuln(def, u.vuln.mult, u.vuln.turns);
@@ -9271,6 +9557,7 @@ function playRound(pm){
   try{
     G.round++;
     playerMoves.push(pm);
+    if(player.st.formation) formationOnRoundStart(player, ai);
     player.st.stakeMult = 1;
     ai.st.stakeMult = 1;
 
@@ -9373,6 +9660,8 @@ function playRound(pm){
                 prevAm: aiMoves.length > 1 ? aiMoves[aiMoves.length-2] : null,
                 round: G.round};
     rlBoonTick(BC, 'pre');
+    /* 🚩 阵法在猜拳判定后、伤害结算前触发：护盾/减伤/增伤都赶得上这一击 */
+    formationOnResult(res, pm, am);
 
     /* 🎪 战场突发事件（仅北伐，独立随机流）：流矢/野火/落石……
        若事件当场打死了一方，立即结算——和军略牌/锦囊的回合外击杀同一口径。 */
@@ -9514,9 +9803,10 @@ function itemEffect(key){
     }
   } else if(key === 'poison'){
     if(ai.alive){
+      const _p = 3 + (player.st.poisonPlus || 0) + ((player.st.formation === 'dusha') ? 1 : 0);
       addPoison(ai, 3, player);
-      log('☠ 【鸩酒】你暗下毒手，'+ai.name+' 中毒 3 层（每回合毒发，逐层递减）','gold');
-      E({k:'float', side:'a', text:'中毒 3 层', cls:'miss'});
+      log('☠ 【鸩酒】你暗下毒手，'+ai.name+' 中毒 '+_p+' 层（每回合毒发，逐层递减）','gold');
+      E({k:'float', side:'a', text:'中毒 '+_p+' 层', cls:'miss'});
     }
   } else if(key === 'spy'){
     player.st.block += 8;
@@ -9525,10 +9815,11 @@ function itemEffect(key){
     doPeek();
   } else if(key === 'fireattack'){
     if(ai.alive){
-      log('🚀 【火攻】火起敌营：6 点无视防御伤害，'+ai.name+' 灼烧 3 回合','gold');
+      const _fd = 3 + ((player.st.formation === 'huode') ? 1 : 0);
+      log('🚀 【火攻】火起敌营：6 点无视防御伤害，'+ai.name+' 灼烧 3 回合（每回合 '+_fd+' 点）','gold');
       E({k:'float', side:'a', text:'火攻！', cls:'crit'});
       dealDamage(ai, 6, player);
-      if(ai.alive) applyBurn(ai, 3, 3);
+      if(ai.alive) applyBurn(ai, 3, 3, player);
     }
   }
   renderItems();
@@ -9623,10 +9914,15 @@ function applyFx(fx, srcName){
     log('⚡ 蓄力 +'+fx.charge+'%（现 '+player.charge+'%）','gold');
     E({k:'charge', side:'p', val:player.charge});
   }
-  if(fx.poison && ai && ai.alive){ addPoison(ai, fx.poison, player); log('☠ '+ai.name+' 中毒 '+fx.poison+' 层','good'); }
+  if(fx.poison && ai && ai.alive){
+    const _p = fx.poison + (player.st.poisonPlus || 0) + ((player.st.formation === 'dusha') ? 1 : 0);
+    addPoison(ai, fx.poison, player);
+    log('☠ '+ai.name+' 中毒 '+_p+' 层','good');
+  }
   if(fx.burn && ai && ai.alive){
-    applyBurn(ai, fx.burn.turns, fx.burn.dmg);
-    log('🔥 '+ai.name+' 陷入火海，灼烧 '+fx.burn.turns+' 回合','good');
+    const _burnDmg = fx.burn.dmg + ((player.st.formation === 'huode') ? 1 : 0);
+    applyBurn(ai, fx.burn.turns, fx.burn.dmg, player);
+    log('🔥 '+ai.name+' 陷入火海，灼烧 '+fx.burn.turns+' 回合（每回合 '+_burnDmg+' 点）','good');
   }
   if(fx.vuln && ai && ai.alive){
     applyVuln(ai, fx.vuln.mult, fx.vuln.turns);
@@ -9731,7 +10027,7 @@ function beginDeckBattle(){
   player.st.cardBattlePlays = 0;
   player.st.lastCardRound = -CARD_TURN_INTERVAL;
   player.st.firstStrikeUsed = false;
-  player.st.energy = BASE_ENERGY + (player.st.energyPlus||0);
+  player.st.energy = Math.max(0, BASE_ENERGY + (player.st.energyPlus||0) - (player.st.formationEnergyPenalty||0));
   if(player.st.startBlock) player.st.block += player.st.startBlock;
   if(player.st.firstBlock) player.st.block += player.st.firstBlock;
   if(player.st.blockPerTurn) player.st.block += player.st.blockPerTurn;
@@ -9774,6 +10070,15 @@ function beginDeckBattle(){
     doPeek();
   }
   if(player.st.peekFirst && G.peekMove == null){ G.peekMove = aiChoose(); aiReadMsg = ''; log('🔭 【望楼】你已探明对手首回合将出 '+MOVES[G.peekMove].icon+MOVES[G.peekMove].label,'gold'); }
+  /* 🚩 疑兵阵：只在没有其他预知来源时补一次首回合情报 */
+  if(player.st.formationPeek){
+    player.st.formationPeek = 0;
+    if(G.peekMove == null){
+      G.peekMove = aiChoose();
+      aiReadMsg = '';
+      log('🕵 疑兵阵：斥候探明敌将首回合将出 '+MOVES[G.peekMove].icon+MOVES[G.peekMove].label,'gold');
+    }
+  }
 }
 /* 回合结束：清增益、弃手牌、重置能量与格挡、抽新牌 */
 function endCardTurn(){
@@ -9790,7 +10095,7 @@ function endCardTurn(){
   player.st.block = 0;
   player.st.cardPlays = 0;
   player.st.firstStrikeUsed = false;
-  player.st.energy = BASE_ENERGY + (player.st.energyPlus||0);
+  player.st.energy = Math.max(0, BASE_ENERGY + (player.st.energyPlus||0) - (player.st.formationEnergyPenalty||0));
   if(player.st.blockPerTurn) player.st.block += player.st.blockPerTurn;
   drawCards(BASE_DRAW + (player.st.drawBonus||0) + (player.st.drawPerTurn||0));
   log('🃏 新回合：能量 '+player.st.energy+'，手牌 '+RL.hand.length+' 张'+
@@ -10660,6 +10965,8 @@ function startRoguelike(){
 function rlFinish(){
   const n = RL.curNode;
   if(n && n.done) return;                       // 防重复结算
+  /* 背水阵的「治疗 −15%」只属于本场战斗，不惩罚战后缴获/回复 */
+  if(player && player.st && player.st.formationHeal) player.st.formationHeal = 0;
   if(!player.alive){
     reportRLBattle('lose', G.round);
     rlDeathNote({ affix: (n && n.affixN) || 0, type: (n && n.type) || 'battle',
@@ -10723,6 +11030,10 @@ function rlFinish(){
        + mutatorFlatGold();
   RL.gold += gold;
   log('🏆 战斗胜利，缴获 '+gold+' 金'+(affixN ? '（含词条风险补偿 +'+(affixN*8)+'）' : ''),'gold');
+  if(player.st.formation === 'tuntian'){
+    RL.gold += 8;
+    log('🌾 屯田阵：战后收粮入仓，额外缴获 8 金','gold');
+  }
   /* 战后回复：北伐原先每赢一场就回 34%~40% 最大生命，六章打下来血线始终在 85% 以上，
      「带血进下一场」这条 roguelike 的核心压力等于不存在（实测 easy 局末 107/125）。
      按成熟肉鸽的调参顺序，先砍治疗与补给经济，而不是先给敌将加血。 */
@@ -10919,6 +11230,12 @@ function enterNode(layer, idx){
 
 function startRLBattle(node){
   player = RL.hero;
+  /* 临阵布阵：真实点击路径会在 RL.flags.formation 留下本战选择；
+     直调 enterNode 的旧测试没有这个字段，行为与以前完全一致。
+     车轮战第二阵没有新的选择，沿用第一阵的阵法。 */
+  const _pendingFormation = (RL.flags && RL.flags.formation) || null;
+  if(RL.flags) RL.flags.formation = null;
+  const _oldFormation = (player && player.st) ? player.st.formation : null;
   /* 战报清屏必须放最前面：原先清在变体/军心分支之后，
      把【烟幕】【烽火示警】【侦察奏效】【军心低落】四条提示全吃掉了——
      效果照常生效，但玩家完全看不到原因（尤其军心低落的惩罚是"无声"的）。 */
@@ -11026,7 +11343,7 @@ function startRLBattle(node){
         ai.name+' 首回合攻击 −'+player.st.foeOpeningAtkDown,'gold');
   }
   if(player.st.burnOnOpen){
-    applyBurn(ai, 2, 3);
+    applyBurn(ai, 2, 3, player);
     player.st.burnOnOpen = 0;
     log('🔥 烽火示警：'+ai.name+' 开局陷入火海，灼烧 2 回合','gold');
   }
@@ -11106,6 +11423,10 @@ function startRLBattle(node){
   const _mweather = mutatorWeather();
   if(_mweather) weather = _mweather;
   applyMutatorStart(player, ai);
+  /* 阵法最后挂：此时敌将成长、变体、词条、军心与天时都已经结算完毕。
+     车轮战第二阵没有新的布阵选择，沿用第一阵的阵法。 */
+  const _battleFormation = _pendingFormation || ((node.relayWave && _oldFormation) ? _oldFormation : null);
+  if(_battleFormation) applyBattleFormation(player, ai, _battleFormation);
   /* 军心惩罚:①阈值 <=1 → <=2 —— 实测 639 场军心最低只到过 3，
      <=1 在真实对局里一次都不会触发，纯属死内容；
      ②移出 node.type!=='boss' —— 原先等于把这条惩罚在最终战白送掉，
@@ -11576,7 +11897,8 @@ function showModal(title, body, opts){
   box.innerHTML = '';
   opts.forEach(o => {
     const b = document.createElement('button');
-    b.textContent = o.t;
+    /* 普通选项用 textContent，只有阵法这类需要「名 + 利 / 弊」两行排版的才走 html */
+    if(o.html) b.innerHTML = o.html; else b.textContent = o.t;
     b.onclick = () => { const keep = o.run(); if(keep === false) return; closeModal(); };
     box.appendChild(b);
   });
@@ -12181,6 +12503,8 @@ function chipsHtml(f){
       Math.round(f.st.affixOpen*100)+'%'+(f.st.affixOpen > f.st.affixes.length*0.06 ? '（决战破绽格外大）' : '（每条词条 +6%）')+
       '">💥破绽 +'+Math.round(f.st.affixOpen*100)+'%</span>';
   }
+  const _fm = formationById(f.st.formation);
+  if(_fm) chips.push(_fm.icon+_fm.name);
   if(f.charge > 0) chips.push('蓄力 '+f.charge+'%');
   if(f.st.burn) chips.push('灼烧 '+f.st.burn.turns+'回合');
   if(f.st.poison > 0) chips.push('☠中毒 '+f.st.poison+'层');
@@ -12291,6 +12615,7 @@ function renderRLBar(){
   const leftJn = Object.keys(items).filter(k => items[k] > 0).length;
   const info = NODE_INFO[node ? node.type : 'battle'];
   const route = node && RL_ROUTE_INFO[node.route] ? RL_ROUTE_INFO[node.route] : null;
+  const _form = formationById(player.st.formation);
   bar.innerHTML =
     '<span class="rlb'+(node && node.type==='boss'?' hot':'')+'">'+info.icon+' '+(variant ? variant.name : info.name)+
       (node && node.type==='boss' ? ' · 决战' : ' · 第 '+(RL.layer+1)+' 层')+'</span>'+
@@ -12304,6 +12629,7 @@ function renderRLBar(){
     '<span>🃏 军略牌 '+((player.st.cardBattlePlays||0))+'/'+CARD_BATTLE_LIMIT+
       (cardWaitRounds() ? '（冷却 '+cardWaitRounds()+' 回合）' : '')+'</span>'+
     (rlCompanion() ? '<span class="rlb">🎖 '+rlCompanion().name+' · '+rlCompanion().short+'</span>' : '')+
+    (_form ? '<span class="rlb" title="'+_form.boon+'；'+_form.cost+'">'+_form.icon+' '+_form.name+'</span>' : '')+
     (ai && ai.st && ai.st.arch && FOE_ARCH_TYPES[ai.st.arch]
       ? '<span class="rlb">🏷 敌将战法 '+FOE_ARCH_TYPES[ai.st.arch].name+'</span>' : '')+
     (route ? '<span>'+route.icon+' '+route.name+'</span>' : '')+
@@ -12942,9 +13268,9 @@ function codexHtml(tab){
     <p>攻击 +8、挨打 +12、平局 +5 积攒怒气，满 <b>100</b> 即可发动该武将的专属超必杀（不占用回合，敌方也会使用）。</p>
     <h4>🧮 一刀是怎么算出来的</h4>
     <p>战报里每一刀都印成一条 <b>🧮 结算式</b>，从左到右就是引擎的实际顺序：<br>
-    <b>攻 X（＋加值）（×倍率）= 基础</b> → <b>−防 Y%</b> → <b>💥暴击 ×1.80</b>（有麒麟铠再打折）→ <b>【易伤】×1.5</b> →
-    <b>刀兵结算 ×${DMG_RATE.toFixed(2)}</b> → <b>玄铁甲 −N / 减伤 N% / 铁壁 −40% / 护体结界 =10</b> → <b>命中：实损 N 点</b>（有格挡则先由格挡吸收）。</p>
-    <p>其中的<b>倍率</b>来自蓄力、天气、阵营羁绊、军略牌、押注和武将技能；<b>刀兵结算 ×${DMG_RATE.toFixed(2)}</b> 是全局系数（没有它两回合就分出胜负，读招反而不值钱）；<b>防御按百分比减免</b>、<b>格挡在最后吸收</b>、<b>中毒与灼烧绕过格挡</b>。看见账就知道这局该堆攻、堆防还是堆格挡。</p>
+    <b>攻 X（＋加值）（×倍率）= 基础（阵·某阵 ±N%）</b> → <b>−防 Y%</b> → <b>💥暴击 ×1.80</b>（有麒麟铠再打折）→ <b>【易伤】×1.5</b> →
+    <b>刀兵结算 ×${DMG_RATE.toFixed(2)}</b> → <b>玄铁甲 −N / 减伤 N%（含 阵·某阵 −N%）/ 受伤 +N% / 铁壁 −40% / 护体结界 =10</b> → <b>命中：实损 N 点</b>（有格挡则先由格挡吸收）。</p>
+    <p>其中的<b>倍率</b>来自蓄力、天气、阵营羁绊、军略牌、押注、本战阵法和武将技能；<b>刀兵结算 ×${DMG_RATE.toFixed(2)}</b> 是全局系数（没有它两回合就分出胜负，读招反而不值钱）；<b>防御按百分比减免</b>、<b>格挡在最后吸收</b>、<b>中毒与灼烧绕过格挡</b>。看见账就知道这局该堆攻、堆防还是堆格挡。</p>
     <h4>🎬 打斗过程播报怎么看</h4>
     <p><b>回合头</b>：「第 N 回合 · 你出✊石头，对手出✌剪刀 → 你得势 / 你失势 / 相持」，得势才出手、失势就挨打、相持双方蓄力。</p>
     <p><b>技能时机</b>：武将技能不是独立回合，而是挂在结算式的固定环节上（图鉴每格都写了它挂在哪一环）：出手之前 → 出手之后 → 猜拳胜负判定时 → 挨打之际 → 挨打之后 → 回合结束 → 蓄力环节。</p>
@@ -13236,6 +13562,13 @@ function codexHtml(tab){
       '<p>🧩 <b>遗物羁绊</b>：41 件遗物分【猛攻 / 守城 / 奇谋 / 军略】四派，凑齐 2 件、4 件各结算一次永久小加成，地图遗物栏会显示进度。<br>'+
       '🎖 <b>副将随行</b>：开局点将一次，三选一（法正/赵云/华佗）；不点将就没有副将。每场战斗第 3 回合支援一次，不替你出拳。<br>'+
       '🐯 <b>虎符秘藏</b>：精英、敌寨、悬赏胜利掉虎符碎片；集 2 枚会在当前地图后续层生成【秘藏】节点，胜利后三选一（神器遗物 / 金帛 / 兵符）。</p>'+
+      '<p>🚩 <b>临阵布阵</b>：战斗节点（含精英、敌寨、悬赏、Boss、秘藏）开打前，会从十阵中随机呈上三阵，'+
+      '可择一阵或直接以常阵接敌。阵法<b>只在本战生效</b>，全部是「一利一弊」的侧向选择，'+
+      '不消耗金币、行动或军略牌；敌将、词条、天时与军心都结算完之后才挂阵。'+
+      '选阵用节点 uid 的独立随机源，读档重进不会换一批。十阵如下：</p>'+
+      cxGrid(RL_FORMATIONS.map(f => cxItem(f.icon, f.name+' <span class="dim">'+f.tag+'</span>',
+        '<span class="fboon">利：'+f.boon+'</span><br><span class="fcost">弊：'+f.cost+'</span>'+
+        '<br><span class="dim">'+f.desc+'</span>')))+
       '<p>🎲 <b>局内天时（mutators）</b>：每局开战随机 roll 1~2 条全局修饰——'+
       RL_MUTATORS.map(m=>m.icon+'【'+m.name+'】').join('、')+'。'+
       '它们是「这一趟」的规则改动（改敌我属性、改天气、改金币与物价、改开场状态），'+
@@ -13650,7 +13983,7 @@ globalThis.__api = {
   setMode, setPicked: ids => { picked = ids.slice(); }, setSpd: v => { if(SPEEDS.includes(v)) spd = v; syncSpeedButton(); savePreferences(); },
   setSelected: id => { selectedId = id; },
   setDiff: d => { difficulty = d; }, itemEffect, animateItem, makeBoss, rollWeather,
-  executeUlt, factionBuffs, startRoguelike, renderMapScreen, enterNode, gainRelic, genMap,
+  executeUlt, factionBuffs, startRoguelike, renderMapScreen, enterNode, startRLBattle, gainRelic, genMap,
   openPrologue, chooseOrigin, openCouncil, chooseCouncil, councilTaken, bossParley, mapNodeClick,
   openJournal, renderJournal, rlJournalLine,
   getRL_ORIGINS: () => RL_ORIGINS, getRL_SCENES: () => RL_SCENES,
@@ -13689,6 +14022,8 @@ globalThis.__api = {
   rlFill, rlRivalName, rlHeroName, STORY_EVENT_CHANCE,
   getRL_FATES: () => RL_FATES, getFATE_BY_ID: () => FATE_BY_ID,
   getRL_DOCTRINES: () => RL_DOCTRINES, getRL_MUTATORS: () => RL_MUTATORS,
+  getRL_FORMATIONS: () => RL_FORMATIONS, formationById, formationOfferList,
+  applyBattleFormation, openFormationChoice,
   getRL_ORDERS: () => RL_ORDERS, getRL_ORDER_BY_ID: () => RL_ORDER_BY_ID,
   getRL_DIFFICULTY: () => RL_DIFFICULTY, CHAPTER_LEVEL_STEP: () => RL_CHAPTER_LEVEL_STEP,
   getRL_EVENTS_EXTRA: () => RL_EVENTS_EXTRA, RL_EVENTS_EXTRA_ON,
