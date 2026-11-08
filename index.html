@@ -962,7 +962,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>🎴 武将风格：</b>每将标注 <b>强攻 / 固守 / 诡变 / 均衡</b> 四类招牌打法并附一段史官列传；选将页可按阵营、打法或关键词筛选。<br>
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
       <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能与列传、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
-      <b>平衡：</b>46 名武将经数万局模拟校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。
+      <b>平衡：</b>46 名武将经 50 万场对局矩阵与数千局完整北伐校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。
       </div>
     </details>
 
@@ -1387,37 +1387,40 @@ const CHARS = [
    }},
 
   /* ---------- P12 新增 8 将（2026-11-08）：招牌打法可读、只复用既有 hooks / ult 字段 ---------- */
-  {id:'caoren', camp:'wei', name:'曹仁', title:'天人将军', atk:10, hp:30, def:17,
-   skill:{name:'坚壁', desc:'生命低于 60% 时防御额外 +18%；每次平局额外获得 3 点格挡。'},
-   ult:{name:'固守樊城', desc:'回复 12 点生命，并使对方 3 回合无法获得蓄力。', heal:12, noCharge:3},
+  {id:'caoren', camp:'wei', name:'曹仁', title:'天人将军', atk:10, hp:28, def:15,
+   skill:{name:'坚壁', desc:'生命低于 60% 时防御额外 +10%；每次平局获得 2 点格挡（累计最多 6 点）。'},
+   ult:{name:'固守樊城', desc:'回复 10 点生命，并使对方 2 回合无法获得蓄力。', heal:10, noCharge:2},
    hooks:{
-     defMod(f){ return f.hp < f.maxHp*0.6 ? 18 : 0; },
-     onDraw(f){ f.st.block = (f.st.block||0) + 3; }
+     defMod(f){ return f.hp < f.maxHp*0.6 ? 10 : 0; },
+     /* 对决模式的格挡不在回合末清零，平局加盾若不封顶会无限叠加成僵局；
+        这里用绝对上限兜住，北伐模式仍按既有规则每回合清零。 */
+     onDraw(f){ f.st.block = Math.min(6, (f.st.block||0) + 2); }
    }},
 
-  {id:'xunyu', camp:'wei', name:'荀彧', title:'王佐之才', atk:10, hp:24, def:14,
-   skill:{name:'举贤', desc:'平局时额外蓄力 +20（共 +45），并回复 2 点生命。'},
+  {id:'xunyu', camp:'wei', name:'荀彧', title:'王佐之才', atk:10, hp:26, def:15,
+   skill:{name:'举贤', desc:'平局时额外蓄力 +30（共 +55），并回复 3 点生命。'},
    ult:{name:'驱虎吞狼', desc:'对方 3 回合受伤 +40%，并清空其蓄力。', vuln:{mult:1.4, turns:3}, drain:true},
    hooks:{
-     onCharge(){ return 45; },
-     onDraw(f){ heal(f,2); }
+     onCharge(){ return 55; },
+     onDraw(f){ heal(f,3); }
    }},
 
-  {id:'fazheng', camp:'shu', name:'法正', title:'蜀中奇谋', atk:11, hp:24, def:12,
-   skill:{name:'奇谋', desc:'对方蓄力每满 20%，本次伤害 +8%（最多 +32%）；专克攒势之人。'},
+  {id:'fazheng', camp:'shu', name:'法正', title:'蜀中奇谋', atk:11, hp:26, def:13,
+   skill:{name:'奇谋', desc:'本次伤害保底 +8%；对方蓄力每满 20% 再 +6%（最多共 +32%）；专克攒势之人。'},
    ult:{name:'定军斩将', desc:'造成 170% 伤害，强制暴击并清空对方蓄力。', strike:{mult:1.7, crit:true}, drain:true},
    hooks:{ beforeAttack(f,foe,C){
-     const b = Math.min(4, Math.floor((foe.charge||0)/20)) * 0.08;
-     if(b > 0){ C.mult *= 1+b; log('【奇谋】法正窥破蓄势，伤害+'+Math.round(b*100)+'%','gold'); }
+     const b = 0.08 + Math.min(4, Math.floor((foe.charge||0)/20)) * 0.06;
+     C.mult *= 1+b;
+     if(b > 0.081) log('【奇谋】法正窥破蓄势，伤害+'+Math.round(b*100)+'%','gold');
    }}},
 
-  {id:'masu', camp:'shu', name:'马谡', title:'街亭之失', atk:12, hp:23, def:10,
-   skill:{name:'居高临下', desc:'对方生命高于 70% 时伤害 +25%；对方生命低于 30% 时伤害 −10%（先声夺人，后力不继）。'},
+  {id:'masu', camp:'shu', name:'马谡', title:'街亭之失', atk:12, hp:26, def:12,
+   skill:{name:'居高临下', desc:'对方生命高于 70% 时伤害 +25%；对方生命低于 30% 时伤害 −5%（先声夺人，后力不继）。'},
    ult:{name:'街亭一掷', desc:'造成 220% 伤害，但自损 3 点生命。', strike:{mult:2.2}, selfDmg:3},
    hooks:{ beforeAttack(f,foe,C){
      const p = foe.hp / Math.max(1, foe.maxHp);
      if(p > 0.7){ C.mult *= 1.25; log('【居高临下】马谡据山而下，伤害+25%','gold'); }
-     else if(p < 0.3) C.mult *= 0.9;
+     else if(p < 0.3) C.mult *= 0.95;
    }}},
 
   {id:'huanggai', camp:'wu', name:'黄盖', title:'苦肉老将', atk:13, hp:28, def:9,
@@ -5706,7 +5709,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261108a';
+const BUILD_ID = '20261108b';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
