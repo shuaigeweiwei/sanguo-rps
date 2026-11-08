@@ -964,7 +964,8 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>🎴 武将风格：</b>每将标注 <b>强攻 / 固守 / 诡变 / 均衡</b> 四类招牌打法并附一段史官列传；选将页可按阵营、打法或关键词筛选。<br>
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
       <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能与列传、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
-      <b>平衡：</b>46 名武将经 50 万场对局矩阵与数千局完整北伐校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。
+      <b>平衡：</b>46 名武将经 50 万场对局矩阵与数千局完整北伐校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。<br>
+      <b>⚖ 首章缓坡：</b>复测发现第 1 章敌将强度在第 2 层断崖式跳升、而战后回复跟不上单场战损。现在第 1 章前 5 层敌将按层渐进、战后额外回 6% 最大生命；<b>层 5 起、第 2 章起与单挑模式全部沿用原曲线</b>，三档难度的数值表一分未动。
       </div>
     </details>
 
@@ -5711,7 +5712,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261108d';
+const BUILD_ID = '20261108e';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -6243,6 +6244,41 @@ const RL_DIFFICULTY = {
   normal: { hp:1.45, bossHp:1.24, bossAtk:0.18, gold:1.00, atk:0 },
   hard:   { hp:1.46, bossHp:1.24, bossAtk:0.18, gold:1.00, atk:0 }
 };
+/* ==================== 首章缓坡（P12e · 平衡） ====================
+   依据：1656 局自然策略完整北伐 + 138 局逐战数值快照（零浏览器）。
+   · 89.1% 的败局止步第 1 章，其中 25.6% 是第一战就死；
+   · 首战敌将因 L0 的 0.8 折保护只有 29.8 血 / 12.0 攻 / 12.9 防，
+     到第 2 层立刻跳成 44.6 血 / 13.3 攻 / 17.9 防（血 +50%），
+     而玩家同期只多约 0.9 张牌、战后仅回 14% 最大生命（约 4 血）；
+   · 结果血线单调下滑，90.2% 的首章败局发生在前 3 战内。
+   对策：只在第 1 章按地图层给敌将一条 6 段缓坡（层 5 起完全回到原曲线），
+         并在第 1 章战后多回 6% 最大生命。第 2 章起与对决模式一律不动。
+   只改 foe 的 hp/atk/def 与 heal() 的入参：不碰猜拳判定、伤害公式、
+   46 将 / 82 牌数据、RL_DIFFICULTY 三档表，也不新增 Math.random 调用。
+   ⚠ RL_DIFFICULTY 上表是上一批 480 局多种子标定过的结论（见上方长注释）：
+     「三档处处非递减、军神更难交给军令与 AI 预判」「别把 atk 改回 1」。
+     本批 5 组参数扫描也证实改它虽抬高 easy，却把 hard 从 8.7% 压到 4.3%，
+     跌出带宽，故保持原样 —— 难度档位不是这轮该动的旋钮。 */
+const RL_OPENING_RAMP = [
+  /* L0     L1     L2     L3     L4     L5+ （第 1 章地图层） */
+  { hpK:0.72, atk:-1, def:-2 },
+  { hpK:0.80, atk:-1, def:-2 },
+  { hpK:0.86, atk:-1, def:-1 },
+  { hpK:0.92, atk: 0, def:-1 },
+  { hpK:0.96, atk: 0, def: 0 },
+  { hpK:1.00, atk: 0, def: 0 }
+];
+const RL_OPENING_HEAL = 0.06;   /* 第 1 章战后额外回复（按最大生命比例） */
+function applyOpeningRamp(foe){
+  if(!foe || (RL.chapter || 0) !== 0) return foe;      /* 第 2 章起零改动 */
+  const L = Math.max(0, Math.min(RL_OPENING_RAMP.length - 1, RL.layer || 0));
+  const r = RL_OPENING_RAMP[L];
+  foe.maxHp = Math.max(10, Math.round(foe.maxHp * r.hpK));
+  foe.hp = foe.maxHp;
+  foe.atk = Math.max(1, foe.atk + r.atk);
+  foe.def = Math.max(0, foe.def + r.def);
+  return foe;
+}
 /* 军功原来是"攒到 5/12/20/30 就白送四档"，玩家全程没有一次选择，
    跨局成长就变成了排队领糖。改成可支配、可全额归还的点买树：
    每一笔都是取舍（先登还是医帐），买错了能推倒重来。
@@ -8228,12 +8264,15 @@ function openPrologue(){
     '<p class="dim">'+mut+'</p>'+
     '<p class="dim">'+ord+'</p>'+
     /* P12c：1656 局完整北伐里约 9 成失利都在第 1 章（平均只打 2.9 场），
-       把「首章该怎么活」直接放到开局，纯文案、不耗随机数、不改选项。 */
+       把「首章该怎么活」直接放到开局，纯文案、不耗随机数、不改选项。
+       P12e：逐战快照定位到「第 2 层敌将断崖跳升 + 战后回复跟不上战损」，
+       已用第 1 章逐层缓坡修过；这里如实写明缓冲只护前 5 层。 */
     '<details style="margin:10px 0;padding:6px 10px;border:1px solid currentColor;'+
       'border-radius:8px;opacity:.9;font-size:.92em">'+
       '<summary style="cursor:pointer">🧭 新军三事 · 首次北伐请先点开（实测建议）</summary>'+
       '<p class="dim" style="margin:6px 0">1656 局完整北伐复测：<b>约九成失利止步第 1 章</b>，'+
-      '平均只打了 <b>2.9 场</b>战斗。头两层的取舍比后五章加起来的影响还大。</p>'+
+      '平均只打了 <b>2.9 场</b>战斗。本版据此给第 1 章前 5 层加了<b>逐层缓坡</b>，'+
+      '层 5 起与后五章完全恢复原难度 —— 缓冲很薄，头几层的取舍仍最要紧。</p>'+
       '<p style="margin:6px 0">① 先走 <b>篝火 / 军营 / 名医</b> 把血补回来，别一开局就贪精英与悬赏。<br>'+
       '② 每战开打前点 <b>🎴 换牌</b>：它会<b>优先抽本局流派</b>的牌，比盲换更容易凑出标签协同。<br>'+
       '③ 战利里带 <b>⭐ 本局流派</b> 标记的优先拿：同标签 <b>3 张初成 / 5 张成型</b>，'+
@@ -11403,7 +11442,10 @@ function rlFinish(){
   const healRate = (n.type === 'challenge' ? 0.18 : n.type === 'stronghold' ? 0.17
       : n.type === 'elite' ? 0.16 : 0.14)
     + ((n.variant === 'do-or-die' || n.variant === 'disaster') ? 0.04 : 0)
-    + (vB.heal || 0) + affixN * 0.03 + mutatorHealBonus();
+    + (vB.heal || 0) + affixN * 0.03 + mutatorHealBonus()
+    /* P12e：首章单场挨损远超 14% 的回复量，血线一路下滑；只补第一章这 6%，
+       第 2 章起的既有经济与难度曲线一分不动。 */
+    + ((RL.chapter || 0) === 0 ? RL_OPENING_HEAL : 0);
   heal(player, Math.round(player.maxHp * healRate));
   if(player.st.healOnBattle) heal(player, Math.round(player.maxHp * player.st.healOnBattle));
   if(player.st.winSupply){ changeSupplies(player.st.winSupply); log('🌾 【屯田令】缴获补给 +'+player.st.winSupply,'gold'); }
@@ -11651,12 +11693,11 @@ function startRLBattle(node){
       foe.def = Math.min(46, foe.def + 6);
       foe.name = '秘藏·'+foe.name;
     }
-    if(RL.chapter === 0 && L === 0 && node.type === 'battle' && !node.relayWave){
-      foe.maxHp = Math.max(10, Math.round(foe.maxHp * 0.8));
-      foe.hp = foe.maxHp;
-    }
     applyMutatorFoe(foe);
   }
+  /* 首章缓坡统一在最后落笔：替代原先「只保 L0 普通战 0.8 折」的孤点保护，
+     覆盖第一章全部节点类型，层 5 起系数归 1，等于原样。 */
+  applyOpeningRamp(foe);
   ai = foe;
   node.foeName = foe.name;
   node.chapter = RL.chapter;
@@ -14535,6 +14576,8 @@ globalThis.__api = {
   applyBattleFormation, openFormationChoice,
   getRL_ORDERS: () => RL_ORDERS, getRL_ORDER_BY_ID: () => RL_ORDER_BY_ID,
   getRL_DIFFICULTY: () => RL_DIFFICULTY, CHAPTER_LEVEL_STEP: () => RL_CHAPTER_LEVEL_STEP,
+  getRL_OPENING_RAMP: () => RL_OPENING_RAMP, RL_OPENING_HEAL: () => RL_OPENING_HEAL,
+  applyOpeningRamp,
   getRL_EVENTS_EXTRA: () => RL_EVENTS_EXTRA, RL_EVENTS_EXTRA_ON,
   seededRng
 };
