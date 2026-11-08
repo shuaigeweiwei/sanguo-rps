@@ -965,7 +965,8 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
       <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能与列传、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
       <b>平衡：</b>46 名武将经 50 万场对局矩阵与数千局完整北伐校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。<br>
-      <b>⚖ 首章缓坡：</b>复测发现第 1 章敌将强度在第 2 层断崖式跳升、而战后回复跟不上单场战损。现在第 1 章前 5 层敌将按层渐进、战后额外回 6% 最大生命；<b>层 5 起、第 2 章起与单挑模式全部沿用原曲线</b>，三档难度的数值表一分未动。
+      <b>⚖ 首章缓坡：</b>复测发现第 1 章敌将强度在第 2 层断崖式跳升、而战后回复跟不上单场战损。现在第 1 章前 5 层敌将按层渐进、战后额外回 6% 最大生命；<b>层 5 起、第 2 章起与单挑模式全部沿用原曲线</b>，三档难度的数值表一分未动。<br>
+      <b>⚔ 自请加压：</b>实测第 3 章起单战胜率高达 98~100%，但强制加压会把整体通关率一起压垮（16 组参数扫描均无解）。因此改成玩家自愿：第 3 章起地图页可点「自请加压」，本章敌将 <b>+3 攻 / 生命 ×1.25</b>、战后缴获 <b>×1.5</b>；<b>默认完全关闭</b>、可随时收起、每章重新选，不改默认难度与猜拳判定。
       </div>
     </details>
 
@@ -5712,7 +5713,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261108e';
+const BUILD_ID = '20261108f';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -6277,6 +6278,38 @@ function applyOpeningRamp(foe){
   foe.hp = foe.maxHp;
   foe.atk = Math.max(1, foe.atk + r.atk);
   foe.def = Math.max(0, foe.def + r.def);
+  return foe;
+}
+/* ⚔ 自请加压（P12f · 玩家自愿层）
+   §14 三轮共 16 组参数扫描证明：第 3 章起「强制」给敌人加数值 / 砍玩家成长 /
+   砍战后回复，都无法在「不显著降通关率」的前提下把后段 98~100% 的单战胜率压下来
+   （加得动的那组通关率 −4.35% p=0.0312、强玩家跌出带宽）。
+   于是改成玩家自己选：默认完全关闭，自动流程与旧版逐位一致；只有真人在地图页
+   主动点「自请加压」时才生效，且每章要重新点一次，不跨章、不带进单挑模式。
+   纯数值加成走既有的 foe 字段与 gold 结算，不碰猜拳判定 / 伤害公式 / 46 将 / 82 牌。 */
+const RL_PLEDGE = { from:2, hpK:1.25, atk:3, goldK:1.5 };
+function rlPledgeOn(){
+  return RL.active && (RL.chapter||0) >= RL_PLEDGE.from &&
+         !!(RL.flags && RL.flags.pledgeCh === (RL.chapter||0));
+}
+function togglePledge(){
+  if(!RL.active || (RL.chapter||0) < RL_PLEDGE.from) return;
+  if(!RL.flags) RL.flags = {};
+  if(rlPledgeOn()){
+    RL.flags.pledgeCh = -1;
+    log('⚔ 收起请战旗，本章敌将恢复常制。','sys');
+  } else {
+    RL.flags.pledgeCh = RL.chapter || 0;
+    log('⚔ 自请加压：本章敌将 +'+RL_PLEDGE.atk+' 攻 / 生命 ×'+RL_PLEDGE.hpK+
+        '，战后缴获 ×'+RL_PLEDGE.goldK+'。可随时收起。','gold');
+  }
+  saveRoguelike(); renderMapScreen();
+}
+function applyPledge(foe){
+  if(!foe || !rlPledgeOn()) return foe;
+  foe.maxHp = Math.round(foe.maxHp * RL_PLEDGE.hpK);
+  foe.hp = foe.maxHp;
+  foe.atk += RL_PLEDGE.atk;
   return foe;
 }
 /* 军功原来是"攒到 5/12/20/30 就白送四档"，玩家全程没有一次选择，
@@ -11428,7 +11461,9 @@ function rlFinish(){
   /* 词条风险补偿：敌将词条越多，缴获越丰厚（每条 +8 金、+5% 战后回复） */
   const affixN = n.affixN || 0;
   gold += affixN * 8;
-  gold = Math.round(gold * (1 + (player.st.goldUp||0)) * rlDifficultyScale().gold * mutatorGoldMult())
+  /* P12f：自请加压的回报，默认恒为 1，旧版逐位一致 */
+  gold = Math.round(gold * (1 + (player.st.goldUp||0)) * rlDifficultyScale().gold * mutatorGoldMult()
+                    * (rlPledgeOn() ? RL_PLEDGE.goldK : 1))
        + mutatorFlatGold();
   RL.gold += gold;
   log('🏆 战斗胜利，缴获 '+gold+' 金'+(affixN ? '（含词条风险补偿 +'+(affixN*8)+'）' : ''),'gold');
@@ -11698,6 +11733,7 @@ function startRLBattle(node){
   /* 首章缓坡统一在最后落笔：替代原先「只保 L0 普通战 0.8 折」的孤点保护，
      覆盖第一章全部节点类型，层 5 起系数归 1，等于原样。 */
   applyOpeningRamp(foe);
+  applyPledge(foe);       /* P12f：默认关闭 → 逐位等价旧版 */
   ai = foe;
   node.foeName = foe.name;
   node.chapter = RL.chapter;
@@ -13120,6 +13156,11 @@ function renderMapScreen(){
     (RL.layer >= 2 && RL.flags.roadChoiceCh !== (RL.chapter || 0)
       ? '<div class="rlmeta"><span class="rlstate">🚩 <button id="btnRoadChoice">行军决断（本章一次）</button>'+
         '　分兵护粮 / 急行军 / 就地休整，选一次</span></div>' : '')+
+    ((RL.chapter || 0) >= RL_PLEDGE.from
+      ? '<div class="rlmeta"><span class="rlstate">⚔ <button id="btnPledge">'+
+        (rlPledgeOn() ? '请战中 · 点击收起' : '自请加压（本章敌将 +'+RL_PLEDGE.atk+
+          ' 攻 / 生命 ×'+RL_PLEDGE.hpK+'，缴获 ×'+RL_PLEDGE.goldK+'）')+'</button>'+
+        '　<span class="dim">后段太顺时可自己加压，默认关闭、每章重选</span></span></div>' : '')+
     '<details class="rlfold"><summary>📖 规则与提示（点开）</summary>'+
       '<div class="rlmeta"><span class="rlnote">🪖 军心三档：<b class="moraleGood">≥4 → 本战起始格挡 +4、怒气 +5%</b>'+
         '　｜　<b>=3 → 无效果</b>'+
@@ -13162,6 +13203,8 @@ function renderMapScreen(){
   if(deckBtn) deckBtn.onclick = openDeckViewer;
   const roadBtn = $('btnRoadChoice');
   if(roadBtn) roadBtn.onclick = openRoadChoice;
+  const pledgeBtn = $('btnPledge');
+  if(pledgeBtn) pledgeBtn.onclick = togglePledge;
   const boonBtn = $('btnBoonView');
   if(boonBtn) boonBtn.onclick = openBoonList;
 
@@ -14577,6 +14620,7 @@ globalThis.__api = {
   getRL_ORDERS: () => RL_ORDERS, getRL_ORDER_BY_ID: () => RL_ORDER_BY_ID,
   getRL_DIFFICULTY: () => RL_DIFFICULTY, CHAPTER_LEVEL_STEP: () => RL_CHAPTER_LEVEL_STEP,
   getRL_OPENING_RAMP: () => RL_OPENING_RAMP, RL_OPENING_HEAL: () => RL_OPENING_HEAL,
+  getRL_PLEDGE: () => RL_PLEDGE, rlPledgeOn, togglePledge, applyPledge,
   applyOpeningRamp,
   getRL_EVENTS_EXTRA: () => RL_EVENTS_EXTRA, RL_EVENTS_EXTRA_ON,
   seededRng
