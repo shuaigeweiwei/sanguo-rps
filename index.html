@@ -592,6 +592,8 @@
   .tag-fire{color:#e8a06a} .tag-poison{color:#9ad07a} .tag-guard{color:#7fb0e8}
   .tag-momentum{color:#e0c060} .tag-food{color:#8fd48a} .tag-none{color:#6f6455}
   .hcard.swap { outline:2px dashed #d8b45a; outline-offset:2px; opacity:1; cursor:pointer; }
+  /* P12c：本局流派牌在换牌态里「建议保留」——金虚线=可弃，灰实线=别弃 */
+  .hcard.swap.keep { outline:2px solid #6f6455; opacity:.62; }
   .pilebtn.on { background:#5a4720; border-color:var(--gold); color:#ffe9b0; }
   .pilebtn:disabled { opacity:.45; }
 
@@ -958,7 +960,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>🏆 擂台·无尽：</b>单将守擂，<b>每胜一场恢复 30% 生命、攻击 +1 并随机补一枚锦囊</b>；每 <b>5 连胜</b> 额外三选一领取遗物或锦囊。下一位擂主血量 +8%、攻击与防御随连胜提升，<b>战败即止</b>，冲击最高连胜纪录。<br>
       <b>🧭 北伐 Roguelike：</b>选 1 将踏上随机分支地图，须<b>连破六章</b>（每章重铺一张 10-14 层的地图、斩一位守关敌将），节点含战斗、精英、敌寨、悬赏、篝火、军营、烽火台、名医、酒馆、废墟、宝藏、行商、奇遇、祭坛、演武、铸造；每局还会随机 roll 1~2 条<b>天时（全局修饰）</b>，战斗另有<b>雾战、伏击、决斗、粮道、天时、夜战、攻城、车轮、谍战、决死、天灾、旱战、狂风、雨战、灰野、挟民、斗将、壕沟、死士、征粮</b>等二十种变体，敌将更会随机携带<b>词条</b>。第 2 层起奇遇会刷出<b>按章分组的剧情奇遇</b>，且每章地图都<b>钉死一个「本章剧情」节点</b>。开局先演<b>🏮 序章（起兵之本三选一）→ 方针 → 章首过场与军议三选一</b>，点 Boss 前还有<b>🥁 阵前搦战</b>；每场战斗开打前可<b>🚩 临阵布阵</b>（十阵随机三选一，也可跳过，阵法只在本战生效）；打完一局由史官给出一条<b>🏛 结局</b>（条目与达成条件见图鉴「🏛 结局史册」页）；仗若打成「谁也打不动谁」的死局，第 15 回合起会有<b>⏳ 久战疲惫</b>逼它收场；只有在最后一章诛杀鬼神·吕布才算功成，阵亡即止。<br>
        <b>🃏 军略牌（卡组构筑）：</b>北伐中你自带一副 10 张卡组 —— 每回合 3 点能量、抽 5 张，每两回合出拳前最多打出 1 张、每场最多 3 张（伤害 / 格挡 / 增益 / 读招），战斗胜利可三选一添牌，篝火升级、商店删牌买牌，猜拳仍是胜负核心。<br>
-      <b>🎴 战前换牌 · 卡组流派：</b>每场开打前可弃 1 张手牌另抽 1 张（每战一次、可跳过，不占回合 / 能量 / 出牌次数）；牌带 <b>火 / 毒 / 守 / 势 / 粮</b> 标签，每战同标签第 2 张触发轻协同，地图页「🎴 本局流派」实时提示你这局在凑什么 —— 只作引导，不加数值。<br>
+      <b>🎴 战前换牌 · 卡组流派：</b>每场开打前可弃 1 张手牌另抽 1 张（每战一次、可跳过，不占回合 / 能量 / 出牌次数，<b>优先抽本局流派的牌</b>）；牌带 <b>火 / 毒 / 守 / 势 / 粮</b> 标签，每战同标签第 2 张触发轻协同；战利与商店用 <b>⭐ 本局流派 / ◈ 可开流派</b> 标出契合牌，地图页「🎴 本局流派」实时提示你这局在凑什么 —— 只作引导，不加数值。序章「🧭 新军三事」与终局复盘会告诉你首章该怎么走。<br>
       <b>🎴 武将风格：</b>每将标注 <b>强攻 / 固守 / 诡变 / 均衡</b> 四类招牌打法并附一段史官列传；选将页可按阵营、打法或关键词筛选。<br>
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
       <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能与列传、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
@@ -5709,7 +5711,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261108c';
+const BUILD_ID = '20261108d';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -6480,9 +6482,20 @@ function rlRecapHtml(){
   /* ✒ 史笔·改：第四行——让 IF 改史在课后复盘也看得见 */
   L.push('✒ <b>史笔</b>：本局改写 <b>'+rlIfCount()+'</b> / '+RL_IF_RULES.length+' 处'+
     (rlIfCount() >= 3 ? '——虎牢关前，若有人献简，那是你的史官' : ''));
+  /* P12c：把「这局凑没凑成流派」也摊进复盘（纯统计，零数值、零随机数）。
+     卡池扩到 82 张后，流派成型度是玩家最该看见、却一直没被结算页写出来的量。 */
+  try{
+    const ar = deckArchetype();
+    const tier = ar.count >= 6 ? '大成' : ar.count >= 5 ? '成型' : ar.count >= 3 ? '初成' : '未成型';
+    L.push('🎴 <b>流派</b>：'+(ar.main
+      ? ARCHETYPE_INFO[ar.main].icon+' '+ARCHETYPE_INFO[ar.main].name+'·'+tier+
+        '（'+ar.main+' '+ar.count+' 张）'+
+        (ar.count < 3 ? ' —— 下一局开战前多用 🎴 换牌（优先抽本局流派牌），战利里认 ⭐ 标记' : '')
+      : '本局没有带标签的牌 —— 下次战利三选一优先拿带 ⭐ / ◈ 标记的牌')+'。');
+  }catch(e){}
   const goal = rlGoalIdeas()[0];
   if(goal) L.push('🎯 <b>下一局目标</b>：'+goal);
-  return '<br><span class="dim">┌ 本局三行复盘 ┐</span><br><span class="dim">'+
+  return '<br><span class="dim">┌ 本局复盘 ┐</span><br><span class="dim">'+
     L.join('<br>')+'</span>';
 }
 
@@ -8213,7 +8226,19 @@ function openPrologue(){
     '<p>⚔ '+RL.hero.ch.name+' 受诏提兵，'+rlChapter().intro.replace(/^[^ ]+ /,'')+'</p>'+
     '<p>军议未开，先要定下这支部队的根：<b>出身不同，起始的卡组、辎重与耳目都不同</b>，一路要走的方向也就不同。</p>'+
     '<p class="dim">'+mut+'</p>'+
-    '<p class="dim">'+ord+'</p>',
+    '<p class="dim">'+ord+'</p>'+
+    /* P12c：1656 局完整北伐里约 9 成失利都在第 1 章（平均只打 2.9 场），
+       把「首章该怎么活」直接放到开局，纯文案、不耗随机数、不改选项。 */
+    '<details style="margin:10px 0;padding:6px 10px;border:1px solid currentColor;'+
+      'border-radius:8px;opacity:.9;font-size:.92em">'+
+      '<summary style="cursor:pointer">🧭 新军三事 · 首次北伐请先点开（实测建议）</summary>'+
+      '<p class="dim" style="margin:6px 0">1656 局完整北伐复测：<b>约九成失利止步第 1 章</b>，'+
+      '平均只打了 <b>2.9 场</b>战斗。头两层的取舍比后五章加起来的影响还大。</p>'+
+      '<p style="margin:6px 0">① 先走 <b>篝火 / 军营 / 名医</b> 把血补回来，别一开局就贪精英与悬赏。<br>'+
+      '② 每战开打前点 <b>🎴 换牌</b>：它会<b>优先抽本局流派</b>的牌，比盲换更容易凑出标签协同。<br>'+
+      '③ 战利里带 <b>⭐ 本局流派</b> 标记的优先拿：同标签 <b>3 张初成 / 5 张成型</b>，'+
+      '比单张高稀有度更稳。胜负仍全由猜拳判定。</p>'+
+    '</details>',
     RL_ORIGINS.map(o => ({
       t:o.icon+' '+o.name+'（'+o.tagline+'）　— '+o.desc,
       run(){
@@ -10529,6 +10554,8 @@ function renderCards(){
   if(RL.flags.mulliganPicking && (G.round !== 0 || !mullLeft || G.over || busy))
     RL.flags.mulliganPicking = false;
   const picking = !!RL.flags.mulliganPicking;
+  /* P12c：换牌按钮旁直接写清「优先抽哪个流派」，纯展示、零数值 */
+  const arch = (mullLeft && RL.active) ? deckArchetype() : null;
   bar.innerHTML =
     '<div class="cbrow">'+
       '<span>⚡ 能量 <b>'+player.st.energy+'</b></span>'+
@@ -10539,7 +10566,8 @@ function renderCards(){
       '<button class="pilebtn" id="pileDiscard">🗑 弃牌堆 '+RL.discard.length+'</button>'+
       '<span class="potions" id="potionRow"></span>'+
       '<span style="flex:1"></span>'+
-      '<span class="cardtip">'+(picking ? '👉 点一张手牌换掉（不占回合）'
+      '<span class="cardtip">'+(picking ? '👉 点一张手牌换掉（不占回合）'+
+        (arch && arch.main ? ' · 优先弃无【'+arch.main+'】标签的牌，换来的优先是【'+arch.main+'】牌' : '')
         : '每两回合最多打出 1 张 · 本战最多 3 张'+
           (G.round === 0 && mullLeft ? ' · 开战前可换 1 张' : ''))+'</span>'+
     '</div>'+
@@ -10552,11 +10580,17 @@ function renderCards(){
     const d = cardDef(e);
     if(!d) return;
     const b = document.createElement('button');
+    /* P12c：换牌态把「本局流派牌」标成建议保留，引导玩家弃对牌。
+       纯 className / title，不改点击行为、不耗随机数。 */
+    const isArch = !!(arch && arch.main && d.tags && d.tags.indexOf(arch.main) >= 0);
     b.className = 'hcard t-'+d.type+' r-'+d.rar + (e.up?' upg':'') + (d.unplayable?' curse':'') +
-      (picking ? ' swap'
+      (picking ? (' swap' + (isArch ? ' keep' : ''))
         : ((d.unplayable || player.st.energy < d.cost || !canPlayCard() || busy || G.over) ? ' dis' : ''));
     b.dataset.uid = e.uid;
-    b.title = (picking ? '【换牌】点我把这张换成另一张　' : '') +
+    b.title = (picking
+      ? (isArch ? '【本局流派·'+arch.main+'】建议保留，优先换掉没有该标签的牌　'
+                : '【建议换掉】点我换一张'+(arch && arch.main ? '，优先抽【'+arch.main+'】流派牌' : '')+'　')
+      : '') +
       (e.up?'【已升级】':'') + (d.unplayable?'诅咒牌，无法打出。':'') + d.desc;
     const tagHtml = (d.tags && d.tags.length)
       ? d.tags.map(t => '<i class="htag tag-'+(TAG_SLUG[t]||'none')+'">'+t+'</i>').join('')
@@ -10585,7 +10619,8 @@ function renderCards(){
     mb.classList.toggle('on', picking);
     mb.title = !mullLeft ? '本战的换牌机会已用掉'
       : (G.round !== 0 ? '换牌只在开战前（出第一拳之前）可用'
-        : '战前换一张手牌：不占回合、不耗能、不算出牌次数，可以跳过');
+        : '战前换一张手牌：不占回合、不耗能、不算出牌次数，可以跳过'+
+          (arch && arch.main ? '；优先抽到【'+arch.main+'】流派牌' : ''));
     mb.onclick = () => {
       if(!RL.flags.mulliganLeft) return;
       RL.flags.mulliganPicking = !RL.flags.mulliganPicking;
@@ -10594,21 +10629,41 @@ function renderCards(){
   }
 }
 
-/* 🎴 战前换牌（P12 新玩法）
+/* 🎴 战前换牌（P12 新玩法 / P12c 数据驱动升级：流派优先）
    每战一次、可跳过，是《杀戮尖塔 / 小丑牌》式「弃牌重抽」的最小版本：
    · 不碰猜拳判定与结算式，不改能量、出牌次数、回合数；
    · 先抽后弃 —— 被换掉的那张不会立刻被自己抽回来；
-   · 只在玩家主动点击时消耗随机数，自动模拟 / 种子回放的流程完全不变。 */
+   · P12c：抽之前把牌堆里一张「本局主流派」的牌挪到堆顶，只调整顺序，
+     不新增随机数、不新增牌、不改任何数值。复测实测卡池 64→82 后每局
+     少拿 1.34 张牌 / 少 2.37 次超必杀，这一步用「低方差」把标签协同补回来；
+   · 只在玩家主动点击时生效，自动模拟 / 种子回放不点按钮 → 随机流零影响。 */
+function preferArchetypeCard(){
+  try{
+    const a = deckArchetype();
+    if(!a.main || !RL.drawPile || !RL.drawPile.length) return null;
+    const idx = RL.drawPile.findIndex(e => {
+      const d = cardDef(e);
+      return d && d.tags && d.tags.indexOf(a.main) >= 0;
+    });
+    if(idx < 0) return null;
+    const hit = RL.drawPile.splice(idx, 1)[0];
+    RL.drawPile.push(hit);          /* drawCards 用 pop()，末尾即下一张 */
+    return a.main;
+  }catch(e){ return null; }
+}
 function swapHandCard(uid){
   if(!RL.active || !RL.flags.mulliganLeft || !RL.hand.length || G.round !== 0 || G.over) return;
   const i = RL.hand.findIndex(e => String(e.uid) === String(uid));
   if(i < 0) return;
   const e = RL.hand.splice(i, 1)[0];
+  const tag = preferArchetypeCard();
   drawCards(1);
   RL.discard.push(e);
   RL.flags.mulliganLeft = 0;
   RL.flags.mulliganPicking = false;
-  log('🎴 战前换牌：弃掉【'+cardName(e)+'】，另抽一张（不占回合、不耗能、不算出牌次数）','gold');
+  log('🎴 战前换牌：弃掉【'+cardName(e)+'】，另抽一张'+
+      (tag ? '（优先抽【'+tag+'】流派牌）' : '（牌堆里暂无本局流派牌）')+
+      '（不占回合、不耗能、不算出牌次数）','gold');
   renderCards();
   saveRoguelike();
 }
@@ -10627,10 +10682,17 @@ function showPile(which){
 function openCardReward(node){
   const pool = randomCards(3, node && node.route === 'scheme' ? 'elite' : (node ? node.type : 'battle'));
   if(!pool.length) return;
-  const opts = pool.map(c => ({
-    t: c.icon+' '+c.name+'（'+c.cost+' 费 · '+RARITY_NAME[c.rar]+'）— '+c.desc,
-    run(){ RL.pendingReward = null; addCardToDeck(c.id); saveRoguelike(); }
-  }));
+  /* P12c：82 张卡池里给「本局流派」一个看得见的标记。
+     纯文本标注，不改抽样、不耗随机数，只帮玩家做协同决策。 */
+  const arch = deckArchetype();
+  const opts = pool.map(c => {
+    const tg = (c.tags && c.tags.length) ? c.tags[0] : null;
+    const mark = tg ? (arch.main === tg ? '⭐ 本局流派·'+tg+'｜' : '◈ 可开流派·'+tg+'｜') : '';
+    return {
+      t: mark + c.icon+' '+c.name+'（'+c.cost+' 费 · '+RARITY_NAME[c.rar]+'）— '+c.desc,
+      run(){ RL.pendingReward = null; addCardToDeck(c.id); saveRoguelike(); }
+    };
+  });
   opts.push({t:'💰 放弃卡牌，领取 16 金', run(){
     RL.pendingReward = null;
     RL.gold += 16;
@@ -10647,7 +10709,8 @@ function openCardReward(node){
       return false;
     }});
   }
-  showModal('🃏 战利 · 军略牌','择一收入卡组，壮大你的牌库：', opts);
+  showModal('🃏 战利 · 军略牌',
+    '择一收入卡组，壮大你的牌库：<span class="dim">⭐ 本局流派契合 · ◈ 可另开一门流派</span>', opts);
 }
 
 function openRelicReward(node){
@@ -12429,13 +12492,19 @@ function openShop(node){
   const sideHtml = sideTale('shop');
   function render(){
     const opts = [];
-    goods.cards.forEach((c,i) => opts.push({
-      t:'📜 '+c.icon+' '+c.name+'（'+c.cost+' 费·'+RARITY_NAME[c.rar]+'）　'+shopPrice(c)+' 金　— '+c.desc,
-      run(){
-        if(RL.gold < shopPrice(c)){ log('金币不足，买不起这张牌','bad'); return false; }
-        RL.gold -= shopPrice(c); addCardToDeck(c.id); goods.cards.splice(i,1); render(); return false;
-      }
-    }));
+    /* P12c：买牌时同样标出本局流派（每次重绘重算，买牌后流派可能已变） */
+    const arch = deckArchetype();
+    goods.cards.forEach((c,i) => {
+      const tg = (c.tags && c.tags.length) ? c.tags[0] : null;
+      const mark = tg ? (arch.main === tg ? '⭐' : '◈') : '';
+      opts.push({
+        t:'📜 '+mark+c.icon+' '+c.name+'（'+c.cost+' 费·'+RARITY_NAME[c.rar]+'）　'+shopPrice(c)+' 金　— '+c.desc,
+        run(){
+          if(RL.gold < shopPrice(c)){ log('金币不足，买不起这张牌','bad'); return false; }
+          RL.gold -= shopPrice(c); addCardToDeck(c.id); goods.cards.splice(i,1); render(); return false;
+        }
+      });
+    });
     goods.potions.forEach((p,i) => opts.push({
       t:'🧪 '+p.icon+' '+p.name+'　'+p.price+' 金　— '+p.desc,
       run(){
@@ -13635,7 +13704,7 @@ function codexHtml(tab){
     <h4>🃏 军略牌（卡组构筑 · 杀戮尖塔式）</h4>
      <p>北伐模式下你拥有一副 <b>卡组</b>（起始 10 张）。每回合开始：<b>重置格挡与能量（默认 3 点）</b>，<b>抽 5 张牌</b>。每两回合在出拳之前最多打出<b> 1 张</b>军略牌，每场最多<b> 3 张</b>，然后猜拳结束本回合，胜负仍由石头剪刀布决定。</p>
      <p>回合结束时：本回合增益失效、手牌弃置、抽牌堆不足时自动洗回弃牌堆。</p>
-    <p><b>🎴 战前换牌</b>：每场战斗开打前，可点「🎴 换牌」再点一张手牌，弃掉它另抽一张；<b>每战 1 次、可跳过</b>，不占回合、不耗能、不算出牌次数。被换掉的牌会等你抽完才进弃牌堆，不会立刻抽回同一张。<b>🎴 卡组流派</b>：牌分火 / 毒 / 守 / 势 / 粮五类标签，每战同标签第 2 张触发一次轻协同；地图页会统计各标签张数并提示本局流派（3 张初成 / 5 张成型 / 6 张大成），<b>纯提示、不加数值</b>。</p>
+    <p><b>🎴 战前换牌</b>：每场战斗开打前，可点「🎴 换牌」再点一张手牌，弃掉它另抽一张；<b>每战 1 次、可跳过</b>，不占回合、不耗能、不算出牌次数。被换掉的牌会等你抽完才进弃牌堆，不会立刻抽回同一张。<b>换牌会优先抽本局流派的牌</b>：只调整抽牌堆顺序，不新增牌、不耗随机数、不改数值，用来在 82 张卡池里把标签凑起来。<b>🎴 卡组流派</b>：牌分火 / 毒 / 守 / 势 / 粮五类标签，每战同标签第 2 张触发一次轻协同；地图页会统计各标签张数并提示本局流派（3 张初成 / 5 张成型 / 6 张大成），<b>纯提示、不加数值</b>。</p>
     <p><b>🛡 格挡</b>：卡牌获得的格挡会优先抵挡你受到的伤害，<b>格挡每回合开始时清零</b>（所以要在出招前铺好盾）。中毒与灼烧无视格挡。</p>
     <p><b>构筑循环</b>：战斗胜利 → 三选一添牌 → 篝火升级卡牌 → 商店删牌 / 买牌 → 卡组越来越精简、越来越强。</p>
     <h4>🎲 押注（诡道）</h4>
@@ -13741,7 +13810,8 @@ function codexHtml(tab){
     }));
     out += '<p>地图页「🎴 本局流派」实时统计卡组里各标签的张数：同标签 <b>3 张初成 / 5 张成型 / 6 张大成</b>，'+
       '只作构筑提示，<b>不附加任何战斗数值</b>。每场战斗开打前还可 <b>🎴 换牌 1 次</b>（可跳过）：'+
-      '弃掉一张手牌另抽一张，不占回合、不耗能、不算出牌次数，用来化解卡手 —— 胜负仍全由猜拳判定。</p>';
+      '弃掉一张手牌另抽一张，不占回合、不耗能、不算出牌次数，用来化解卡手；<b>优先抽本局流派的牌</b>，'+
+      '战利与商店里的 <b>⭐ / ◈</b> 是同一套提示 —— 胜负仍全由猜拳判定。</p>';
     out += '<p><b>节奏限制：</b>军略牌每两回合最多使用一张、每场最多三张；胜负与主要伤害仍由石头、剪刀、布的判断结果决定。</p>';
     return out;
   }
@@ -14448,6 +14518,7 @@ globalThis.__api = {
   /* P12 内容 / 新玩法的可测入口 */
   heroStyle, heroLore, HERO_STYLE_INFO, HERO_LORE, CARD_TAGS, TAG_SLUG,
   deckTagStats, deckArchetype, archetypeHtml, ARCHETYPE_INFO, swapHandCard, renderCards,
+  preferArchetypeCard,
   getItems: () => items, getJN: () => JN, getNODE_INFO: () => NODE_INFO,
   getBATTLE_VARIANTS: () => BATTLE_VARIANTS, getRL_EVENTS: () => RL_EVENTS,
   getENEMY_AFFIXES: () => ENEMY_AFFIXES, getAFFIX_BY_ID: () => AFFIX_BY_ID,
