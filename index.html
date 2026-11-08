@@ -1141,7 +1141,7 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
 </div>
 
 <script>
-/* ==================== 数据：38 名武将 ====================
+/* ==================== 数据：46 名武将 ====================
    atk 攻击 / hp 生命 / def 防御(百分比)
    技能钩子（可选，签名以真实代码为准）：
      beforeAttack(self, foe, C)  攻击前修正 C={mult,bonus,ignoreDef,critAdd,extraCrit,postTrue,strikes,totalDmg}
@@ -1388,7 +1388,7 @@ const CHARS = [
 
   /* ---------- P12 新增 8 将（2026-11-08）：招牌打法可读、只复用既有 hooks / ult 字段 ---------- */
   {id:'caoren', camp:'wei', name:'曹仁', title:'天人将军', atk:10, hp:28, def:15,
-   skill:{name:'坚壁', desc:'生命低于 60% 时防御额外 +10%；每次平局获得 2 点格挡（累计最多 6 点）。'},
+   skill:{name:'坚壁', desc:'生命低于 60% 时防御额外 +10%；每次平局获得 2 点格挡（最多保有 6 点）。'},
    ult:{name:'固守樊城', desc:'回复 10 点生命，并使对方 2 回合无法获得蓄力。', heal:10, noCharge:2},
    hooks:{
      defMod(f){ return f.hp < f.maxHp*0.6 ? 10 : 0; },
@@ -5709,7 +5709,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261108b';
+const BUILD_ID = '20261108c';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
