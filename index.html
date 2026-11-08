@@ -579,6 +579,51 @@
   .rar-boss { color:#e0a0ff; }
   .cardtip { font-size:12px; color:#6f6455; letter-spacing:1px; }
 
+  /* ---------- P12 卡牌视觉分层：类型色带 / 稀有度角标 / 标签徽章 ---------- */
+  .hcard.t-atk { border-left:3px solid #e08a6a; }
+  .hcard.t-def { border-left:3px solid #7fb0e8; }
+  .hcard.t-tech { border-left:3px solid #e0c060; }
+  .hcard.t-curse { border-left:3px solid #a2463b; }
+  .hcard .hrar { position:absolute; top:5px; right:6px; font-size:9.5px; letter-spacing:.5px; opacity:.8; }
+  .hcard .ht { position:absolute; right:6px; bottom:4px; font-size:10px; color:#6f6455;
+    display:flex; gap:3px; align-items:center; }
+  .htag { font-style:normal; font-size:9.5px; line-height:1.35; padding:0 4px;
+    border-radius:4px; border:1px solid currentColor; opacity:.92; }
+  .tag-fire{color:#e8a06a} .tag-poison{color:#9ad07a} .tag-guard{color:#7fb0e8}
+  .tag-momentum{color:#e0c060} .tag-food{color:#8fd48a} .tag-none{color:#6f6455}
+  .hcard.swap { outline:2px dashed #d8b45a; outline-offset:2px; opacity:1; cursor:pointer; }
+  .pilebtn.on { background:#5a4720; border-color:var(--gold); color:#ffe9b0; }
+  .pilebtn:disabled { opacity:.45; }
+
+  /* ---------- P12 选将筛选 / 风格 / 列传 ---------- */
+  .herofilter { background:#181310; border:1px solid var(--line); border-radius:10px;
+    padding:9px 11px; margin:0 0 10px; }
+  .hfrow { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+  .hfrow:last-child { margin-bottom:0; }
+  .hflabel { font-size:11.5px; color:var(--dim); letter-spacing:1px; margin-right:2px; }
+  .hfbtn { padding:3px 10px; font-size:11.5px; border-radius:12px; }
+  .hfbtn.active { background:#5a4720; border-color:var(--gold); color:#ffe9b0; }
+  .hfsearch { flex:1 1 190px; min-width:150px; padding:5px 9px; font-size:12.5px;
+    background:#100d0a; border:1px solid var(--line); border-radius:8px;
+    color:var(--text); font-family:inherit; }
+  .hfcount { font-size:11.5px; color:var(--dim); white-space:nowrap; }
+  .hfempty { color:var(--dim); font-size:13px; padding:16px; text-align:center; }
+  .card .csty { margin:5px 0 3px; }
+  .card .cstyle { font-size:10.5px; padding:1px 6px; border-radius:999px;
+    border:1px solid currentColor; white-space:nowrap; }
+  .st-atk{color:#e08a6a} .st-def{color:#7fb0e8} .st-trick{color:#c88ae0} .st-bal{color:#9b8f7c}
+  .card .clore { margin-top:5px; padding-top:5px; border-top:1px dashed rgba(216,180,90,.18);
+    font-size:11px; line-height:1.5; color:#8b7f6c; }
+  .cxstyle { font-size:10.5px; padding:0 5px; border-radius:999px;
+    border:1px solid currentColor; margin-left:4px; }
+
+  /* ---------- P12 卡组流派 ---------- */
+  .rlarche .rlstate { color:#d8c9a8; }
+  .rlarche b { color:#e8c877; }
+  .archebar { display:inline-flex; gap:2px; vertical-align:middle; margin-left:6px; }
+  .archebar i { width:8px; height:8px; border-radius:2px; background:#3b3327; display:inline-block; }
+  .archebar i.on { background:#d8b45a; }
+
   /* ---------- 药水 ---------- */
   .potions { display:flex; gap:7px; align-items:center; }
   .potion { width:32px; height:32px; border-radius:50%; border:1px solid var(--gold-dim);
@@ -913,9 +958,11 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <b>🏆 擂台·无尽：</b>单将守擂，<b>每胜一场恢复 30% 生命、攻击 +1 并随机补一枚锦囊</b>；每 <b>5 连胜</b> 额外三选一领取遗物或锦囊。下一位擂主血量 +8%、攻击与防御随连胜提升，<b>战败即止</b>，冲击最高连胜纪录。<br>
       <b>🧭 北伐 Roguelike：</b>选 1 将踏上随机分支地图，须<b>连破六章</b>（每章重铺一张 10-14 层的地图、斩一位守关敌将），节点含战斗、精英、敌寨、悬赏、篝火、军营、烽火台、名医、酒馆、废墟、宝藏、行商、奇遇、祭坛、演武、铸造；每局还会随机 roll 1~2 条<b>天时（全局修饰）</b>，战斗另有<b>雾战、伏击、决斗、粮道、天时、夜战、攻城、车轮、谍战、决死、天灾、旱战、狂风、雨战、灰野、挟民、斗将、壕沟、死士、征粮</b>等二十种变体，敌将更会随机携带<b>词条</b>。第 2 层起奇遇会刷出<b>按章分组的剧情奇遇</b>，且每章地图都<b>钉死一个「本章剧情」节点</b>。开局先演<b>🏮 序章（起兵之本三选一）→ 方针 → 章首过场与军议三选一</b>，点 Boss 前还有<b>🥁 阵前搦战</b>；每场战斗开打前可<b>🚩 临阵布阵</b>（十阵随机三选一，也可跳过，阵法只在本战生效）；打完一局由史官给出一条<b>🏛 结局</b>（条目与达成条件见图鉴「🏛 结局史册」页）；仗若打成「谁也打不动谁」的死局，第 15 回合起会有<b>⏳ 久战疲惫</b>逼它收场；只有在最后一章诛杀鬼神·吕布才算功成，阵亡即止。<br>
        <b>🃏 军略牌（卡组构筑）：</b>北伐中你自带一副 10 张卡组 —— 每回合 3 点能量、抽 5 张，每两回合出拳前最多打出 1 张、每场最多 3 张（伤害 / 格挡 / 增益 / 读招），战斗胜利可三选一添牌，篝火升级、商店删牌买牌，猜拳仍是胜负核心。<br>
+      <b>🎴 战前换牌 · 卡组流派：</b>每场开打前可弃 1 张手牌另抽 1 张（每战一次、可跳过，不占回合 / 能量 / 出牌次数）；牌带 <b>火 / 毒 / 守 / 势 / 粮</b> 标签，每战同标签第 2 张触发轻协同，地图页「🎴 本局流派」实时提示你这局在凑什么 —— 只作引导，不加数值。<br>
+      <b>🎴 武将风格：</b>每将标注 <b>强攻 / 固守 / 诡变 / 均衡</b> 四类招牌打法并附一段史官列传；选将页可按阵营、打法或关键词筛选。<br>
       <b>💎 遗物装备：</b>共 <span id="relicCountTxt">41</span> 件（普通 / 稀有 / 史诗 / 神器四档），获得即永久生效。<b>🧪 药水：</b>3 格随身，随时饮用。<br>
-      <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
-      <b>平衡：</b>38 名武将经数万局模拟校准，技能越强、基础属性越低。
+      <b>📖 图鉴百科：</b>点下方「图鉴百科」可查阅全部武将技能与列传、军略牌、遗物、锦囊、结界、天命、药水、天时、状态与经济说明。<br>
+      <b>平衡：</b>46 名武将经数万局模拟校准，技能越强、基础属性越低；本轮新增内容全部沿用既有结算通道，不动猜拳判定。
       </div>
     </details>
 
@@ -931,6 +978,27 @@ body.x-runlose::after{ content:''; position:fixed; inset:0; z-index:9998; pointe
       <button id="btnCodex">📖 图鉴百科</button>
       <button id="btnRandom">🎲 随机</button>
       <button id="btnStart" class="primary" disabled>⚔ 开始战斗</button>
+    </div>
+
+    <div class="herofilter" id="heroFilter">
+      <div class="hfrow">
+        <span class="hflabel">阵营</span>
+        <button class="hfbtn active" data-camp="all">全部</button>
+        <button class="hfbtn" data-camp="wei">魏</button>
+        <button class="hfbtn" data-camp="shu">蜀</button>
+        <button class="hfbtn" data-camp="wu">吴</button>
+        <button class="hfbtn" data-camp="qun">群</button>
+        <span class="hflabel" style="margin-left:8px">打法</span>
+        <button class="hfbtn active" data-style="all">全部</button>
+        <button class="hfbtn" data-style="强攻">⚔ 强攻</button>
+        <button class="hfbtn" data-style="固守">🛡 固守</button>
+        <button class="hfbtn" data-style="诡变">🌀 诡变</button>
+        <button class="hfbtn" data-style="均衡">⚖ 均衡</button>
+      </div>
+      <div class="hfrow">
+        <input id="heroSearch" class="hfsearch" type="search" placeholder="🔍 搜武将 / 称号 / 技能 / 列传" autocomplete="off">
+        <span class="hfcount" id="heroCount"></span>
+      </div>
     </div>
 
     <div id="grid" class="grid"></div>
@@ -1316,7 +1384,72 @@ const CHARS = [
    hooks:{
      beforeAttack(f,foe,C){ if(Math.random()<0.4){ C.mult*=1.5; log('【乱武】贾诩一言乱武，伤害×1.5','gold'); } },
      afterAttack(f,foe,C){ if(f.alive){ log('☠ 【乱武】毒计反噬，'+f.name+' 自损 1 点生命','bad'); dealDamage(f,1,f); } }
-   }}
+   }},
+
+  /* ---------- P12 新增 8 将（2026-11-08）：招牌打法可读、只复用既有 hooks / ult 字段 ---------- */
+  {id:'caoren', camp:'wei', name:'曹仁', title:'天人将军', atk:10, hp:30, def:17,
+   skill:{name:'坚壁', desc:'生命低于 60% 时防御额外 +18%；每次平局额外获得 3 点格挡。'},
+   ult:{name:'固守樊城', desc:'回复 12 点生命，并使对方 3 回合无法获得蓄力。', heal:12, noCharge:3},
+   hooks:{
+     defMod(f){ return f.hp < f.maxHp*0.6 ? 18 : 0; },
+     onDraw(f){ f.st.block = (f.st.block||0) + 3; }
+   }},
+
+  {id:'xunyu', camp:'wei', name:'荀彧', title:'王佐之才', atk:10, hp:24, def:14,
+   skill:{name:'举贤', desc:'平局时额外蓄力 +20（共 +45），并回复 2 点生命。'},
+   ult:{name:'驱虎吞狼', desc:'对方 3 回合受伤 +40%，并清空其蓄力。', vuln:{mult:1.4, turns:3}, drain:true},
+   hooks:{
+     onCharge(){ return 45; },
+     onDraw(f){ heal(f,2); }
+   }},
+
+  {id:'fazheng', camp:'shu', name:'法正', title:'蜀中奇谋', atk:11, hp:24, def:12,
+   skill:{name:'奇谋', desc:'对方蓄力每满 20%，本次伤害 +8%（最多 +32%）；专克攒势之人。'},
+   ult:{name:'定军斩将', desc:'造成 170% 伤害，强制暴击并清空对方蓄力。', strike:{mult:1.7, crit:true}, drain:true},
+   hooks:{ beforeAttack(f,foe,C){
+     const b = Math.min(4, Math.floor((foe.charge||0)/20)) * 0.08;
+     if(b > 0){ C.mult *= 1+b; log('【奇谋】法正窥破蓄势，伤害+'+Math.round(b*100)+'%','gold'); }
+   }}},
+
+  {id:'masu', camp:'shu', name:'马谡', title:'街亭之失', atk:12, hp:23, def:10,
+   skill:{name:'居高临下', desc:'对方生命高于 70% 时伤害 +25%；对方生命低于 30% 时伤害 −10%（先声夺人，后力不继）。'},
+   ult:{name:'街亭一掷', desc:'造成 220% 伤害，但自损 3 点生命。', strike:{mult:2.2}, selfDmg:3},
+   hooks:{ beforeAttack(f,foe,C){
+     const p = foe.hp / Math.max(1, foe.maxHp);
+     if(p > 0.7){ C.mult *= 1.25; log('【居高临下】马谡据山而下，伤害+25%','gold'); }
+     else if(p < 0.3) C.mult *= 0.9;
+   }}},
+
+  {id:'huanggai', camp:'wu', name:'黄盖', title:'苦肉老将', atk:13, hp:28, def:9,
+   skill:{name:'苦肉', desc:'每次攻击追加 3 点无视防御的伤害，但每回合结束自损 1 点生命。'},
+   ult:{name:'诈降火船', desc:'造成 130% 伤害，并使对方灼烧 4 回合（每回合 3 点）。', strike:{mult:1.3}, burn:{turns:4, dmg:3}},
+   hooks:{
+     beforeAttack(f,foe,C){ C.postTrue = (C.postTrue||0) + 3; },
+     roundEnd(f){ if(f.alive){ log('【苦肉】黄盖旧创迸裂，自损 1 点生命','bad'); dealDamage(f,1,f); } }
+   }},
+
+  {id:'zhoutai', camp:'wu', name:'周泰', title:'身披数创', atk:11, hp:29, def:12,
+   skill:{name:'不屈', desc:'生命低于 50% 时防御额外 +22%；生命低于 30% 时每次挨打后回复 2 点。'},
+   ult:{name:'护主血战', desc:'回复 12 点生命，并完全闪避下次攻击。', heal:12, evade:true},
+   hooks:{
+     defMod(f){ return f.hp < f.maxHp*0.5 ? 22 : 0; },
+     onDamaged(f){ if(f.alive && f.hp < f.maxHp*0.3) heal(f,2); }
+   }},
+
+  {id:'zhangjiao', camp:'qun', name:'张角', title:'天公将军', atk:10, hp:25, def:13,
+   skill:{name:'太平道', desc:'攻击命中后使对方灼烧 2 回合（每回合 2 点，无视格挡）。'},
+   ult:{name:'苍天已死', desc:'对方灼烧 5 回合（每回合 3 点），且 3 回合内受伤 +20%。', burn:{turns:5, dmg:3}, vuln:{mult:1.2, turns:3}},
+   hooks:{ afterAttack(f,foe,C){
+     if(foe.alive){ applyBurn(foe, 2, 2, f); log('【太平道】符火附身，'+foe.name+' 灼烧 2 回合（每回合 2 点）','bad'); }
+   }}},
+
+  {id:'gaoshun', camp:'qun', name:'高顺', title:'陷阵营', atk:13, hp:25, def:10,
+   skill:{name:'陷阵', desc:'每第 3 次攻击无视对方防御，并额外 +4 伤害。'},
+   ult:{name:'破阵先登', desc:'连续攻击 3 次，每次 75% 伤害。', multi:{count:3, ratio:0.75}},
+   hooks:{ beforeAttack(f,foe,C){
+     f.st.atkCount = (f.st.atkCount||0) + 1;
+     if(f.st.atkCount % 3 === 0){ C.ignoreDef=true; C.bonus+=4; log('【陷阵】高顺先登破垒，这一击穿防且 +4','gold'); }
+   }}}
 ];
 
 /* ==================== 敌将战法（普通敌将差异化） ====================
@@ -1343,7 +1476,9 @@ const FOE_ARCH = {
   luxun:'scheme', pangtong:'scheme', huangyueying:'scheme', jiaxu:'scheme',
   jiangwei:'scheme', zhanghe:'scheme',
   zhaoyun:'skirmish', gongsunzan:'skirmish', zhangliao:'skirmish',
-  lvmeng:'skirmish', xuhuang:'skirmish', yuanshao:'skirmish'
+  lvmeng:'skirmish', xuhuang:'skirmish', yuanshao:'skirmish',
+  caoren:'guard', xunyu:'scheme', fazheng:'scheme', masu:'scheme',
+  huanggai:'assault', zhoutai:'guard', zhangjiao:'scheme', gaoshun:'assault'
 };
 function foeArchOf(f){ return f && f.ch ? FOE_ARCH[f.ch.id] || null : null; }
 function applyFoeArchetype(f){
@@ -5395,6 +5530,46 @@ const CARDS = [
   {id:'breakthrough', name:'破阵', icon:'🪓', cost:2, rar:'epic', type:'atk',
    desc:'造成 10 点伤害（无视防御，可被格挡），本回合攻击伤害 ×1.4，自身承受 3 点反噬',
    fx:{damage:10, dmgMult:1.4, selfDamage:3}, upg:{damage:14, dmgMult:1.6, selfDamage:2}},
+  /* ---- P12 牌池扩容（2026-11-08）：18 张同梯度侧向牌 ----
+     一律不手写 desc，交给 fxDesc 从 fx/upg 自动生成，文案数字与代码永远一致；
+     只复用既有 fx 字段，不新增解释器分支；稀有度配比与旧池一致（普通为主）。 */
+  {id:'beacon', name:'烽火', icon:'🔺', cost:0, rar:'common', type:'atk',
+   fx:{damage:2, rage:12}, upg:{damage:4, rage:18}},
+  {id:'triple', name:'三叠阵', icon:'⚔', cost:1, rar:'rare', type:'atk',
+   fx:{damage:2, hits:3}, upg:{damage:3, hits:3}},
+  {id:'sacrifice', name:'死士', icon:'🗡', cost:1, rar:'rare', type:'atk',
+   fx:{damage:12, selfDamage:4}, upg:{damage:16, selfDamage:4}},
+  {id:'flank', name:'侧击', icon:'🏹', cost:1, rar:'common', type:'atk',
+   fx:{damage:6, draw:1}, upg:{damage:8, draw:1}},
+  {id:'ember', name:'余烬', icon:'🔥', cost:0, rar:'common', type:'atk',
+   fx:{damage:2, burn:{turns:2, dmg:1}}, upg:{damage:3, burn:{turns:3, dmg:1}}},
+  {id:'sting', name:'蜂刺', icon:'🦂', cost:1, rar:'common', type:'atk',
+   fx:{damage:4, poison:2}, upg:{damage:6, poison:3}},
+  {id:'decapitate', name:'断旗', icon:'🚩', cost:2, rar:'epic', type:'atk',
+   fx:{damage:8, execute:{below:0.3, dmg:18}}, upg:{damage:11, execute:{below:0.35, dmg:24}}},
+  {id:'shieldline', name:'盾墙', icon:'🛡', cost:1, rar:'common', type:'def',
+   fx:{block:9, draw:1}, upg:{block:12, draw:1}},
+  {id:'bracers', name:'裹甲', icon:'🥋', cost:0, rar:'common', type:'def',
+   fx:{block:4, thorns:2}, upg:{block:6, thorns:3}},
+  {id:'coolhead', name:'定心', icon:'🪷', cost:0, rar:'common', type:'def',
+   fx:{cleanse:true}, upg:{cleanse:true, heal:3}},
+  {id:'laststand', name:'死守', icon:'🏰', cost:2, rar:'rare', type:'def',
+   fx:{block:13, reduce:0.3}, upg:{block:18, reduce:0.35}},
+  {id:'fieldkit', name:'行军药', icon:'⚕', cost:1, rar:'common', type:'def',
+   fx:{heal:4, block:6}, upg:{heal:6, block:8}},
+  {id:'scout', name:'斥候', icon:'🕵', cost:0, rar:'common', type:'tech',
+   fx:{peek:true, rage:12}, upg:{peek:true, rage:20}},
+  {id:'warplan', name:'庙算', icon:'📜', cost:1, rar:'rare', type:'tech',
+   fx:{draw:2, critAdd:0.15}, upg:{draw:2, critAdd:0.25}},
+  {id:'forage', name:'就粮', icon:'🌾', cost:0, rar:'common', type:'tech',
+   fx:{draw:1, charge:10}, upg:{draw:1, charge:20}},
+  {id:'ambush', name:'设伏', icon:'🪤', cost:1, rar:'rare', type:'tech',
+   fx:{dodge:0.2, vuln:{mult:1.15, turns:2}}, upg:{dodge:0.3, vuln:{mult:1.2, turns:2}}},
+  {id:'warchest', name:'赏格', icon:'💰', cost:0, rar:'common', type:'tech',
+   fx:{rage:20, block:4}, upg:{rage:30, block:6}},
+  {id:'siege', name:'攻城', icon:'🏯', cost:2, rar:'epic', type:'tech',
+   fx:{damage:6, ignoreDef:true, dmgMult:1.3, selfDamage:2},
+   upg:{damage:9, ignoreDef:true, dmgMult:1.4, selfDamage:2}},
   /* ---- 诅咒牌：不可打出，只在冒险里被塞进卡组；商店/铁匠/奇遇可删 ---- */
   {id:'c_wound', name:'伤口', icon:'🩸', cost:0, rar:'curse', type:'curse',
    desc:'无法打出。抽到只是占一张手牌。', fx:{}, unplayable:true},
@@ -5412,12 +5587,14 @@ CARDS.forEach(c => {
 });
 /* 卡牌标签：只做轻协同，不新增出拳机制。每战同一标签第 2 张触发一次。 */
 const CARD_TAGS = {
-  '火':['fire','firearrow','firestorm'],
-  '毒':['venom','venomblade'],
-  '守':['guard','ironwall','fortify','bulwark','entrench','phalanx','spearwall','ironformation','counter','counterstrike','sidestep','smokescreen'],
-  '势':['momentum','bloodoath','countercharge','energize','supplyline','warcry'],
-  '粮':['bandage','ration','meditate','purify','fieldmedic']
+  '火':['fire','firearrow','firestorm','ember'],
+  '毒':['venom','venomblade','sting'],
+  '守':['guard','ironwall','fortify','bulwark','entrench','phalanx','spearwall','ironformation','counter','counterstrike','sidestep','smokescreen','shieldline','bracers','laststand'],
+  '势':['momentum','bloodoath','countercharge','energize','supplyline','warcry','scout','warplan','warchest'],
+  '粮':['bandage','ration','meditate','purify','fieldmedic','coolhead','fieldkit','forage']
 };
+/* 标签 → ASCII 类名（CSS 标识符不用中文，避免各浏览器解析差异） */
+const TAG_SLUG = {'火':'fire', '毒':'poison', '守':'guard', '势':'momentum', '粮':'food'};
 CARDS.forEach(c => {
   if(c.type === 'curse') return;
   Object.keys(CARD_TAGS).forEach(tag => {
@@ -5441,6 +5618,52 @@ function applyTagBonus(tag){
   else if(tag === '守'){ player.st.block += 3; log('🛡 守势连成：获得 3 点格挡','gold'); }
   else if(tag === '势' && player.charge < chargeCap(player)){ player.charge = Math.min(chargeCap(player), player.charge + 10); log('⚡ 势势相续：蓄力 +10%','gold'); }
   else if(tag === '粮'){ RL.gold += 10; log('🌾 粮道接济：获得 10 金','gold'); }
+}
+
+/* ==================== P12 卡组流派雷达（纯信息层，零数值） ====================
+   只统计标签、给一句构筑方向，不改任何战斗数值。
+   呼应杀戮尖塔 / 小丑牌：让「这一局我在凑什么」在地图页一直看得见。 */
+const ARCHETYPE_INFO = {
+  '火':{icon:'🔥', name:'燎原', desc:'灼烧层层叠上去，拖越久越疼'},
+  '毒':{icon:'☠',  name:'鸩羽', desc:'毒层滚雪球，专克血厚的守将'},
+  '守':{icon:'🛡', name:'坚壁', desc:'格挡与减伤，把回合拖成自己的'},
+  '势':{icon:'⚡', name:'蓄锐', desc:'攒蓄力与怒气，一波超必杀收场'},
+  '粮':{icon:'🌾', name:'屯田', desc:'回复与续航，靠补给磨穿六章'}
+};
+function deckTagStats(){
+  const stat = {};
+  Object.keys(CARD_TAGS).forEach(t => { stat[t] = 0; });
+  (RL.deck || []).forEach(e => {
+    const d = cardDef(e);
+    if(d && d.tags) d.tags.forEach(t => { if(t in stat) stat[t]++; });
+  });
+  return stat;
+}
+function deckArchetype(){
+  const stat = deckTagStats();
+  let main = null;
+  Object.keys(stat).forEach(t => { if(main === null || stat[t] > stat[main]) main = t; });
+  return {stat, main, count: main ? stat[main] : 0};
+}
+function archetypeBar(n){
+  let s = '<span class="archebar" title="同标签 3 张初成 · 5 张成型 · 6 张大成">';
+  for(let i = 1; i <= 6; i++) s += '<i class="'+(i <= n ? 'on' : '')+'"></i>';
+  return s + '</span>';
+}
+function archetypeHtml(){
+  if(!RL.active) return '';
+  const a = deckArchetype();
+  const parts = Object.keys(a.stat).filter(t => a.stat[t] > 0)
+    .sort((x,y) => a.stat[y] - a.stat[x])
+    .map(t => ARCHETYPE_INFO[t].icon + ' ' + t + ' ' + a.stat[t]).join('　');
+  if(a.count >= 3){
+    const info = ARCHETYPE_INFO[a.main];
+    const tier = a.count >= 6 ? '大成' : a.count >= 5 ? '成型' : '初成';
+    return '🎴 本局流派：<b>'+info.icon+' '+info.name+'·'+tier+'</b>（'+a.main+' '+a.count+' 张）'+
+      archetypeBar(a.count)+' — '+info.desc+'　<span class="dim">'+parts+'</span>';
+  }
+  return '🎴 卡组流派：<b>尚未成型</b>'+archetypeBar(a.count)+'　<span class="dim">'+
+    (parts || '尚无带标签的牌')+'</span>　再添 <b>'+(3 - a.count)+'</b> 张同标签牌即可立起一门流派';
 }
 
 /* 起始卡组（10 张） */
@@ -5483,7 +5706,7 @@ const G = { round: 0, over: true, mode: 'duel', result: null,
             arenaRelics: [], arenaRewardPending: false };
 /* 全局伤害节奏系数：调小 → 单次伤害更低、回合更多（当前约 8~10 回合） */
 const DMG_RATE = 0.6;
-const BUILD_ID = '20261105a';
+const BUILD_ID = '20261108a';
 
 const PREFS_KEY = 'sanguo_rps_prefs_v1';
 let savedPrefs = {};
@@ -9151,7 +9374,31 @@ const FOE_HABITS = {
     broke:'你两次在他守约时占了先手，鲁肃苦笑一声，不再一味守盟。'},
   jiaxu:{id:'jiaxu', name:'下毒', when:'afterLoss', move:1, p:0.64,
     tell:'贾诩失手后最爱下毒：下一合常出✌剪刀，专在你以为他要收手时递过来。',
-    broke:'你两次没接他的毒手，贾诩眯起眼，又换了一副心思。'}
+    broke:'你两次没接他的毒手，贾诩眯起眼，又换了一副心思。'},
+  caoren:{id:'caoren', name:'闭门', when:'low', move:0, p:0.64,
+    tell:'曹仁血薄时只做一件事：✊石头堵门。城在人在，他不肯给你半点空隙。',
+    broke:'你两次砸开他的门板，曹仁终于把盾从城头挪开了。'},
+  xunyu:{id:'xunyu', name:'持重', when:'afterDraw', move:2, p:0.62,
+    tell:'荀彧相持之后必先站稳：下一合常出✋布，把粮道与后手一并摆平。',
+    broke:'你两次在他摆盘时抢了先，荀彧收了竹简，另换一策。'},
+  fazheng:{id:'fazheng', name:'窥势', when:'charge', move:1, p:0.64,
+    tell:'法正蓄力满四成便要拆你的势：下一合常出✌剪刀，专剪攒起来的那一手。',
+    broke:'你两次没让他剪着，法正抚掌一笑，改了题目。'},
+  masu:{id:'masu', name:'据山', when:'high', move:0, p:0.64,
+    tell:'马谡满血时自信得过分：一律✊石头自上压下来，舍不得走平地。',
+    broke:'你两次把他从山上请下来，马谡收了舆图，不再只认高处。'},
+  huanggai:{id:'huanggai', name:'先燃', when:'first', move:1, p:0.66,
+    tell:'黄盖开局便点火船：前两合常出✌剪刀，老将要把这一仗先烧起来。',
+    broke:'你两次浇灭他的头一把火，黄盖哼了一声，把火种收进袖里。'},
+  zhoutai:{id:'zhoutai', name:'挡刀', when:'playerLow', move:0, p:0.64,
+    tell:'见你血薄，周泰反倒横身在前：下一合常出✊石头，硬把这一合扛住。',
+    broke:'你两次绕过他的身子，周泰抹了把创口，不再只靠挡。'},
+  zhangjiao:{id:'zhangjiao', name:'符水', when:'round3', move:2, p:0.64,
+    tell:'张角每第三合便撒一次符水：第三、六、九合，他常以✋布铺开黄天。',
+    broke:'你两次踏碎他的符纸，张角收了太平道，另请一路神。'},
+  gaoshun:{id:'gaoshun', name:'先登', when:'streak', move:0, p:0.66,
+    tell:'高顺见你连胜两合，陷阵营便不待令：下一合必以✊石头直凿中军。',
+    broke:'你两次顶住先登，高顺整了整盔，换了个缺口。'}
 };
 
 /* Boss 沿用「名字」而不是 ch.id 查表：makeChapterBoss 全部复用 lvbu_boss 骨架，
@@ -10018,6 +10265,9 @@ function drawCards(n){
 /* 战斗开始：铺开卡组、生成初始手牌与能量 */
 function beginDeckBattle(){
   if(!RL.active) return;
+  /* 🎴 战前换牌：每战重置一次、可跳过；随 flags 存档，读档不会白送第二次 */
+  RL.flags.mulliganLeft = 1;
+  RL.flags.mulliganPicking = false;
   RL.deck.forEach((e,i) => { if(!e.uid) e.uid = 'c'+i+'_'+Math.random().toString(36).slice(2,7); });
   initDeck();
   if(RL.relics.includes('jiuzun')) player.st.firstLoseWard = 1;
@@ -10270,35 +10520,51 @@ function renderCards(){
   }
   bar.classList.remove('hidden');
   const cardWait = cardWaitRounds();
+  const mullLeft = RL.flags.mulliganLeft || 0;
+  /* 「战前换牌」严格只在第 0 回合可用；一旦出拳就自动收起选择态，
+     否则玩家点了按钮又出拳，会卡在 picking 模式里点不动牌。 */
+  if(RL.flags.mulliganPicking && (G.round !== 0 || !mullLeft || G.over || busy))
+    RL.flags.mulliganPicking = false;
+  const picking = !!RL.flags.mulliganPicking;
   bar.innerHTML =
     '<div class="cbrow">'+
       '<span>⚡ 能量 <b>'+player.st.energy+'</b></span>'+
       '<span class="wax">🃏 军略 <b>'+(player.st.cardPlays||0)+'/'+CARD_TURN_LIMIT+'</b> · 本战 '+(player.st.cardBattlePlays||0)+'/'+CARD_BATTLE_LIMIT+'</span>'+
       '<span class="wax">🛡 格挡 <b>'+player.st.block+'</b></span>'+
+      '<button class="pilebtn" id="btnMulligan">🎴 换牌 '+mullLeft+'/1</button>'+
       '<button class="pilebtn" id="pileDraw">📚 抽牌堆 '+RL.drawPile.length+'</button>'+
       '<button class="pilebtn" id="pileDiscard">🗑 弃牌堆 '+RL.discard.length+'</button>'+
       '<span class="potions" id="potionRow"></span>'+
       '<span style="flex:1"></span>'+
-      '<span class="cardtip">每两回合最多打出 1 张 · 本战最多 3 张 · 能量每回合重置</span>'+
+      '<span class="cardtip">'+(picking ? '👉 点一张手牌换掉（不占回合）'
+        : '每两回合最多打出 1 张 · 本战最多 3 张'+
+          (G.round === 0 && mullLeft ? ' · 开战前可换 1 张' : ''))+'</span>'+
     '</div>'+
      '<div class="hand" id="handRow"></div>';
   bar.title = cardWait
     ? '军略牌冷却中，还需 '+cardWait+' 回合'
-    : '军略牌每两回合最多使用一张，本战最多三张';
+    : '军略牌每两回合最多使用一张，本战最多三张；战前可换一张手牌';
   const row = $('handRow');
   RL.hand.forEach(e => {
     const d = cardDef(e);
     if(!d) return;
     const b = document.createElement('button');
-    b.className = 'hcard r-'+d.rar + (e.up?' upg':'') + (d.unplayable?' curse':'') +
-      ((d.unplayable || player.st.energy < d.cost || !canPlayCard() || busy || G.over) ? ' dis' : '');
+    b.className = 'hcard t-'+d.type+' r-'+d.rar + (e.up?' upg':'') + (d.unplayable?' curse':'') +
+      (picking ? ' swap'
+        : ((d.unplayable || player.st.energy < d.cost || !canPlayCard() || busy || G.over) ? ' dis' : ''));
     b.dataset.uid = e.uid;
-    b.title = (e.up?'【已升级】':'') + (d.unplayable?'诅咒牌，无法打出。':'') + d.desc;
+    b.title = (picking ? '【换牌】点我把这张换成另一张　' : '') +
+      (e.up?'【已升级】':'') + (d.unplayable?'诅咒牌，无法打出。':'') + d.desc;
+    const tagHtml = (d.tags && d.tags.length)
+      ? d.tags.map(t => '<i class="htag tag-'+(TAG_SLUG[t]||'none')+'">'+t+'</i>').join('')
+      : '<i class="htag tag-none">'+CARD_TYPE[d.type]+'</i>';
     b.innerHTML = '<span class="hcost">'+d.cost+'</span>'+
+                  '<span class="hrar rar-'+d.rar+'">'+(RARITY_NAME[d.rar]||'诅咒')+'</span>'+
                   '<span class="hn">'+d.icon+' '+d.name+(e.up?'+':'')+'</span>'+
                   '<span class="hd">'+d.desc+'</span>'+
-                  '<span class="ht">'+d.tag+'</span>';
+                  '<span class="ht">'+tagHtml+'</span>';
     b.onclick = () => {
+      if(picking){ swapHandCard(e.uid); return; }
       if(d.unplayable){ log('🩸 【'+d.name+'】无法打出；可到商店 / 铁匠 / 奇遇里删除。','bad'); return; }
       animateCard(e.uid);
     };
@@ -10308,9 +10574,40 @@ function renderCards(){
     row.innerHTML = '<span class="cardtip">（手牌已空，直接出招吧）</span>';
   }
   renderPotions();
-  const pd = $('pileDraw'), pc = $('pileDiscard');
+  const pd = $('pileDraw'), pc = $('pileDiscard'), mb = $('btnMulligan');
   if(pd) pd.onclick = () => showPile('draw');
   if(pc) pc.onclick = () => showPile('discard');
+  if(mb){
+    mb.disabled = !mullLeft || G.round !== 0 || G.over || busy;
+    mb.classList.toggle('on', picking);
+    mb.title = !mullLeft ? '本战的换牌机会已用掉'
+      : (G.round !== 0 ? '换牌只在开战前（出第一拳之前）可用'
+        : '战前换一张手牌：不占回合、不耗能、不算出牌次数，可以跳过');
+    mb.onclick = () => {
+      if(!RL.flags.mulliganLeft) return;
+      RL.flags.mulliganPicking = !RL.flags.mulliganPicking;
+      renderCards();
+    };
+  }
+}
+
+/* 🎴 战前换牌（P12 新玩法）
+   每战一次、可跳过，是《杀戮尖塔 / 小丑牌》式「弃牌重抽」的最小版本：
+   · 不碰猜拳判定与结算式，不改能量、出牌次数、回合数；
+   · 先抽后弃 —— 被换掉的那张不会立刻被自己抽回来；
+   · 只在玩家主动点击时消耗随机数，自动模拟 / 种子回放的流程完全不变。 */
+function swapHandCard(uid){
+  if(!RL.active || !RL.flags.mulliganLeft || !RL.hand.length || G.round !== 0 || G.over) return;
+  const i = RL.hand.findIndex(e => String(e.uid) === String(uid));
+  if(i < 0) return;
+  const e = RL.hand.splice(i, 1)[0];
+  drawCards(1);
+  RL.discard.push(e);
+  RL.flags.mulliganLeft = 0;
+  RL.flags.mulliganPicking = false;
+  log('🎴 战前换牌：弃掉【'+cardName(e)+'】，另抽一张（不占回合、不耗能、不算出牌次数）','gold');
+  renderCards();
+  saveRoguelike();
 }
 function showPile(which){
   const list = which === 'draw' ? RL.drawPile : RL.discard;
@@ -12695,6 +12992,7 @@ function renderMapScreen(){
     (boonList().length ? '<div class="rlmeta rlboons"><span class="rlstate">🀄 本局兵势：'+
       boonList().map(b => '<b class="boonchip" title="'+boonText(b)+'">'+boonLabel(b)+'</b>').join('　')+
       '<button id="btnBoonView">看详解</button></span></div>' : '')+
+    '<div class="rlmeta rlarche"><span class="rlstate">'+archetypeHtml()+'</span></div>'+
     '<div class="rlmeta">'+
       '<span class="rlstat">🗺 当前战区：<b>'+region.name+'</b></span>'+
       '<span class="rlstat" title="'+MORALE_TIP+'">🪖 军心：<b>'+RL.morale+'/5</b></span>'+
@@ -13196,6 +13494,80 @@ function cxGrid(list){ return '<div class="cxgrid">'+list.join('')+'</div>'; }
 const CAMP_NAME = { wei:'魏', shu:'蜀', wu:'吴', qun:'群' };
 const CAMP_CLS = { wei:'camp-wei', shu:'camp-shu', wu:'camp-wu', qun:'camp-qun' };
 
+/* ==================== P12 武将风格 · 列传（纯信息层，绝不进结算） ====================
+   风格是给玩家「一眼看懂这人准备怎么打」用的：Yomi 式可读的招牌打法。
+   它只是展示标签，不参与伤害、不出拳、不影响属性；旧将按面板与文案自动推断。 */
+const HERO_STYLE_INFO = {
+  '强攻':{icon:'⚔', cls:'st-atk', desc:'正面压上，得势时收益最高'},
+  '固守':{icon:'🛡', cls:'st-def', desc:'拖得起，靠减伤与回复磨死对手'},
+  '诡变':{icon:'🌀', cls:'st-trick', desc:'条件触发、蓄力与状态，最讲究时机'},
+  '均衡':{icon:'⚖', cls:'st-bal', desc:'无明显短板，什么局面都能接'}
+};
+const HERO_STYLE_OVERRIDE = {
+  caoren:'固守', xunyu:'诡变', fazheng:'诡变', masu:'诡变',
+  huanggai:'强攻', zhoutai:'固守', zhangjiao:'诡变', gaoshun:'强攻',
+  caocao:'均衡', liubei:'固守', sunquan:'诡变', zhugeliang:'诡变',
+  diaochan:'诡变', simayi:'固守', guojia:'诡变', huatuo:'固守',
+  dongzhuo:'强攻', yuanshao:'强攻', lusu:'均衡', jiaxu:'诡变'
+};
+function heroStyle(c){
+  if(HERO_STYLE_OVERRIDE[c.id]) return HERO_STYLE_OVERRIDE[c.id];
+  const s = (c.skill.desc || '') + (c.ult.desc || '');
+  if(c.def >= 15 && /回复|防御|闪避|免死|格挡/.test(s)) return '固守';
+  if(/蓄力|平局|预知|灼烧|中毒|易伤|清空|连胜|每第|临时/.test(s)) return '诡变';
+  if(c.atk >= 13 || /暴击|连击|伤害 \+|×/.test(s)) return '强攻';
+  return '均衡';
+}
+const HERO_LORE = {
+  caocao:'挟天子以令诸侯；官渡一把火烧掉袁绍的粮，也烧出了北方半壁。',
+  liubei:'织席贩履起于涿郡，半生寄人篱下，却在成都续了汉家一脉。',
+  sunquan:'十八岁接住江东，用周瑜、用鲁肃、用吕蒙，把长江守成一道墙。',
+  guanyu:'白马坡斩颜良，水淹七军威震华夏；败走麦城时，青龙刀仍握在手里。',
+  zhangfei:'当阳桥一声吼，喝断桥梁水倒流；敬君子而不恤小人，终害于帐下。',
+  zhaoyun:'长坂坡怀抱幼主，在百万军中七进七出，一身白袍不曾染血。',
+  zhugeliang:'隆中一对定三分，六出祁山未竟；五丈原的秋风吹灭了最后一盏灯。',
+  zhouyu:'赤壁借东风纵火，谈笑间樯橹灰飞烟灭；曲有误，周郎顾。',
+  lvbu:'人中吕布，马中赤兔；辕门射戟解了刘备的围，也解不开自己的死局。',
+  diaochan:'一袭连环计，把凤仪亭的月色变成董卓与吕布之间的刀。',
+  simayi:'忍了曹家三代，五丈原等到对手先走；高平陵一闭门，天下改姓。',
+  guojia:'十胜十败之论说定了官渡，遗计定辽东；天不假年，三十八岁而止。',
+  sunshangxiang:'弓腰姬带剑入蜀，联姻是棋、回吴也是棋，偏每一步都自己作主。',
+  huangzhong:'定军山一刀斩夏侯渊，老将的白发比年轻人的锋芒更亮。',
+  machao:'西凉锦马超，潼关逼得曹操割须弃袍；一身勇烈，半世飘零。',
+  xuchu:'裸衣斗马超，虎痴只认曹操一人；寸步不离，便是他一生的战法。',
+  dianwei:'宛城之夜独守辕门，双戟断了仍以人挡，死后良久无人敢近。',
+  xiahoudun:'拔矢啖睛，眼睛没了也要把那一箭讨回来；刚烈二字写在一只眼上。',
+  luxun:'夷陵一把火烧连营七百里，书生拜将，把刘备的复仇烧成白帝托孤。',
+  daqiao:'皖城双姝之一，江东的春风与战火一同落在她的名字上。',
+  xiaoqiao:'铜雀台锁不住的传说；赤壁那夜的东风里，也有她的一笔。',
+  zhenji:'洛神赋里的惊鸿，是邺城最深的一段背影；才貌与命运都不由己。',
+  huatuo:'麻沸散与五禽戏，医得了万人，医不了一个疑心重的丞相。',
+  dongzhuo:'入洛阳、废少帝、焚长安；酒池肉林之上，点起的是天下讨伐的火。',
+  yuanshao:'四世三公，河北带甲百万；官渡一败，多谋寡断四字跟他到了底。',
+  jiangwei:'继丞相之志九伐中原，蜀亡之后仍写一封密信，想再把天翻回来。',
+  gongsunzan:'白马义从驰塞北，界桥一挫便筑楼自守，终困于易京的高台。',
+  zhangliao:'八百人冲孙权十万，逍遥津一役，江东小儿闻名不敢夜啼。',
+  ganning:'锦帆百骑劫魏营，铃声响处敌将还未披甲；粗豪里自有信义。',
+  pangtong:'凤雏献连环计助赤壁，落凤坡一箭，把入川的功劳让给了别人。',
+  taishici:'神亭岭与孙策酣战一场，摔了头盔、夺了手戟，从此互为知己。',
+  weiyan:'子午谷奇谋无人敢用，反骨二字跟了他一生，也误了他一生。',
+  huangyueying:'木牛流马与连弩背后那个不说话的人；沔南名士的女儿，丑名是才名。',
+  xuhuang:'樊城长驱直入破关羽之围，治军严整得连曹操都叹有周亚夫之风。',
+  zhanghe:'从官渡到街亭，巧变一生；木门道的箭雨，替武侯收了最后一员魏将。',
+  lvmeng:'士别三日当刮目，白衣渡江取荆州；读书人最狠的一刀不响。',
+  lusu:'榻上策先定三分，单刀会替两家留了余地；他一辈子在替联盟缝线。',
+  jiaxu:'一言乱武，两度易主而善终；乱世里算得最准的，是何时闭嘴。',
+  caoren:'樊城被关羽围得水漫城墙，他站在城头不退一步，等来了徐晃。',
+  xunyu:'举贤荐能撑起半座曹营，却在加九锡一事上，把一生功名换成一个不字。',
+  fazheng:'定军山献策斩夏侯渊，蜀中奇谋；连丞相也让他三分，睚眦必报亦真性情。',
+  masu:'街亭舍水上山，把丞相第一次北伐的胜势，输给了自己读熟的兵书。',
+  huanggai:'苦肉计挨的那顿板子，换来赤壁满江火船；老将的背，比东风更先到。',
+  zhoutai:'宣城护主身被数十创，孙权数一处伤赐一杯酒；伤疤就是他的军功簿。',
+  zhangjiao:'太平道一卷书，黄巾一句苍天已死，把东汉最后一口气吹散了。',
+  gaoshun:'陷阵营七百余人，攻无不破；白门楼上沉默赴死，比吕布更像个将军。'
+};
+function heroLore(c){ return HERO_LORE[c.id] || '史官尚未为此将立传。'; }
+
 /* 技能挂在结算式的哪一环 —— 直接从 hooks 的键名生成，不写死文案，
    这样图鉴永远不会和引擎跑偏（改钩子名时这里会立刻跟着变）。 */
 const HOOK_WHERE = {
@@ -13259,7 +13631,8 @@ function codexHtml(tab){
     <p>阵亡即止；连破各章守将、最终在虎牢关诛杀鬼神·吕布才算通关。层数与章节越靠后，敌将血量 / 攻击 / 防御同步成长，不同战斗变体会改变开局条件、天气或奖励。</p>
     <h4>🃏 军略牌（卡组构筑 · 杀戮尖塔式）</h4>
      <p>北伐模式下你拥有一副 <b>卡组</b>（起始 10 张）。每回合开始：<b>重置格挡与能量（默认 3 点）</b>，<b>抽 5 张牌</b>。每两回合在出拳之前最多打出<b> 1 张</b>军略牌，每场最多<b> 3 张</b>，然后猜拳结束本回合，胜负仍由石头剪刀布决定。</p>
-    <p>回合结束时：本回合增益失效、手牌弃置、抽牌堆不足时自动洗回弃牌堆。</p>
+     <p>回合结束时：本回合增益失效、手牌弃置、抽牌堆不足时自动洗回弃牌堆。</p>
+    <p><b>🎴 战前换牌</b>：每场战斗开打前，可点「🎴 换牌」再点一张手牌，弃掉它另抽一张；<b>每战 1 次、可跳过</b>，不占回合、不耗能、不算出牌次数。被换掉的牌会等你抽完才进弃牌堆，不会立刻抽回同一张。<b>🎴 卡组流派</b>：牌分火 / 毒 / 守 / 势 / 粮五类标签，每战同标签第 2 张触发一次轻协同；地图页会统计各标签张数并提示本局流派（3 张初成 / 5 张成型 / 6 张大成），<b>纯提示、不加数值</b>。</p>
     <p><b>🛡 格挡</b>：卡牌获得的格挡会优先抵挡你受到的伤害，<b>格挡每回合开始时清零</b>（所以要在出招前铺好盾）。中毒与灼烧无视格挡。</p>
     <p><b>构筑循环</b>：战斗胜利 → 三选一添牌 → 篝火升级卡牌 → 商店删牌 / 买牌 → 卡组越来越精简、越来越强。</p>
     <h4>🎲 押注（诡道）</h4>
@@ -13306,13 +13679,22 @@ function codexHtml(tab){
     const groups = ['wei','shu','wu','qun'];
     let out = '<p>共 <b>'+CHARS.length+'</b> 名武将。技能越强、基础属性越低（经数值校准）。「超必杀」需怒气满 100。' +
       '<br>🧠 <b>北伐中若与此人为敌</b>，他还带着一条可读的「习性」：到了特定时机便容易走同一条路；你看得见、也破得掉。</p>';
+    out += '<h4>🎴 招牌打法速览</h4><p>风格只说明「这人打算怎么打」，<b>不附加任何数值</b>；'+
+      '选将页可按阵营 / 打法 / 关键词筛选，卡片下方附有史官列传。</p>' +
+      cxGrid(Object.keys(HERO_STYLE_INFO).map(k => {
+        const s = HERO_STYLE_INFO[k];
+        return cxItem(s.icon, k+'　<span class="dim">('+CHARS.filter(c => heroStyle(c) === k).length+' 名)</span>',
+          s.desc, '风格');
+      }));
     groups.forEach(c => {
       const list = CHARS.filter(x => x.camp === c);
       if(!list.length) return;
       out += '<h4>' + CAMP_NAME[c] + '　(' + list.length + ' 名)</h4>';
       out += cxGrid(list.map(x => {
         const hab = FOE_HABITS[x.id];
-        return cxItem('🎭', x.name,
+        const st = heroStyle(x), si = HERO_STYLE_INFO[st];
+        return cxItem('🎭', x.name+'<span class="cxstyle '+si.cls+'">'+si.icon+' '+st+'</span>',
+          '📖 <i>'+heroLore(x)+'</i><br>' +
           '【'+x.skill.name+'】'+x.skill.desc +
           '<br>🎬 <b>技能挂在哪一环</b>：'+heroFlow(x) +
           '<br>💥 <b>超必杀·'+x.ult.name+'</b>：'+x.ult.desc +
@@ -13346,6 +13728,17 @@ function codexHtml(tab){
       out += '<h4>🩸 诅咒牌</h4><p>诅咒<b>无法打出</b>，会占手牌/牌堆；部分还会在回合末或出牌时反噬。它们不会出现在战利三选一里，只从高风险奇遇获得；商店删牌、铁匠与部分奇遇可以清掉。</p>';
       out += cxGrid(curses.map(c => cxItem(c.icon, c.name, c.desc, '<span class="rar-curse">诅咒</span>')));
     }
+    out += '<h4>🎴 标签与卡组流派</h4>';
+    out += cxGrid(Object.keys(CARD_TAGS).map(t => {
+      const info = ARCHETYPE_INFO[t], ids = CARD_TAGS[t];
+      return cxItem(info.icon, info.name+'派 · '+t+'　<span class="dim">('+ids.length+' 张)</span>',
+        info.desc + '<br><span class="dim">'+
+        ids.map(id => (CARDS.find(c => c.id === id) || {}).name || id).join('、')+'</span>',
+        '本战第 2 张触发轻协同');
+    }));
+    out += '<p>地图页「🎴 本局流派」实时统计卡组里各标签的张数：同标签 <b>3 张初成 / 5 张成型 / 6 张大成</b>，'+
+      '只作构筑提示，<b>不附加任何战斗数值</b>。每场战斗开打前还可 <b>🎴 换牌 1 次</b>（可跳过）：'+
+      '弃掉一张手牌另抽一张，不占回合、不耗能、不算出牌次数，用来化解卡手 —— 胜负仍全由猜拳判定。</p>';
     out += '<p><b>节奏限制：</b>军略牌每两回合最多使用一张、每场最多三张；胜负与主要伤害仍由石头、剪刀、布的判断结果决定。</p>';
     return out;
   }
@@ -13654,9 +14047,42 @@ function codexHtml(tab){
 }
 
 /* ==================== 选将流程 ==================== */
+/* P12：46 将之后手机上不好翻，加阵营 / 打法 / 关键词三路筛选。
+   筛选只影响「显示哪些卡」，selectedId / picked 原样保留，切回来仍在。 */
+const heroFilter = {camp:'all', style:'all', q:''};
+function heroMatches(c){
+  if(heroFilter.camp !== 'all' && c.camp !== heroFilter.camp) return false;
+  if(heroFilter.style !== 'all' && heroStyle(c) !== heroFilter.style) return false;
+  const q = heroFilter.q.trim();
+  if(q && (c.name + c.title + c.skill.name + c.skill.desc + c.ult.name + heroLore(c)).indexOf(q) < 0) return false;
+  return true;
+}
+function syncHeroFilterUI(list){
+  document.querySelectorAll('#heroFilter .hfbtn').forEach(b => {
+    const v = b.dataset.camp || b.dataset.style;
+    b.classList.toggle('active', (b.dataset.camp ? heroFilter.camp : heroFilter.style) === v);
+  });
+  const cnt = $('heroCount');
+  if(cnt) cnt.textContent = '显示 '+list.length+' / '+CHARS.length+' 将';
+}
+function bindHeroFilter(){
+  document.querySelectorAll('#heroFilter .hfbtn').forEach(b => {
+    b.onclick = () => {
+      if(b.dataset.camp) heroFilter.camp = b.dataset.camp;
+      else heroFilter.style = b.dataset.style;
+      buildGrid();
+    };
+  });
+  const s = $('heroSearch');
+  if(s) s.oninput = () => { heroFilter.q = s.value; buildGrid(); };
+}
 function buildGrid(){
   const grid = $('grid');
-  grid.innerHTML = CHARS.map(c => `
+  if(!grid) return;
+  const list = CHARS.filter(heroMatches);
+  grid.innerHTML = list.length ? list.map(c => {
+    const st = heroStyle(c), si = HERO_STYLE_INFO[st];
+    return `
     <div class="card" data-id="${c.id}">
       <div class="chead"><span class="cname">${c.name}</span><span class="ctitle">${c.title}</span>
       <span class="ccamp camp-${c.camp}">${{wei:'魏',shu:'蜀',wu:'吴',qun:'群'}[c.camp]}</span></div>
@@ -13665,11 +14091,16 @@ function buildGrid(){
         <span class="stat"><i>❤生命</i> ${characterStat(c, 'hp')}</span>
         <span class="stat"><i>🛡防御</i> ${characterStat(c, 'def')}%</span>
       </div>
+      <div class="csty"><span class="cstyle ${si.cls}" title="${si.desc}">${si.icon} ${st}</span></div>
       <div class="skill"><b>【${c.skill.name}】</b>${c.skill.desc}</div>
-    </div>`).join('');
+      <div class="clore">📖 ${heroLore(c)}</div>
+    </div>`; }).join('')
+    : '<p class="hfempty">没有匹配的武将，换个条件试试。</p>';
   grid.querySelectorAll('.card').forEach(el => {
     el.addEventListener('click', () => onCardClick(el.dataset.id));
   });
+  syncHeroFilterUI(list);
+  refreshSelection();
 }
 
 function setMode(m){
@@ -13821,6 +14252,7 @@ function startBattle(){
 }
 
 /* ==================== 事件绑定 ==================== */
+bindHeroFilter();
 buildGrid();
 setMode('duel');
 const rcEl = $('relicCountTxt');
@@ -14010,6 +14442,9 @@ globalThis.__api = {
   openCardReward, openRelicReward, openRLReward, completeNode, cardWaitRounds, canPlayCard,
   randomCards, starterDeck, fxDesc, spinDuel, doPeek, renderCodex,
   codexHtml, usePotion, addPotion, dealDamage, heal, getRL: () => RL, getG: () => G,
+  /* P12 内容 / 新玩法的可测入口 */
+  heroStyle, heroLore, HERO_STYLE_INFO, HERO_LORE, CARD_TAGS, TAG_SLUG,
+  deckTagStats, deckArchetype, archetypeHtml, ARCHETYPE_INFO, swapHandCard, renderCards,
   getItems: () => items, getJN: () => JN, getNODE_INFO: () => NODE_INFO,
   getBATTLE_VARIANTS: () => BATTLE_VARIANTS, getRL_EVENTS: () => RL_EVENTS,
   getENEMY_AFFIXES: () => ENEMY_AFFIXES, getAFFIX_BY_ID: () => AFFIX_BY_ID,
